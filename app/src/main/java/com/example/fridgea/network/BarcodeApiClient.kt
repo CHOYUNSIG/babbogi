@@ -10,7 +10,6 @@ import retrofit2.Retrofit
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-
 private const val BASE_URL = "https://openapi.foodsafetykorea.go.kr/api/${BuildConfig.BARCODE_API_KEY}/C005/json/1/5/"
 private val json = Json { ignoreUnknownKeys = true }
 private val retrofit = Retrofit.Builder()
@@ -26,13 +25,9 @@ interface BarcodeApiService {
 
 
 object BarcodeApi {
-    val retrofitService : BarcodeApiService by lazy {
+    private val retrofitService : BarcodeApiService by lazy {
         retrofit.create(BarcodeApiService::class.java)
     }
-}
 
-
-fun main() = runBlocking {
-    val product = BarcodeApi.retrofitService.getProducts("8801094512668")
-    Unit
+    suspend fun getProducts(barcode: String) = retrofitService.getProducts(barcode).C005
 }

@@ -1,4 +1,4 @@
-package com.example.fridgea.ui
+package com.example.fridgea.ui.model
 
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
@@ -92,7 +92,7 @@ class CameraViewModel: ViewModel() {
                 _validBarcode.value.forEach { barcode ->
                     job.add(launch {
                         // API를 통해 상품명 가져오기
-                        val response = BarcodeApi.retrofitService.getProducts(barcode).C005
+                        val response = BarcodeApi.getProducts(barcode)
                         if (response.total_count > 0)
                             list.add(response.row!![0].PRDLST_NM)
                     })

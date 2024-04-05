@@ -8,8 +8,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import com.example.fridgea.ui.CameraViewModel
-import com.example.fridgea.ui.CameraViewModelFactory
+import com.example.fridgea.ui.CameraScreen
+import com.example.fridgea.ui.model.CameraViewModel
+import com.example.fridgea.ui.model.CameraViewModelFactory
 import com.example.fridgea.ui.theme.FridgeaTheme
 
 

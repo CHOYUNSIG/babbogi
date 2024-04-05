@@ -1,4 +1,4 @@
-package com.example.fridgea
+package com.example.fridgea.ui
 
 import androidx.annotation.OptIn
 import androidx.camera.core.CameraSelector
@@ -32,9 +32,11 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.example.fridgea.ui.CameraViewModel
+import com.example.fridgea.R
+import com.example.fridgea.ui.model.CameraViewModel
 import kotlinx.coroutines.*
 import java.util.concurrent.Executors
+
 
 @OptIn(ExperimentalGetImage::class)
 @Composable
