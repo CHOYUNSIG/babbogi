@@ -17,17 +17,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -36,73 +32,25 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.common.InputImage
+import com.example.fridgea.ui.CameraViewModel
 import kotlinx.coroutines.*
 import java.util.concurrent.Executors
 
-
 @OptIn(ExperimentalGetImage::class)
 @Composable
-fun CameraScreen() {
+fun CameraScreen(viewModel: CameraViewModel) {
+    // 카메라 사용 설정
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
     val cameraController = remember { LifecycleCameraController(context) }
-    cameraController.bindToLifecycle(lifecycleOwner)
+    val executor = remember { Executors.newSingleThreadExecutor() }
+    cameraController.bindToLifecycle(LocalLifecycleOwner.current)
     cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
     previewView.controller = cameraController
 
-    val executor = remember { Executors.newSingleThreadExecutor() }
-    val barcodeRecognizer = remember {
-        BarcodeScanning.getClient(
-            BarcodeScannerOptions.Builder()
-                .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
-                .enableAllPotentialBarcodes()
-                .build()
-        )
-    }
+    // 바코드 얻어오기 시작
+    viewModel.asyncGetBarcodeFromCamera(cameraController, executor)
 
-    var recognizedCode by rememberSaveable { mutableStateOf(emptyMap<String, Long>()) }
-    var isLoading by remember { mutableStateOf(false) }
-
-    // 카메라로부터 바코드 정보를 가져옴
-    if (!isLoading) {
-        runBlocking {
-            launch {
-                isLoading = true
-                cameraController.setImageAnalysisAnalyzer(executor) { imageProxy ->
-                    imageProxy.image?.let { image ->
-                        val img = InputImage.fromMediaImage(image, imageProxy.imageInfo.rotationDegrees)
-                        val generatedTime = System.nanoTime()
-
-                        barcodeRecognizer.process(img).addOnCompleteListener { task ->
-                            recognizedCode =
-                                if (!task.isSuccessful)
-                                    emptyMap()
-                                else
-                                    HashMap<String, Long>().also { newRecognizedCode ->
-                                        task.result.forEach lambda@ { barcode ->
-                                            val code = barcode.rawValue.toString()
-                                            if (code.isEmpty())
-                                                return@lambda
-                                            newRecognizedCode[code] =
-                                                if (code in recognizedCode.keys) recognizedCode[code]!!
-                                                else generatedTime
-                                        }
-                                    }.toMap()
-                            cameraController.clearImageAnalysisAnalyzer()
-                            imageProxy.close()
-                            isLoading = false
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
     // 화면 구성
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
@@ -122,22 +70,26 @@ fun CameraScreen() {
         ) {
             ElevatedCard(
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
+                modifier = Modifier.fillMaxWidth(0.8f)
             ) {
-                val time = System.nanoTime()
                 Text(
-                    text = recognizedCode
-                        .filter { (_, generatedTime) -> time - generatedTime > 200_000_000 }
-                        .map { (code, _) -> code }
-                        .joinToString("\n"),
-                    modifier = Modifier
-                        .padding(16.dp),
-                    style = MaterialTheme.typography.bodyMedium
+                    text = viewModel.validBarcode.joinToString("\n"),
+                    modifier = Modifier.padding(16.dp)
                 )
+                if (viewModel.isProductFetching)
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .padding(16.dp)
+                    )
+                else
+                    Text(
+                        text = viewModel.products.joinToString("\n"),
+                        modifier = Modifier.padding(16.dp)
+                    )
             }
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = { viewModel.asyncGetProductFromBarcode() },
                 modifier = Modifier
                     .size(100.dp, 100.dp)
                     .clip(RoundedCornerShape(50.dp))
