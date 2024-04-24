@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.fridgea.network.BarcodeApi
+import com.example.fridgea.network.NutritionApi
+import com.example.fridgea.util.NutritionInfo
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
@@ -15,6 +17,7 @@ import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.concurrent.ExecutorService
+import com.example.fridgea.util.ProductInfo
 
 // 바코드 유효 인정 시간, 나노초 단위
 private const val validRecognitionNanoTime = 200_000_000
@@ -31,13 +34,13 @@ class CameraViewModel: ViewModel() {
 
     // 상태 선언
     private var _validBarcode = mutableStateOf(emptyList<String>())
-    private var _products = mutableStateOf(emptyList<String>())
+    private var _products = mutableStateOf(emptyList<ProductInfo>())
     private var _recognizedBarcode = mutableStateOf(emptyMap<String, Long>())
     private var _isRecognizing = mutableStateOf(false)
     private var _isProductFetching = mutableStateOf(false)
 
     val validBarcode: List<String> get() = _validBarcode.value
-    val products: List<String> get() =  _products.value
+    val products: List<ProductInfo> get() = _products.value
     val isProductFetching: Boolean get() = _isProductFetching.value
 
     // 카메라를 이용해 바코드 정보를 가져옴 (비동기)
@@ -80,27 +83,58 @@ class CameraViewModel: ViewModel() {
         }
     }
 
-    // 바코드 번호로 품명을 가져옴 (비동기)
+    // 바코드 번호로 품명과 영양 정보를 가져옴 (비동기)
     fun asyncGetProductFromBarcode() {
         if (_isProductFetching.value)
             return
         _isProductFetching.value = true
         _products.value = emptyList()
         viewModelScope.launch {
-            _products.value = MutableList(0) { "" }.also { list ->
+            _products.value = emptyList<ProductInfo>().toMutableList().also { list ->
                 val job = emptyList<Job>().toMutableList()
                 _validBarcode.value.forEach { barcode ->
-                    job.add(launch {
+                    job.add(launch lambda@{
                         // API를 통해 상품명 가져오기
-                        val response = BarcodeApi.getProducts(barcode)
-                        if (response.total_count > 0)
-                            list.add(response.row!![0].PRDLST_NM)
+                        val barcodeResponse = BarcodeApi.getProducts(barcode)
+                        if (barcodeResponse.total_count == 0)
+                            return@lambda
+                        val productName = barcodeResponse.row!!.first().PRDLST_NM
+                        val nutritionResponse = NutritionApi.getNutrition(productName)
+                        list.add(
+                            ProductInfo(
+                                productName,
+                                barcode,
+                                if (nutritionResponse.total_count == 0)
+                                    null
+                                else {
+                                    val nutrition = nutritionResponse.row!!.first()
+                                    fun toFloat(string: String): Float = if (string.isNotBlank()) string.toFloat() else 0.0f
+                                    NutritionInfo(
+                                        toFloat(nutrition.SERVING_SIZE),
+                                        toFloat(nutrition.SERVING_UNIT),
+                                        toFloat(nutrition.NUTR_CONT1),
+                                        toFloat(nutrition.NUTR_CONT2),
+                                        toFloat(nutrition.NUTR_CONT3),
+                                        toFloat(nutrition.NUTR_CONT4),
+                                        toFloat(nutrition.NUTR_CONT5),
+                                        toFloat(nutrition.NUTR_CONT6),
+                                        toFloat(nutrition.NUTR_CONT7),
+                                        toFloat(nutrition.NUTR_CONT8),
+                                        toFloat(nutrition.NUTR_CONT9)
+                                    )
+                                }
+                            )
+                        )
                     })
                 }
                 job.forEach { it.join() }
-            }.toList()
+            }
             _isProductFetching.value = false
         }
+    }
+
+    fun cleanProduct() {
+        _products.value = emptyList()
     }
 }
 

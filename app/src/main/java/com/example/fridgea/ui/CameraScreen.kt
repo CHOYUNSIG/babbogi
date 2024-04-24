@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -24,12 +25,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.fridgea.R
@@ -65,43 +68,93 @@ fun CameraScreen(viewModel: CameraViewModel) {
             .padding(top = 12.dp)
     ) {
         Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(top = 30.dp, bottom = 30.dp)
         ) {
-            ElevatedCard(
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                modifier = Modifier.fillMaxWidth(0.8f)
-            ) {
+            BarcodeCard(viewModel)
+            NutritionCard(viewModel)
+            CaptureButton(viewModel)
+        }
+    }
+}
+
+@Composable
+fun BarcodeCard(viewModel: CameraViewModel) {
+    ElevatedCard(
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        modifier = Modifier.fillMaxWidth(0.8f)
+    ) {
+        Column {
+            viewModel.validBarcode.forEach {
                 Text(
-                    text = viewModel.validBarcode.joinToString("\n"),
+                    text = it,
                     modifier = Modifier.padding(16.dp)
-                )
-                if (viewModel.isProductFetching)
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .padding(16.dp)
-                    )
-                else
-                    Text(
-                        text = viewModel.products.joinToString("\n"),
-                        modifier = Modifier.padding(16.dp)
-                    )
-            }
-            IconButton(
-                onClick = { viewModel.asyncGetProductFromBarcode() },
-                modifier = Modifier
-                    .size(100.dp, 100.dp)
-                    .clip(RoundedCornerShape(50.dp))
-                    .background(Color.Black)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.baseline_camera_alt_24),
-                    contentDescription = "Capture"
                 )
             }
         }
+    }
+}
+
+@Composable
+fun NutritionCard(viewModel: CameraViewModel) {
+    ElevatedCard(
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        modifier = Modifier.fillMaxWidth(0.8f)
+    ) {
+        if (viewModel.isProductFetching) {
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .padding(16.dp)
+                )
+            }
+        }
+        else if (viewModel.products.isNotEmpty()) {
+            viewModel.products.forEach { (prodName, _, nutrition) ->
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(modifier = Modifier.padding(bottom = 8.dp), fontWeight = FontWeight.Bold, text = prodName)
+                    if (nutrition != null) {
+                        Text(modifier = Modifier.padding(bottom = 8.dp), text = nutrition.toString())
+                        Text(text = "per ${100 * nutrition.servingUnit / nutrition.servingVolume}% of the total product.")
+                    }
+                    else {
+                        Text(text = "There's no nutrition info.")
+                    }
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(16.dp)
+            ) {
+                Button(onClick = { viewModel.cleanProduct() }) {
+                    Text(text = "Done")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CaptureButton(viewModel: CameraViewModel) {
+    IconButton(
+        onClick = { viewModel.asyncGetProductFromBarcode() },
+        modifier = Modifier
+            .size(80.dp, 80.dp)
+            .clip(RoundedCornerShape(40.dp))
+            .background(Color.Black)
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.baseline_camera_alt_24),
+            contentDescription = "Capture"
+        )
     }
 }
