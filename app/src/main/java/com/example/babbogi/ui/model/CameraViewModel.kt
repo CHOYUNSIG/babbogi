@@ -1,4 +1,4 @@
-package com.example.fridgea.ui.model
+package com.example.babbogi.ui.model
 
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
@@ -7,9 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.fridgea.network.BarcodeApi
-import com.example.fridgea.network.NutritionApi
-import com.example.fridgea.util.NutritionInfo
+import com.example.babbogi.network.BarcodeApi
+import com.example.babbogi.network.NutritionApi
+import com.example.babbogi.util.NutritionInfo
+import com.example.babbogi.util.ProductInfo
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
@@ -17,7 +18,6 @@ import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.concurrent.ExecutorService
-import com.example.fridgea.util.ProductInfo
 
 // 바코드 유효 인정 시간, 나노초 단위
 private const val validRecognitionNanoTime = 200_000_000
@@ -104,9 +104,7 @@ class CameraViewModel: ViewModel() {
                             ProductInfo(
                                 productName,
                                 barcode,
-                                if (nutritionResponse.total_count == 0)
-                                    null
-                                else {
+                                if (nutritionResponse.total_count != 0) {
                                     val nutrition = nutritionResponse.row!!.first()
                                     fun toFloat(string: String): Float = if (string.isNotBlank()) string.toFloat() else 0.0f
                                     NutritionInfo(
@@ -123,6 +121,7 @@ class CameraViewModel: ViewModel() {
                                         toFloat(nutrition.NUTR_CONT9)
                                     )
                                 }
+                                else null
                             )
                         )
                     })

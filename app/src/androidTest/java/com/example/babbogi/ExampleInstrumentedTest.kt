@@ -1,4 +1,4 @@
-package com.example.fridgea
+package com.example.babbogi
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

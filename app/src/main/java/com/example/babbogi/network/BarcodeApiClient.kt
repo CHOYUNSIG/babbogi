@@ -1,7 +1,7 @@
-package com.example.fridgea.network
+package com.example.babbogi.network
 
-import com.example.fridgea.BuildConfig
-import com.example.fridgea.network.response.BarcodeApiResponse
+import com.example.babbogi.BuildConfig
+import com.example.babbogi.network.response.BarcodeApiResponse
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
