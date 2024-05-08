@@ -1,4 +1,4 @@
-package com.example.fridgea.ui
+package com.example.babbogi.ui
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fridgea.R
+import com.example.babbogi.R
 import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -225,7 +225,7 @@ fun listUserMeals(){
                         fontWeight = FontWeight.W600,
                     )
                     IconButton(
-                        onClick = { CameraScreen(cameraViewModel) },
+                        onClick = { /* TODO */ },
                         modifier = Modifier.size(48.dp)
                     )
                     {

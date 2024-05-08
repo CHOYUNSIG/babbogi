@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.example.fridgea.R
+import com.example.babbogi.R
 
 // Set of Material typography styles to start with
 val Typography = Typography(
@@ -37,11 +37,13 @@ val Typography = Typography(
 
 val nanumFontFamily = FontFamily(
     Font(R.font.nanumsquare_acb, FontWeight.Normal),
-    /*Font(R.font.nanumgothic, FontWeight.Black),
-Font(R.font.nanumgothicbold, FontWeight.Black),
-Font(R.font.nanumgothicextrabold, FontWeight.Black),
-Font(R.font.nanumgothiclight, FontWeight.Black),
-Font(R.font.nanumbarunpenb, FontWeight.Black),
-Font(R.font.nanumbarunpenr, FontWeight.Black),
-Font(R.font.nanumsquare_acb, FontWeight.Black),*/
+    /*
+    Font(R.font.nanumgothic, FontWeight.Black),
+    Font(R.font.nanumgothicbold, FontWeight.Black),
+    Font(R.font.nanumgothicextrabold, FontWeight.Black),
+    Font(R.font.nanumgothiclight, FontWeight.Black),
+    Font(R.font.nanumbarunpenb, FontWeight.Black),
+    Font(R.font.nanumbarunpenr, FontWeight.Black),
+    Font(R.font.nanumsquare_acb, FontWeight.Black),
+    */
 )

@@ -1,4 +1,4 @@
-package com.example.fridgea.ui
+package com.example.babbogi.ui
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -25,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fridgea.ui.theme.nanumFontFamily
 
 data class NutritionInfo(val name: String, val color: Color, val percentage: Float)
 
@@ -44,9 +43,10 @@ val nutritionInfos: List<NutritionInfo> = listOf(
 @Preview
 @Composable
 fun NutritionOverview() {
-    Column (modifier = Modifier.background(color = Color.White)){
+    Column(modifier = Modifier.background(color = Color.White)) {
         //맨 위 앱 이름
-        Box(modifier = Modifier
+        Box(
+            modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.White)
         )
@@ -78,38 +78,38 @@ fun NutritionOverview() {
     }
 }
 
-    @SuppressLint("RememberReturnType")
-    @Composable
+@SuppressLint("RememberReturnType")
+@Composable
 //영양성분들 원그래프 만드는 함수
-    fun CircularGraphCard(percentage: Float, color: Color, name: String) {
-        ElevatedCard(
-            modifier = Modifier
-                .padding(16.dp)
-                .background(color = Color.White),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
+fun CircularGraphCard(percentage: Float, color: Color, name: String) {
+    ElevatedCard(
+        modifier = Modifier
+            .padding(16.dp)
+            .background(color = Color.White),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
+    ) {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .background(color = Color(0xE5E5E5))
         ) {
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .background(color = Color(0xE5E5E5))
-            ) {
-                Row() {
-                    Canvas(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(16.dp)
-                    ) {
-                        drawArc(
-                            color = color,
-                            startAngle = -90f,
-                            sweepAngle = percentage,
-                            useCenter = false,
-                            size = Size(width = size.width, height = size.width),
-                            style = Stroke(width = 8.dp.toPx())
-                        )
-                    }
-                    Text(text = "$name")
+            Row() {
+                Canvas(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .padding(16.dp)
+                ) {
+                    drawArc(
+                        color = color,
+                        startAngle = -90f,
+                        sweepAngle = percentage,
+                        useCenter = false,
+                        size = Size(width = size.width, height = size.width),
+                        style = Stroke(width = 8.dp.toPx())
+                    )
                 }
+                Text(text = name)
             }
         }
     }
+}
 

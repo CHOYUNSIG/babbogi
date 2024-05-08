@@ -1,4 +1,4 @@
-package com.example.fridgea.ui.model
+package com.example.babbogi.ui.model
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
