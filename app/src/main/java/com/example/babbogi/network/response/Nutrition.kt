@@ -1,4 +1,4 @@
-package com.example.fridgea.network.response
+package com.example.babbogi.network.response
 
 import kotlinx.serialization.Serializable
 

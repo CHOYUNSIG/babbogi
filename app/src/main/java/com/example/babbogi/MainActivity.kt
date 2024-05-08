@@ -1,4 +1,4 @@
-package com.example.fridgea
+package com.example.babbogi
 
 import android.os.Build
 import android.os.Bundle
@@ -10,11 +10,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import com.example.fridgea.ui.CameraScreen
-import com.example.fridgea.ui.MainScreen
-import com.example.fridgea.ui.model.CameraViewModel
-import com.example.fridgea.ui.model.CameraViewModelFactory
-import com.example.fridgea.ui.theme.FridgeaTheme
 
 
 class MainActivity : ComponentActivity() {
@@ -28,7 +23,7 @@ class MainActivity : ComponentActivity() {
         )[CameraViewModel::class.java]
 
         setContent {
-            FridgeaTheme {
+            BabbogiTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

@@ -8,11 +8,11 @@ Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 android {
-    namespace 'com.example.fridgea'
+    namespace 'com.example.babbogi'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.fridgea"
+        applicationId 'com.example.babbogi'
         minSdk 24
         targetSdk 34
         versionCode 1

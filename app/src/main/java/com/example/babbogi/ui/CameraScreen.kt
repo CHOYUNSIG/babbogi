@@ -1,4 +1,4 @@
-package com.example.fridgea.ui
+package com.example.babbogi.ui
 
 import androidx.annotation.OptIn
 import androidx.camera.core.CameraSelector
@@ -35,8 +35,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.example.fridgea.R
-import com.example.fridgea.ui.model.CameraViewModel
+import com.example.babbogi.R
+import com.example.babbogi.ui.model.CameraViewModel
 import kotlinx.coroutines.*
 import java.util.concurrent.Executors
 

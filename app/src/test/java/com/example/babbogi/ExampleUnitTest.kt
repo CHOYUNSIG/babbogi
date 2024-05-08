@@ -1,4 +1,4 @@
-package com.example.fridgea
+package com.example.babbogi
 
 import org.junit.Test
 

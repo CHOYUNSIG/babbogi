@@ -1,4 +1,4 @@
-package com.example.fridgea.util
+package com.example.babbogi.util
 
 // 상품 정보
 data class ProductInfo(
