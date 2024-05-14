@@ -90,20 +90,26 @@ fun CircularGraphCard(percentage: Float, color: Color, name: String) {
             .fillMaxWidth()
             .background(color = Color(0xE5E5E5))
         ) {
-            Row {
-                Canvas(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .padding(16.dp)
-                ) {
-                    drawArc(
-                        color = color,
-                        startAngle = -90f,
-                        sweepAngle = percentage,
-                        useCenter = false,
-                        size = Size(width = size.width, height = size.width),
-                        style = Stroke(width = 8.dp.toPx())
-                    )
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .background(color = Color(0xE5E5E5))
+            ) {
+                Row() {
+                    Canvas(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(16.dp)
+                    ) {
+                        drawArc(
+                            color = color,
+                            startAngle = -90f,
+                            sweepAngle = percentage,
+                            useCenter = false,
+                            size = Size(width = size.width, height = size.width),
+                            style = Stroke(width = 8.dp.toPx())
+                        )
+                    }
+                    Text(text = name)
                 }
                 Text(text = name)
             }
