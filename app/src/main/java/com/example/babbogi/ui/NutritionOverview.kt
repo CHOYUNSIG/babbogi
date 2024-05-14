@@ -49,8 +49,7 @@ fun NutritionOverview() {
             modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.White)
-        )
-        {
+        ) {
             Text(
                 "밥보기",
                 color = Color.DarkGray,
@@ -73,7 +72,6 @@ fun NutritionOverview() {
                     name = nutritionInfo.name
                 )
             }
-
         }
     }
 }
@@ -92,7 +90,7 @@ fun CircularGraphCard(percentage: Float, color: Color, name: String) {
             .fillMaxWidth()
             .background(color = Color(0xE5E5E5))
         ) {
-            Row() {
+            Row {
                 Canvas(
                     modifier = Modifier
                         .size(100.dp)

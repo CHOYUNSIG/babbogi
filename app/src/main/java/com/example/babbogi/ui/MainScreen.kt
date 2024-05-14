@@ -43,17 +43,11 @@ import java.time.LocalDate
 @Preview
 @Composable
 fun MainScreen() {
-
     Column (modifier = Modifier.background(color = Color.White)) {
-
         AppName()
-
         SelectDate()
-
         InputUserData()
-
-        listUserMeals()
-
+        ListUserMeals()
     }
 }
 
@@ -110,13 +104,12 @@ fun SelectDate() {
 
 @Composable
 //앱 이름
-fun AppName(){
+fun AppName() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.White)
-    )
-    {
+    ) {
         Text(
             "밥보기",
             color = Color.DarkGray,
@@ -127,7 +120,7 @@ fun AppName(){
 }
 
 @Composable
-// 건강정보 추가하기(메인화면)
+// 건강정보 추가하기(메인 화면)
 fun InputUserData(){
     Box(modifier = Modifier.padding(16.dp)) {
         Canvas(modifier = Modifier.matchParentSize()) {
@@ -155,15 +148,12 @@ fun InputUserData(){
                 focusedElevation = 6.dp,  // 포커스가 맞춰졌을 때의 고도
                 hoveredElevation = 6.dp   // 호버링 했을 때의 고도
             )
-        )
-        {
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(color = Color(0xEDEFED))
-            )
-            {
-
+            ) {
                 Column {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -192,16 +182,14 @@ fun InputUserData(){
                             textAlign = TextAlign.Center
                         )
                     }
-
                 }
-
             }
         }
     }
 }
 
 @Composable
-fun listUserMeals(){
+fun ListUserMeals(){
     ElevatedCard(
         modifier = Modifier
             .padding(16.dp)
