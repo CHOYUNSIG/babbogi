@@ -37,11 +37,13 @@ val Typography = Typography(
 
 val nanumFontFamily = FontFamily(
     Font(R.font.nanumsquare_acb, FontWeight.Normal),
-    /*Font(R.font.nanumgothic, FontWeight.Black),
-Font(R.font.nanumgothicbold, FontWeight.Black),
-Font(R.font.nanumgothicextrabold, FontWeight.Black),
-Font(R.font.nanumgothiclight, FontWeight.Black),
-Font(R.font.nanumbarunpenb, FontWeight.Black),
-Font(R.font.nanumbarunpenr, FontWeight.Black),
-Font(R.font.nanumsquare_acb, FontWeight.Black),*/
+    /*
+    Font(R.font.nanumgothic, FontWeight.Black),
+    Font(R.font.nanumgothicbold, FontWeight.Black),
+    Font(R.font.nanumgothicextrabold, FontWeight.Black),
+    Font(R.font.nanumgothiclight, FontWeight.Black),
+    Font(R.font.nanumbarunpenb, FontWeight.Black),
+    Font(R.font.nanumbarunpenr, FontWeight.Black),
+    Font(R.font.nanumsquare_acb, FontWeight.Black),
+    */
 )

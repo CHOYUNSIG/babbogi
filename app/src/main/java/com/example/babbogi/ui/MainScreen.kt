@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.babbogi.R
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -55,17 +56,11 @@ enum class BabbogiScreen() {
 @Preview
 @Composable
 fun MainScreen(navController: NavHostController = rememberNavController()) {
-
     Column (modifier = Modifier.background(color = Color.White)) {
-
         AppName()
-
         SelectDate()
-
         InputUserData()
-
         ListUserMeals(navController)
-
     }
 }
 
@@ -125,13 +120,12 @@ fun SelectDate() {
 
 @Composable
 //앱 이름
-fun AppName(){
+fun AppName() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.White)
-    )
-    {
+    ) {
         Text(
             "밥보기",
             color = Color.DarkGray,
@@ -142,7 +136,7 @@ fun AppName(){
 }
 
 @Composable
-// 건강정보 추가하기(메인화면)
+// 건강정보 추가하기(메인 화면)
 fun InputUserData(){
     Box(modifier = Modifier.padding(16.dp)) {
         Canvas(modifier = Modifier.matchParentSize()) {
@@ -168,15 +162,13 @@ fun InputUserData(){
                 focusedElevation = 6.dp,  // 포커스가 맞춰졌을 때의 고도
                 hoveredElevation = 6.dp   // 호버링 했을 때의 고도
             )
-        )
-        {
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(color = Color(0xEDEFEDFF))
             )
             {
-
                 Column {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -205,9 +197,7 @@ fun InputUserData(){
                             textAlign = TextAlign.Center
                         )
                     }
-
                 }
-
             }
         }
     }
@@ -242,8 +232,7 @@ fun ListUserMeals(
                         fontWeight = FontWeight.W600,
                     )
                     IconButton(
-                        onClick = {navController.navigate(BabbogiScreen.Camera.name)
-                        },
+                        onClick = {navController.navigate(BabbogiScreen.Camera.name)},
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
