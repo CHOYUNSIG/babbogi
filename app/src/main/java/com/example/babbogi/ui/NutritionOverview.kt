@@ -25,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fridgea.ui.theme.nanumFontFamily
 
 data class NutritionInfo(val name: String, val color: Color, val percentage: Float)
 
@@ -107,7 +106,7 @@ fun NutritionOverview() {
                             style = Stroke(width = 8.dp.toPx())
                         )
                     }
-                    Text(text = "$name")
+                    Text(text = name)
                 }
             }
         }

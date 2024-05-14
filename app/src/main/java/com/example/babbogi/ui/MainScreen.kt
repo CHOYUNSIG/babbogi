@@ -1,4 +1,4 @@
-package com.example.fridgea.ui
+package com.example.babbogi.ui
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -36,13 +36,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fridgea.R
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.babbogi.R
+import com.example.babbogi.ui.model.CameraViewModel
 import java.time.LocalDate
+
+
+enum class BabbogiScreen() {
+    Home,
+    Camera,
+    //NutritionSummary,
+}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavHostController = rememberNavController()) {
 
     Column (modifier = Modifier.background(color = Color.White)) {
 
@@ -52,7 +64,7 @@ fun MainScreen() {
 
         InputUserData()
 
-        listUserMeals()
+        ListUserMeals(navController)
 
     }
 }
@@ -83,11 +95,14 @@ fun SelectDate() {
             }
             ElevatedCard(
                 modifier = Modifier
-                    .width(250.dp)
+                    .width(250.dp),
+                colors = CardDefaults.elevatedCardColors(containerColor = Color(0xF7F7F7FF)),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                 ) {
                     Text(
                         text = today.toString(),
@@ -146,11 +161,9 @@ fun InputUserData(){
             modifier = Modifier
                 .fillMaxWidth(),
             shape = RectangleShape,
-            colors = ButtonDefaults.elevatedButtonColors(
-                containerColor = Color.White,
-            ),
+            colors = ButtonDefaults.elevatedButtonColors(containerColor = Color.White),
             elevation = ButtonDefaults.elevatedButtonElevation(
-                defaultElevation = 4.dp,  // 기본 고도
+                defaultElevation = 3.dp,  // 기본 고도
                 pressedElevation = 8.dp,  // 버튼이 눌렸을 때의 고도
                 focusedElevation = 6.dp,  // 포커스가 맞춰졌을 때의 고도
                 hoveredElevation = 6.dp   // 호버링 했을 때의 고도
@@ -160,7 +173,7 @@ fun InputUserData(){
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = Color(0xEDEFED))
+                    .background(color = Color(0xEDEFEDFF))
             )
             {
 
@@ -201,14 +214,18 @@ fun InputUserData(){
 }
 
 @Composable
-fun listUserMeals(){
+fun ListUserMeals(
+    navController: NavHostController = rememberNavController()
+){
     ElevatedCard(
         modifier = Modifier
-            .padding(16.dp)
-            .background(color = Color.White),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
+            .padding(16.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = Color(0xF7F7F7FF)),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
     )
     {
+        val CameraViewModel = CameraViewModel()
+
         Column {
             Box(
                 contentAlignment = Alignment.TopStart,
@@ -216,7 +233,7 @@ fun listUserMeals(){
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
                         text = "사용자 식사 정보",
@@ -225,14 +242,13 @@ fun listUserMeals(){
                         fontWeight = FontWeight.W600,
                     )
                     IconButton(
-                        onClick = { CameraScreen(cameraViewModel) },
+                        onClick = {navController.navigate(BabbogiScreen.Camera.name)
+                        },
                         modifier = Modifier.size(48.dp)
-                    )
-                    {
+                    ) {
                         Icon(
                             tint = Color.Green,
-                            modifier = Modifier
-                                .size(160.dp),
+                            modifier = Modifier.size(160.dp),
                             painter = painterResource(id = R.drawable.ic_add_box_24),
                             contentDescription = "정보 추가하기 아이콘"
                         )
@@ -242,3 +258,26 @@ fun listUserMeals(){
         }
     }
 }
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun MainApp(
+    navController: NavHostController = rememberNavController(),
+    viewModel: CameraViewModel
+){
+
+    NavHost(
+        navController = navController,
+        startDestination = BabbogiScreen.Home.name
+    ){
+        composable(route = BabbogiScreen.Home.name){
+            MainScreen(navController = navController)
+        }
+        composable(route = BabbogiScreen.Camera.name){
+            CameraScreen(viewModel = viewModel)
+        }
+    }
+}
+
+
+

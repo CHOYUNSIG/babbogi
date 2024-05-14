@@ -10,6 +10,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
+import com.example.babbogi.ui.MainApp
+import com.example.babbogi.ui.model.CameraViewModel
+import com.example.babbogi.ui.model.CameraViewModelFactory
+import com.example.babbogi.ui.theme.BabbogiTheme
+import com.example.babbogi.ui.MainScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -18,17 +23,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val cameraViewModel = ViewModelProvider(
-            this,
-            CameraViewModelFactory()
+            owner = this,
+            factory = CameraViewModelFactory()
         )[CameraViewModel::class.java]
 
         setContent {
             BabbogiTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
-                    MainScreen()
+                    MainApp(viewModel = cameraViewModel)
                 }
             }
         }

@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.example.fridgea.R
+import com.example.babbogi.R
 
 // Set of Material typography styles to start with
 val Typography = Typography(
