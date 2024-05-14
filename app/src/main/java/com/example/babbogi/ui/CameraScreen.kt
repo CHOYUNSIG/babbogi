@@ -36,13 +36,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.babbogi.R
-import com.example.babbogi.ui.model.CameraViewModel
+import com.example.babbogi.ui.model.BabbogiViewModel
 import java.util.concurrent.Executors
 
 
 @OptIn(ExperimentalGetImage::class)
 @Composable
-fun CameraScreen(viewModel: CameraViewModel) {
+fun CameraScreen(viewModel: BabbogiViewModel) {
     // 카메라 사용 설정
     val context = LocalContext.current
     val previewView = remember { PreviewView(context) }
@@ -81,7 +81,7 @@ fun CameraScreen(viewModel: CameraViewModel) {
 }
 
 @Composable
-fun BarcodeCard(viewModel: CameraViewModel) {
+fun BarcodeCard(viewModel: BabbogiViewModel) {
     ElevatedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         modifier = Modifier.fillMaxWidth(0.8f)
@@ -98,7 +98,7 @@ fun BarcodeCard(viewModel: CameraViewModel) {
 }
 
 @Composable
-fun NutritionCard(viewModel: CameraViewModel) {
+fun NutritionCard(viewModel: BabbogiViewModel) {
     ElevatedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         modifier = Modifier.fillMaxWidth(0.8f)
@@ -143,7 +143,7 @@ fun NutritionCard(viewModel: CameraViewModel) {
 }
 
 @Composable
-fun CaptureButton(viewModel: CameraViewModel) {
+fun CaptureButton(viewModel: BabbogiViewModel) {
     IconButton(
         onClick = { viewModel.asyncGetProductFromBarcode() },
         modifier = Modifier

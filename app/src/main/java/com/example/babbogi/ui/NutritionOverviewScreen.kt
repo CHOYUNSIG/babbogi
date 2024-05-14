@@ -42,7 +42,7 @@ val nutritionInfos: List<NutritionInfo> = listOf(
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun NutritionOverview() {
+fun NutritionOverviewScreen() {
     Column(modifier = Modifier.background(color = Color.White)) {
         //맨 위 앱 이름
         Box(
@@ -88,11 +88,11 @@ fun CircularGraphCard(percentage: Float, color: Color, name: String) {
     ) {
         Box(modifier = Modifier
             .fillMaxWidth()
-            .background(color = Color(0xE5E5E5))
+            .background(color = Color(0xFFE5E5E5))
         ) {
             Box(modifier = Modifier
                 .fillMaxWidth()
-                .background(color = Color(0xE5E5E5))
+                .background(color = Color(0xFFE5E5E5))
             ) {
                 Row() {
                     Canvas(
@@ -111,7 +111,6 @@ fun CircularGraphCard(percentage: Float, color: Color, name: String) {
                     }
                     Text(text = name)
                 }
-                Text(text = name)
             }
         }
     }

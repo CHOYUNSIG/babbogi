@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutorService
 private const val validRecognitionNanoTime = 200_000_000
 
 
-class CameraViewModel: ViewModel() {
+class BabbogiViewModel: ViewModel() {
     // ML Kit 바코드 인식기
     private val barcodeRecognizer = BarcodeScanning.getClient(
         BarcodeScannerOptions.Builder()
@@ -138,10 +138,10 @@ class CameraViewModel: ViewModel() {
 }
 
 
-class CameraViewModelFactory: ViewModelProvider.Factory {
+class BabbogiViewModelFactory: ViewModelProvider.Factory {
     override fun<T: ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(CameraViewModel::class.java))
-            return CameraViewModel() as T
+        if (modelClass.isAssignableFrom(BabbogiViewModel::class.java))
+            return BabbogiViewModel() as T
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
