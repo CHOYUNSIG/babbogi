@@ -33,13 +33,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.babbogi.R
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.babbogi.R
 import com.example.babbogi.ui.model.CameraViewModel
 import java.time.LocalDate
 
@@ -53,17 +54,13 @@ enum class BabbogiScreen() {
 
 
 @RequiresApi(Build.VERSION_CODES.O)
+@Preview
 @Composable
 fun MainScreen(navController: NavHostController = rememberNavController()) {
-
     Column (modifier = Modifier.background(color = Color.White)) {
-
         AppName()
-
         SelectDate()
-
         InputUserData(navController)
-
         ListUserMeals(navController)
 
 
@@ -144,7 +141,6 @@ fun AppName(){
 }
 
 @Composable
-// 건강정보 추가하기(메인화면)
 fun InputUserData(
     navController: NavHostController = rememberNavController()
 ){
@@ -172,15 +168,13 @@ fun InputUserData(
                 focusedElevation = 6.dp,  // 포커스가 맞춰졌을 때의 고도
                 hoveredElevation = 6.dp   // 호버링 했을 때의 고도
             )
-        )
-        {
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(color = Color(0xEDEFEDFF))
             )
             {
-
                 Column {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -213,9 +207,7 @@ fun InputUserData(
                             textAlign = TextAlign.Center
                         )
                     }
-
                 }
-
             }
         }
     }
@@ -289,7 +281,5 @@ fun MainApp(
         }
     }
 }
-
-
 
 

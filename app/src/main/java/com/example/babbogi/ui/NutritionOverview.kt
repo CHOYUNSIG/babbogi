@@ -1,4 +1,4 @@
-package com.example.fridgea.ui
+package com.example.babbogi.ui
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -43,13 +43,13 @@ val nutritionInfos: List<NutritionInfo> = listOf(
 @Preview
 @Composable
 fun NutritionOverview() {
-    Column (modifier = Modifier.background(color = Color.White)){
+    Column(modifier = Modifier.background(color = Color.White)) {
         //맨 위 앱 이름
-        Box(modifier = Modifier
+        Box(
+            modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.White)
-        )
-        {
+        ) {
             Text(
                 "밥보기",
                 color = Color.DarkGray,
@@ -72,20 +72,23 @@ fun NutritionOverview() {
                     name = nutritionInfo.name
                 )
             }
-
         }
     }
 }
 
-    @SuppressLint("RememberReturnType")
-    @Composable
+@SuppressLint("RememberReturnType")
+@Composable
 //영양성분들 원그래프 만드는 함수
-    fun CircularGraphCard(percentage: Float, color: Color, name: String) {
-        ElevatedCard(
-            modifier = Modifier
-                .padding(16.dp)
-                .background(color = Color.White),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
+fun CircularGraphCard(percentage: Float, color: Color, name: String) {
+    ElevatedCard(
+        modifier = Modifier
+            .padding(16.dp)
+            .background(color = Color.White),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
+    ) {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .background(color = Color(0xE5E5E5))
         ) {
             Box(modifier = Modifier
                 .fillMaxWidth()
@@ -108,7 +111,9 @@ fun NutritionOverview() {
                     }
                     Text(text = name)
                 }
+                Text(text = name)
             }
         }
     }
+}
 
