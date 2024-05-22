@@ -35,6 +35,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.NavController
+import com.example.babbogi.BabbogiScreen
 import com.example.babbogi.R
 import com.example.babbogi.ui.model.BabbogiViewModel
 import java.util.concurrent.Executors
@@ -42,7 +44,7 @@ import java.util.concurrent.Executors
 
 @OptIn(ExperimentalGetImage::class)
 @Composable
-fun CameraScreen(viewModel: BabbogiViewModel) {
+fun CameraScreen(viewModel: BabbogiViewModel, navController: NavController) {
     // 카메라 사용 설정
     val context = LocalContext.current
     val previewView = remember { PreviewView(context) }
@@ -75,7 +77,10 @@ fun CameraScreen(viewModel: BabbogiViewModel) {
         ) {
             BarcodeCard(viewModel)
             NutritionCard(viewModel)
-            CaptureButton(viewModel)
+            Row {
+                CaptureButton(viewModel)
+                GotoListButton(navController)
+            }
         }
     }
 }
@@ -87,12 +92,10 @@ fun BarcodeCard(viewModel: BabbogiViewModel) {
         modifier = Modifier.fillMaxWidth(0.8f)
     ) {
         Column {
-            viewModel.validBarcode.forEach {
-                Text(
-                    text = it,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
+            Text(
+                text = viewModel.validBarcode?: "",
+                modifier = Modifier.padding(16.dp)
+            )
         }
     }
 }
@@ -114,19 +117,19 @@ fun NutritionCard(viewModel: BabbogiViewModel) {
                 )
             }
         }
-        else if (viewModel.products.isNotEmpty()) {
-            viewModel.products.forEach { (prodName, _, nutrition) ->
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(modifier = Modifier.padding(bottom = 8.dp), fontWeight = FontWeight.Bold, text = prodName)
-                    if (nutrition != null) {
-                        Text(modifier = Modifier.padding(bottom = 8.dp), text = nutrition.toString())
-                        Text(text = "per ${100 * nutrition.servingUnit / nutrition.servingVolume}% of the total product.")
-                    }
-                    else {
-                        Text(text = "There's no nutrition info.")
-                    }
+        else if (viewModel.product != null) {
+            val product = viewModel.product!!
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(modifier = Modifier.padding(bottom = 8.dp), fontWeight = FontWeight.Bold, text = product.name)
+                if (product.nutrition != null) {
+                    val nutrition = product.nutrition
+                    Text(modifier = Modifier.padding(bottom = 8.dp), text = nutrition.toString())
+                    Text(text = "per ${100 * nutrition.servingUnit / nutrition.servingVolume}% of the total product.")
+                }
+                else {
+                    Text(text = "There's no nutrition info.")
                 }
             }
             Row(
@@ -134,8 +137,13 @@ fun NutritionCard(viewModel: BabbogiViewModel) {
                     .align(Alignment.End)
                     .padding(16.dp)
             ) {
-                Button(onClick = { viewModel.cleanProduct() }) {
-                    Text(text = "Done")
+                Button(onClick =
+                {
+                    viewModel.enrollProduct()
+                    viewModel.truncateProduct()
+                }
+                ) {
+                    Text(text = "Add")
                 }
             }
         }
@@ -154,6 +162,25 @@ fun CaptureButton(viewModel: BabbogiViewModel) {
         Icon(
             painter = painterResource(R.drawable.baseline_camera_alt_24),
             contentDescription = "Capture"
+        )
+    }
+}
+
+@Composable
+fun GotoListButton(navController: NavController) {
+    IconButton(
+        onClick =
+        {
+            navController.navigate(BabbogiScreen.FoodList.name)
+        },
+        modifier = Modifier
+            .size(80.dp, 80.dp)
+            .clip(RoundedCornerShape(40.dp))
+            .background(Color.Black)
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.baseline_send_24),
+            contentDescription = "Send"
         )
     }
 }

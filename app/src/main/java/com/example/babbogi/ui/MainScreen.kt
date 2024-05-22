@@ -33,20 +33,19 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.babbogi.BabbogiScreen
 import com.example.babbogi.R
+import com.example.babbogi.ui.model.BabbogiViewModel
 import java.time.LocalDate
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-@Preview
 @Composable
-fun MainScreen(navController: NavHostController = rememberNavController()) {
+fun MainScreen(viewModel: BabbogiViewModel, navController: NavController) {
     Column (modifier = Modifier.background(color = Color.White)) {
         AppName()
         SelectDate()
@@ -128,7 +127,7 @@ fun AppName() {
 
 @Composable
 // 건강정보 추가하기(메인 화면)
-fun InputUserData(navController: NavHostController){
+fun InputUserData(navController: NavController = rememberNavController()){
     Box(modifier = Modifier.padding(16.dp)) {
         Canvas(modifier = Modifier.matchParentSize()) {
             val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
@@ -193,7 +192,7 @@ fun InputUserData(navController: NavHostController){
 }
 
 @Composable
-fun ListUserMeals(navController: NavHostController) {
+fun ListUserMeals(navController: NavController = rememberNavController()) {
     ElevatedCard(
         modifier = Modifier
             .padding(16.dp),

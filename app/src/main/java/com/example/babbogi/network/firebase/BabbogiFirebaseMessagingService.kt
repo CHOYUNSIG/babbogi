@@ -16,6 +16,6 @@ class BabbogiFirebaseMessagingService: FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-        Log.d(TAG, "Received message: $message")
+        Log.d(TAG, "Received message: ${message.notification?.body}")
     }
 }
