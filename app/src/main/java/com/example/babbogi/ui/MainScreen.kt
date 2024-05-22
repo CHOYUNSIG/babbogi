@@ -31,38 +31,27 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.babbogi.BabbogiScreen
 import com.example.babbogi.R
 import com.example.babbogi.ui.model.BabbogiViewModel
-import java.time.LocalDate
-import com.example.babbogi.ui.model.CameraViewModel
+import com.example.babbogi.ui.view.TitleBar
 import java.time.LocalDate
 
-
-enum class BabbogiScreen() {
-    Home,
-    Camera,
-    //NutritionSummary,
-    HealthProfile
-}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainScreen(viewModel: BabbogiViewModel, navController: NavController) {
-    Column (modifier = Modifier.background(color = Color.White)) {
-        AppName()
-        SelectDate()
-        InputUserData(navController)
-        ListUserMeals(navController)
-
-
-    }
+    Main(
+        onInputUserDataClicked = { navController.navigate(BabbogiScreen.HealthProfile.name) },
+        onEnrollClicked = { navController.navigate(BabbogiScreen.Camera.name) }
+    )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -99,6 +88,7 @@ fun SelectDate() {
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(8.dp)
                 ) {
                     Text(
                         text = today.toString(),
@@ -120,27 +110,8 @@ fun SelectDate() {
 }
 
 @Composable
-// 앱 이름
-fun AppName() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Color.White)
-            .padding(16.dp)
-    )
-    {
-        Text(
-            "밥보기",
-            color = Color.Black,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.W600
-        )
-    }
-}
-
-@Composable
 // 건강정보 추가하기(메인 화면)
-fun InputUserData(navController: NavController) {
+fun InputUserData(onInputUserDataClicked: () -> Unit) {
     Box(modifier = Modifier.padding(16.dp)) {
         Canvas(modifier = Modifier.matchParentSize()) {
             val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
@@ -154,9 +125,8 @@ fun InputUserData(navController: NavController) {
             )
         }
         ElevatedButton(
-            onClick = { navController.navigate(BabbogiScreen.HealthProfile.name) },
-            modifier = Modifier
-                .fillMaxWidth(),
+            onClick = onInputUserDataClicked,
+            modifier = Modifier.fillMaxWidth(),
             shape = RectangleShape,
             colors = ButtonDefaults.elevatedButtonColors(containerColor = Color.White),
             elevation = ButtonDefaults.elevatedButtonElevation(
@@ -209,7 +179,7 @@ fun InputUserData(navController: NavController) {
 }
 
 @Composable
-fun ListUserMeals(navController: NavController = rememberNavController()) {
+fun ListUserMeals(onEnrollClicked: () -> Unit) {
     ElevatedCard(
         modifier = Modifier
             .padding(16.dp),
@@ -222,7 +192,8 @@ fun ListUserMeals(navController: NavController = rememberNavController()) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
@@ -232,7 +203,7 @@ fun ListUserMeals(navController: NavController = rememberNavController()) {
                         fontWeight = FontWeight.W600,
                     )
                     IconButton(
-                        onClick = {navController.navigate(BabbogiScreen.Camera.name)},
+                        onClick = onEnrollClicked,
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
@@ -248,3 +219,17 @@ fun ListUserMeals(navController: NavController = rememberNavController()) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview
+@Composable
+fun Main(
+    onInputUserDataClicked: () -> Unit = {},
+    onEnrollClicked: () -> Unit = {}
+) {
+    Column (modifier = Modifier.background(color = Color.White)) {
+        TitleBar(stringResource(id = R.string.app_name))
+        SelectDate()
+        InputUserData(onInputUserDataClicked)
+        ListUserMeals(onEnrollClicked)
+    }
+}

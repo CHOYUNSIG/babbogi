@@ -8,86 +8,49 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
-import java.time.LocalDate
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.ui.view.TitleBar
+import java.time.LocalDate
 
 @Composable
-fun HealthProfileScreen(
-    navController: NavHostController = rememberNavController()
-) {
+fun HealthProfileScreen(viewModel: BabbogiViewModel, navController: NavController) {
     var UserHight: Float = 0.0F
     var UserWeght: Float = 0.0F
     var UserAge : LocalDate
     var UserSex: String = ""
     var UserAdultDisease: Boolean = false
 
-    Column (modifier = Modifier.background(color = Color.White))
-    {
-        HealthScreenName()
-
-        EnterUserHeightScreen(onSubmit = {})
-
-        EnterUserWeightScreen(onSubmit = {})
-
-        EnterUserSexScreen(onSubmit = {})
-
-        EnterUserAdultDiseaseScreen()
-    }
-
+    HealthProfile()
 }
 
-@Composable
-fun HealthScreenName(){
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .background(color = Color.White)
-    )
-    {
-        Text(
-            "건강정보",
-            color = Color.Black,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.W600
-        )
-    }
-}
-
-
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EnterUserHeightScreen(onSubmit: (Float) -> Unit) {
     val height = remember { mutableStateOf("") }
@@ -113,11 +76,11 @@ fun EnterUserHeightScreen(onSubmit: (Float) -> Unit) {
             }
             Box(
                 modifier = Modifier
-                .weight(100.0F)
-            ){
+                    .weight(100.0F)
+            ) {
                 OutlinedTextField(
                     value = "",
-                    onValueChange = {/*값 업데이트*/ },
+                    onValueChange = { /*값 업데이트*/ },
                     label = { Text("본인의 키를 입력하시오") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier
@@ -132,7 +95,6 @@ fun EnterUserHeightScreen(onSubmit: (Float) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EnterUserWeightScreen(onSubmit: (Float) -> Unit) {
     val weight = remember { mutableStateOf("") }
@@ -162,7 +124,7 @@ fun EnterUserWeightScreen(onSubmit: (Float) -> Unit) {
             ){
                 OutlinedTextField(
                     value = "",
-                    onValueChange = {/*값 업데이트*/ },
+                    onValueChange = { /*값 업데이트*/ },
                     label = { Text("본인의 몸무게를 입력하시오") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier
@@ -177,11 +139,11 @@ fun EnterUserWeightScreen(onSubmit: (Float) -> Unit) {
     }
 }
 
-
 @Composable
 fun EnterUserSexScreen(onSubmit: (Float) -> Unit) {
     var selectedGender by remember { mutableStateOf("None") }
     val options = listOf("남성", "여성")
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -206,7 +168,6 @@ fun EnterUserSexScreen(onSubmit: (Float) -> Unit) {
                 modifier = Modifier
                     .weight(100.0F)
             ) {
-
                 Row {
                     options.forEach { gender ->
                         Box(
@@ -230,7 +191,8 @@ fun EnterUserSexScreen(onSubmit: (Float) -> Unit) {
                                 text = gender,
                                 fontSize = 20.sp,
                                 color = Color.Black,
-                                fontWeight = FontWeight.Normal)
+                                fontWeight = FontWeight.Normal
+                            )
                         }
                     }
 
@@ -274,15 +236,8 @@ fun EnterUserAdultDiseaseScreen(){
 @Composable
 fun DropDown(){
     val list = listOf("해당 없음", "당뇨", "고혈압")
-
-    var selectedText by remember {
-        mutableStateOf(list[0])
-    }
-
-    var isExpended by remember{
-        mutableStateOf(false)
-    }
-
+    var selectedText by remember { mutableStateOf(list[0]) }
+    var isExpended by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -299,27 +254,33 @@ fun DropDown(){
                 readOnly = true,
                 trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpended)}
             )
-
-        ExposedDropdownMenu(
-            expanded = isExpended,
-            onDismissRequest = {isExpended = false},
-        ){
-            list.forEachIndexed{ index, text ->
-                DropdownMenuItem(
-                    text = { Text(text = text) },
-                    onClick = {
-                        selectedText = list[index]
-                        isExpended = false
-                    },
-                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
-                )
+            ExposedDropdownMenu(
+                expanded = isExpended,
+                onDismissRequest = {isExpended = false},
+            ) {
+                list.forEachIndexed{ index, text ->
+                    DropdownMenuItem(
+                        text = { Text(text = text) },
+                        onClick = {
+                            selectedText = list[index]
+                            isExpended = false
+                        },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    )
+                }
             }
-        }
         }
     }
 }
+
 @Preview
 @Composable
-fun PreviewHealthProfileScreen(){
-    HealthProfileScreen()
+fun HealthProfile() {
+    Column (modifier = Modifier.background(color = Color.White)) {
+        TitleBar("건강 정보")
+        EnterUserHeightScreen(onSubmit = {})
+        EnterUserWeightScreen(onSubmit = {})
+        EnterUserSexScreen(onSubmit = {})
+        EnterUserAdultDiseaseScreen()
+    }
 }

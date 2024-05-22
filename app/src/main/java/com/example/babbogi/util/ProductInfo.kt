@@ -1,16 +1,19 @@
 package com.example.babbogi.util
 
+import kotlin.random.Random
+import kotlin.random.nextUInt
+
 // 상품 정보
 data class ProductInfo(
     // 등록 상품 정보
     val name: String,
     val barcode: String,
     // 영양 정보
-    val nutrition: NutritionInfo?
+    val nutrition: ProductNutritionInfo?
 )
 
 // 상품의 영양 정보
-data class NutritionInfo(
+data class ProductNutritionInfo(
     val servingVolume: Float,
     val servingUnit: Float,
     val calorie: Float,
@@ -35,3 +38,14 @@ data class NutritionInfo(
         "Trans Fat: ${trans_fat}g"
     ).joinToString("\n")
 }
+
+// 테스트 제품
+val testProduct = ProductInfo(
+    "아카페라카라멜마끼아또",
+    "8801104212403",
+    ProductNutritionInfo(240f, 180f, 140f, 23f, 3.5f, 4f, 21f, 120f, 15f, 3f, 0f)
+)
+
+val testProductList: List<Pair<ProductInfo, Int>> = emptyList<Pair<ProductInfo, Int>>().toMutableList().also {
+    repeat(5) { _ -> it.add(testProduct to Random.nextUInt().mod(5u).toInt() + 1) }
+}.toList()

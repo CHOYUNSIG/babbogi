@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.babbogi.ui.CameraScreen
 import com.example.babbogi.ui.FoodListScreen
+import com.example.babbogi.ui.HealthProfileScreen
 import com.example.babbogi.ui.MainScreen
 import com.example.babbogi.ui.NutritionOverviewScreen
 import com.example.babbogi.ui.model.BabbogiViewModel
@@ -26,6 +27,7 @@ enum class BabbogiScreen {
     NutritionOverview,
     Camera,
     FoodList,
+    HealthProfile,
 }
 
 class MainActivity : ComponentActivity() {
@@ -69,6 +71,9 @@ fun MainApp(viewModel: BabbogiViewModel) {
         }
         composable(route = BabbogiScreen.FoodList.name) {
             FoodListScreen(viewModel, navController)
+        }
+        composable(route = BabbogiScreen.HealthProfile.name) {
+            HealthProfileScreen(viewModel, navController)
         }
     }
 }

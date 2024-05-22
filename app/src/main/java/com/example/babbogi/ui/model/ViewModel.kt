@@ -6,11 +6,10 @@ import androidx.camera.view.LifecycleCameraController
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.babbogi.network.BarcodeApi
 import com.example.babbogi.network.NutritionApi
-import com.example.babbogi.util.NutritionInfo
+import com.example.babbogi.util.ProductNutritionInfo
 import com.example.babbogi.util.ProductInfo
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -87,7 +86,7 @@ class BabbogiViewModel: ViewModel() {
 
     // 바코드 번호로 품명과 영양 정보를 가져옴 (비동기)
     fun asyncGetProductFromBarcode() {
-        if (_isProductFetching.value)
+        if (_isProductFetching.value || _validBarcode.value == null)
             return
         _isProductFetching.value = true
         viewModelScope.launch {
@@ -103,7 +102,7 @@ class BabbogiViewModel: ViewModel() {
                 if (nutritionResponse.total_count != 0) {
                     val nutrition = nutritionResponse.row!!.first()
                     fun toFloat(string: String): Float = if (string.isNotBlank()) string.toFloat() else 0.0f
-                    NutritionInfo(
+                    ProductNutritionInfo(
                         toFloat(nutrition.SERVING_SIZE),
                         toFloat(nutrition.SERVING_UNIT),
                         toFloat(nutrition.NUTR_CONT1),
@@ -138,14 +137,5 @@ class BabbogiViewModel: ViewModel() {
     // 리스트에서 제품 삭제
     fun deleteProduct(index: Int) {
         _productList.value = _productList.value.filterIndexed { i, _ -> i != index }
-    }
-}
-
-
-class BabbogiViewModelFactory: ViewModelProvider.Factory {
-    override fun<T: ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(BabbogiViewModel::class.java))
-            return BabbogiViewModel() as T
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
