@@ -2,18 +2,14 @@ package com.example.babbogi.network
 
 import com.example.babbogi.BuildConfig
 import com.example.babbogi.network.response.BarcodeApiResponse
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-private const val BASE_URL = "https://openapi.foodsafetykorea.go.kr/api/${BuildConfig.BARCODE_API_KEY}/C005/json/1/5/"
-private val json = Json { ignoreUnknownKeys = true }
 private val retrofit = Retrofit.Builder()
-    .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-    .baseUrl(BASE_URL)
+    .addConverterFactory(GsonConverterFactory.create())
+    .baseUrl("https://openapi.foodsafetykorea.go.kr/api/${BuildConfig.BARCODE_API_KEY}/C005/json/1/5/")
     .build()
 
 

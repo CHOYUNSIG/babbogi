@@ -35,14 +35,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.NavController
+import com.example.babbogi.BabbogiScreen
 import com.example.babbogi.R
-import com.example.babbogi.ui.model.CameraViewModel
+import com.example.babbogi.ui.model.BabbogiViewModel
 import java.util.concurrent.Executors
 
 
 @OptIn(ExperimentalGetImage::class)
 @Composable
-fun CameraScreen(viewModel: CameraViewModel) {
+fun CameraScreen(viewModel: BabbogiViewModel, navController: NavController) {
     // 카메라 사용 설정
     val context = LocalContext.current
     val previewView = remember { PreviewView(context) }
@@ -75,30 +77,31 @@ fun CameraScreen(viewModel: CameraViewModel) {
         ) {
             BarcodeCard(viewModel)
             NutritionCard(viewModel)
-            CaptureButton(viewModel)
-        }
-    }
-}
-
-@Composable
-fun BarcodeCard(viewModel: CameraViewModel) {
-    ElevatedCard(
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        modifier = Modifier.fillMaxWidth(0.8f)
-    ) {
-        Column {
-            viewModel.validBarcode.forEach {
-                Text(
-                    text = it,
-                    modifier = Modifier.padding(16.dp)
-                )
+            Row {
+                CaptureButton(viewModel)
+                GotoListButton(navController)
             }
         }
     }
 }
 
 @Composable
-fun NutritionCard(viewModel: CameraViewModel) {
+fun BarcodeCard(viewModel: BabbogiViewModel) {
+    ElevatedCard(
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        modifier = Modifier.fillMaxWidth(0.8f)
+    ) {
+        Column {
+            Text(
+                text = viewModel.validBarcode?: "",
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun NutritionCard(viewModel: BabbogiViewModel) {
     ElevatedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         modifier = Modifier.fillMaxWidth(0.8f)
@@ -114,19 +117,19 @@ fun NutritionCard(viewModel: CameraViewModel) {
                 )
             }
         }
-        else if (viewModel.products.isNotEmpty()) {
-            viewModel.products.forEach { (prodName, _, nutrition) ->
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(modifier = Modifier.padding(bottom = 8.dp), fontWeight = FontWeight.Bold, text = prodName)
-                    if (nutrition != null) {
-                        Text(modifier = Modifier.padding(bottom = 8.dp), text = nutrition.toString())
-                        Text(text = "per ${100 * nutrition.servingUnit / nutrition.servingVolume}% of the total product.")
-                    }
-                    else {
-                        Text(text = "There's no nutrition info.")
-                    }
+        else if (viewModel.product != null) {
+            val product = viewModel.product!!
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(modifier = Modifier.padding(bottom = 8.dp), fontWeight = FontWeight.Bold, text = product.name)
+                if (product.nutrition != null) {
+                    val nutrition = product.nutrition
+                    Text(modifier = Modifier.padding(bottom = 8.dp), text = nutrition.toString())
+                    Text(text = "per ${100 * nutrition.servingUnit / nutrition.servingVolume}% of the total product.")
+                }
+                else {
+                    Text(text = "There's no nutrition info.")
                 }
             }
             Row(
@@ -134,8 +137,13 @@ fun NutritionCard(viewModel: CameraViewModel) {
                     .align(Alignment.End)
                     .padding(16.dp)
             ) {
-                Button(onClick = { viewModel.cleanProduct() }) {
-                    Text(text = "Done")
+                Button(onClick =
+                {
+                    viewModel.enrollProduct()
+                    viewModel.truncateProduct()
+                }
+                ) {
+                    Text(text = "Add")
                 }
             }
         }
@@ -143,7 +151,7 @@ fun NutritionCard(viewModel: CameraViewModel) {
 }
 
 @Composable
-fun CaptureButton(viewModel: CameraViewModel) {
+fun CaptureButton(viewModel: BabbogiViewModel) {
     IconButton(
         onClick = { viewModel.asyncGetProductFromBarcode() },
         modifier = Modifier
@@ -154,6 +162,25 @@ fun CaptureButton(viewModel: CameraViewModel) {
         Icon(
             painter = painterResource(R.drawable.baseline_camera_alt_24),
             contentDescription = "Capture"
+        )
+    }
+}
+
+@Composable
+fun GotoListButton(navController: NavController) {
+    IconButton(
+        onClick =
+        {
+            navController.navigate(BabbogiScreen.FoodList.name)
+        },
+        modifier = Modifier
+            .size(80.dp, 80.dp)
+            .clip(RoundedCornerShape(40.dp))
+            .background(Color.Black)
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.baseline_send_24),
+            contentDescription = "Send"
         )
     }
 }

@@ -33,14 +33,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.babbogi.R
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.babbogi.BabbogiScreen
+import com.example.babbogi.R
+import com.example.babbogi.ui.model.BabbogiViewModel
+import java.time.LocalDate
 import com.example.babbogi.ui.model.CameraViewModel
 import java.time.LocalDate
 
@@ -52,11 +52,9 @@ enum class BabbogiScreen() {
     HealthProfile
 }
 
-
 @RequiresApi(Build.VERSION_CODES.O)
-@Preview
 @Composable
-fun MainScreen(navController: NavHostController = rememberNavController()) {
+fun MainScreen(viewModel: BabbogiViewModel, navController: NavController) {
     Column (modifier = Modifier.background(color = Color.White)) {
         AppName()
         SelectDate()
@@ -122,8 +120,8 @@ fun SelectDate() {
 }
 
 @Composable
-//앱 이름
-fun AppName(){
+// 앱 이름
+fun AppName() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,9 +139,8 @@ fun AppName(){
 }
 
 @Composable
-fun InputUserData(
-    navController: NavHostController = rememberNavController()
-){
+// 건강정보 추가하기(메인 화면)
+fun InputUserData(navController: NavController) {
     Box(modifier = Modifier.padding(16.dp)) {
         Canvas(modifier = Modifier.matchParentSize()) {
             val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
@@ -173,8 +170,7 @@ fun InputUserData(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(color = Color(0xEDEFEDFF))
-            )
-            {
+            ) {
                 Column {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -192,7 +188,6 @@ fun InputUserData(
                             contentDescription = "정보 추가하기 아이콘"
                         )
                     }
-
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
@@ -214,18 +209,13 @@ fun InputUserData(
 }
 
 @Composable
-fun ListUserMeals(
-    navController: NavHostController = rememberNavController()
-){
+fun ListUserMeals(navController: NavController = rememberNavController()) {
     ElevatedCard(
         modifier = Modifier
             .padding(16.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = Color(0xF7F7F7FF)),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
-    )
-    {
-        val CameraViewModel = CameraViewModel()
-
+    ) {
         Column {
             Box(
                 contentAlignment = Alignment.TopStart,
@@ -257,29 +247,4 @@ fun ListUserMeals(
         }
     }
 }
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun MainApp(
-    navController: NavHostController = rememberNavController(),
-    viewModel: CameraViewModel
-){
-
-    NavHost(
-        navController = navController,
-        startDestination = BabbogiScreen.Home.name
-    ){
-        composable(route = BabbogiScreen.Home.name){
-            MainScreen(navController = navController)
-        }
-        composable(route = BabbogiScreen.Camera.name){
-            CameraScreen(viewModel = viewModel)
-        }
-
-        composable(route = BabbogiScreen.HealthProfile.name){
-            HealthProfileScreen(navController = navController)
-        }
-    }
-}
-
 
