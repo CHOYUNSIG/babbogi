@@ -33,7 +33,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -49,10 +48,11 @@ enum class BabbogiScreen() {
     Home,
     Camera,
     //NutritionSummary,
+    HealthProfile
 }
 
+
 @RequiresApi(Build.VERSION_CODES.O)
-@Preview
 @Composable
 fun MainScreen(navController: NavHostController = rememberNavController()) {
 
@@ -62,9 +62,10 @@ fun MainScreen(navController: NavHostController = rememberNavController()) {
 
         SelectDate()
 
-        InputUserData()
+        InputUserData(navController)
 
         ListUserMeals(navController)
+
 
     }
 }
@@ -130,20 +131,23 @@ fun AppName(){
         modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.White)
+            .padding(16.dp)
     )
     {
         Text(
             "밥보기",
-            color = Color.DarkGray,
+            color = Color.Black,
             fontSize = 26.sp,
-            fontWeight = FontWeight.W900
+            fontWeight = FontWeight.W600
         )
     }
 }
 
 @Composable
 // 건강정보 추가하기(메인화면)
-fun InputUserData(){
+fun InputUserData(
+    navController: NavHostController = rememberNavController()
+){
     Box(modifier = Modifier.padding(16.dp)) {
         Canvas(modifier = Modifier.matchParentSize()) {
             val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
@@ -157,7 +161,7 @@ fun InputUserData(){
             )
         }
         ElevatedButton(
-            onClick = { /*TODO*/ },
+            onClick = { navController.navigate(BabbogiScreen.HealthProfile.name) },
             modifier = Modifier
                 .fillMaxWidth(),
             shape = RectangleShape,
@@ -180,7 +184,9 @@ fun InputUserData(){
                 Column {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
                     ) {
                         Icon(
                             tint = Color.Green,
@@ -195,7 +201,9 @@ fun InputUserData(){
 
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
                     ) {
                         Text(
                             text = "사용자 건강 정보 추가하기",
@@ -242,8 +250,7 @@ fun ListUserMeals(
                         fontWeight = FontWeight.W600,
                     )
                     IconButton(
-                        onClick = {navController.navigate(BabbogiScreen.Camera.name)
-                        },
+                        onClick = {navController.navigate(BabbogiScreen.Camera.name)},
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
@@ -276,8 +283,13 @@ fun MainApp(
         composable(route = BabbogiScreen.Camera.name){
             CameraScreen(viewModel = viewModel)
         }
+
+        composable(route = BabbogiScreen.HealthProfile.name){
+            HealthProfileScreen(navController = navController)
+        }
     }
 }
+
 
 
 
