@@ -41,7 +41,16 @@ import com.example.babbogi.BabbogiScreen
 import com.example.babbogi.R
 import com.example.babbogi.ui.model.BabbogiViewModel
 import java.time.LocalDate
+import com.example.babbogi.ui.model.CameraViewModel
+import java.time.LocalDate
 
+
+enum class BabbogiScreen() {
+    Home,
+    Camera,
+    //NutritionSummary,
+    HealthProfile
+}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -51,6 +60,8 @@ fun MainScreen(viewModel: BabbogiViewModel, navController: NavController) {
         SelectDate()
         InputUserData(navController)
         ListUserMeals(navController)
+
+
     }
 }
 
@@ -115,19 +126,21 @@ fun AppName() {
         modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.White)
-    ) {
+            .padding(16.dp)
+    )
+    {
         Text(
             "밥보기",
-            color = Color.DarkGray,
+            color = Color.Black,
             fontSize = 26.sp,
-            fontWeight = FontWeight.W900
+            fontWeight = FontWeight.W600
         )
     }
 }
 
 @Composable
 // 건강정보 추가하기(메인 화면)
-fun InputUserData(navController: NavController = rememberNavController()){
+fun InputUserData(navController: NavController) {
     Box(modifier = Modifier.padding(16.dp)) {
         Canvas(modifier = Modifier.matchParentSize()) {
             val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
@@ -141,7 +154,7 @@ fun InputUserData(navController: NavController = rememberNavController()){
             )
         }
         ElevatedButton(
-            onClick = { navController.navigate(BabbogiScreen.NutritionOverview.name) },
+            onClick = { navController.navigate(BabbogiScreen.HealthProfile.name) },
             modifier = Modifier
                 .fillMaxWidth(),
             shape = RectangleShape,
@@ -161,7 +174,9 @@ fun InputUserData(navController: NavController = rememberNavController()){
                 Column {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
                     ) {
                         Icon(
                             tint = Color.Green,
@@ -175,7 +190,9 @@ fun InputUserData(navController: NavController = rememberNavController()){
                     }
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
                     ) {
                         Text(
                             text = "사용자 건강 정보 추가하기",
@@ -230,8 +247,4 @@ fun ListUserMeals(navController: NavController = rememberNavController()) {
         }
     }
 }
-
-
-
-
 
