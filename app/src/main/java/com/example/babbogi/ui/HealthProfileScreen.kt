@@ -52,7 +52,7 @@ fun HealthProfileScreen(viewModel: BabbogiViewModel, navController: NavControlle
 }
 
 @Composable
-fun EnterUserHeightScreen(onSubmit: (Float) -> Unit) {
+fun InputHeight(onSubmit: (Float) -> Unit) {
     val height = remember { mutableStateOf("") }
     Box(
         modifier = Modifier
@@ -96,7 +96,7 @@ fun EnterUserHeightScreen(onSubmit: (Float) -> Unit) {
 }
 
 @Composable
-fun EnterUserWeightScreen(onSubmit: (Float) -> Unit) {
+fun InputWeight(onSubmit: (Float) -> Unit) {
     val weight = remember { mutableStateOf("") }
     Box(
         modifier = Modifier
@@ -140,7 +140,7 @@ fun EnterUserWeightScreen(onSubmit: (Float) -> Unit) {
 }
 
 @Composable
-fun EnterUserSexScreen(onSubmit: (Float) -> Unit) {
+fun InputGender(onSubmit: (Float) -> Unit) {
     var selectedGender by remember { mutableStateOf("None") }
     val options = listOf("남성", "여성")
 
@@ -203,7 +203,7 @@ fun EnterUserSexScreen(onSubmit: (Float) -> Unit) {
 }
 
 @Composable
-fun EnterUserAdultDiseaseScreen(){
+fun InputAdultDisease(){
     var expanded by remember { mutableStateOf(false) }
     var selectedDisease by remember { mutableStateOf("") }
 
@@ -278,9 +278,9 @@ fun DropDown(){
 fun HealthProfile() {
     Column (modifier = Modifier.background(color = Color.White)) {
         TitleBar("건강 정보")
-        EnterUserHeightScreen(onSubmit = {})
-        EnterUserWeightScreen(onSubmit = {})
-        EnterUserSexScreen(onSubmit = {})
-        EnterUserAdultDiseaseScreen()
+        InputHeight(onSubmit = {})
+        InputWeight(onSubmit = {})
+        InputGender(onSubmit = {})
+        InputAdultDisease()
     }
 }

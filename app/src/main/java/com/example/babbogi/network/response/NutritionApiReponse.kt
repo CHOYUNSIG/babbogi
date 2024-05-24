@@ -4,17 +4,17 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NutritionApiResponse(
-    val I2790: NutritionInfo
+    val I2790: I2790
 )
 
 @Serializable
-data class NutritionInfo(
+data class I2790(
     val total_count: Int,
-    val row: List<Nutrition>? = null
+    val row: List<I2790_row>? = null
 )
 
 @Serializable
-data class Nutrition(
+data class I2790_row(
     val NUM: Int,
 
     val NUTR_CONT1: String,

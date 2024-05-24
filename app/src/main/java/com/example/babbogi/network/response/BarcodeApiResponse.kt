@@ -4,17 +4,17 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BarcodeApiResponse(
-    val C005: ProductList
+    val C005: C005
 )
 
 @Serializable
-data class ProductList(
+data class C005(
     val total_count: Int,
-    val row: List<Product>? = null
+    val row: List<C005_row>? = null
 )
 
 @Serializable
-data class Product(
+data class C005_row(
     val PRDLST_REPORT_NO: String,
     val PRMS_DT: String,
     val END_DT: String,

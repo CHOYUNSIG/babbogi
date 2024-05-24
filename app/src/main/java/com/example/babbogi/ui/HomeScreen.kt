@@ -38,7 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.babbogi.BabbogiScreen
+import com.example.babbogi.ScreenEnum
 import com.example.babbogi.R
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.TitleBar
@@ -47,17 +47,17 @@ import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainScreen(viewModel: BabbogiViewModel, navController: NavController) {
-    Main(
-        onInputUserDataClicked = { navController.navigate(BabbogiScreen.HealthProfile.name) },
-        onEnrollClicked = { navController.navigate(BabbogiScreen.Camera.name) }
+fun HomeScreen(viewModel: BabbogiViewModel, navController: NavController) {
+    Home(
+        onInputUserDataClicked = { navController.navigate(ScreenEnum.HealthProfile.name) },
+        onEnrollClicked = { navController.navigate(ScreenEnum.Camera.name) }
     )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 //날짜 선택
-fun SelectDate() {
+fun DateSelector() {
     val today = LocalDate.now()  // 현재 날짜를 가져옴
     Box(
         modifier = Modifier
@@ -179,7 +179,7 @@ fun InputUserData(onInputUserDataClicked: () -> Unit) {
 }
 
 @Composable
-fun ListUserMeals(onEnrollClicked: () -> Unit) {
+fun MealList(onEnrollClicked: () -> Unit) {
     ElevatedCard(
         modifier = Modifier
             .padding(16.dp),
@@ -222,14 +222,14 @@ fun ListUserMeals(onEnrollClicked: () -> Unit) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun Main(
+fun Home(
     onInputUserDataClicked: () -> Unit = {},
     onEnrollClicked: () -> Unit = {}
 ) {
     Column (modifier = Modifier.background(color = Color.White)) {
         TitleBar(stringResource(id = R.string.app_name))
-        SelectDate()
+        DateSelector()
         InputUserData(onInputUserDataClicked)
-        ListUserMeals(onEnrollClicked)
+        MealList(onEnrollClicked)
     }
 }

@@ -2,4 +2,13 @@
     <string name="app_name">밥보기</string>
     <string name="default_notification_channel_id">Channel ID</string>
     <string name="default_notification_channel_name" translatable="true">Test</string>
+    <string name="calorie">열량</string>
+    <string name="carbohydrate">탄수화물</string>
+    <string name="protein">단백질</string>
+    <string name="fat">지방</string>
+    <string name="sugar">당</string>
+    <string name="salt">나트륨</string>
+    <string name="cholesterol">콜레스테롤</string>
+    <string name="saturated_fatty_acids">포화지방산</string>
+    <string name="trans_fat">트랜스지방</string>
 </resources>

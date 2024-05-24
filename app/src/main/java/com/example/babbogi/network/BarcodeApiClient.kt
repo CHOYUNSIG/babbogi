@@ -2,6 +2,7 @@ package com.example.babbogi.network
 
 import com.example.babbogi.BuildConfig
 import com.example.babbogi.network.response.BarcodeApiResponse
+import com.example.babbogi.util.Product
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -24,5 +25,11 @@ object BarcodeApi {
         retrofit.create(BarcodeApiService::class.java)
     }
 
-    suspend fun getProducts(barcode: String) = retrofitService.getProducts(barcode).C005
+    suspend fun getProducts(barcode: String): List<Product> {
+        val product = retrofitService.getProducts(barcode).C005
+        return if (product.row == null)
+            emptyList()
+        else
+            product.row.map { row -> Product(row.PRDLST_NM, row.BAR_CD, null) }
+    }
 }

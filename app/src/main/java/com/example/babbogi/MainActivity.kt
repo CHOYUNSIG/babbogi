@@ -14,15 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.babbogi.ui.CameraScreen
+import com.example.babbogi.ui.CameraViewScreen
 import com.example.babbogi.ui.FoodListScreen
 import com.example.babbogi.ui.HealthProfileScreen
-import com.example.babbogi.ui.MainScreen
+import com.example.babbogi.ui.HomeScreen
 import com.example.babbogi.ui.NutritionOverviewScreen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 
-enum class BabbogiScreen {
+enum class ScreenEnum {
     Home,
     NutritionOverview,
     Camera,
@@ -58,22 +58,12 @@ fun MainApp(viewModel: BabbogiViewModel) {
 
     NavHost(
         navController = navController,
-        startDestination = BabbogiScreen.Home.name
+        startDestination = ScreenEnum.Home.name
     ) {
-        composable(route = BabbogiScreen.Home.name) {
-            MainScreen(viewModel, navController)
-        }
-        composable(route = BabbogiScreen.NutritionOverview.name) {
-            NutritionOverviewScreen(viewModel, navController)
-        }
-        composable(route = BabbogiScreen.Camera.name) {
-            CameraScreen(viewModel, navController)
-        }
-        composable(route = BabbogiScreen.FoodList.name) {
-            FoodListScreen(viewModel, navController)
-        }
-        composable(route = BabbogiScreen.HealthProfile.name) {
-            HealthProfileScreen(viewModel, navController)
-        }
+        composable(route = ScreenEnum.Home.name) { HomeScreen(viewModel, navController) }
+        composable(route = ScreenEnum.NutritionOverview.name) { NutritionOverviewScreen(viewModel, navController) }
+        composable(route = ScreenEnum.Camera.name) { CameraViewScreen(viewModel, navController) }
+        composable(route = ScreenEnum.FoodList.name) { FoodListScreen(viewModel, navController) }
+        composable(route = ScreenEnum.HealthProfile.name) { HealthProfileScreen(viewModel, navController) }
     }
 }

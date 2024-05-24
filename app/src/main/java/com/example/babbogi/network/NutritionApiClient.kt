@@ -2,7 +2,8 @@ package com.example.babbogi.network
 
 import com.example.babbogi.BuildConfig
 import com.example.babbogi.network.response.NutritionApiResponse
-import com.example.babbogi.network.response.NutritionInfo
+import com.example.babbogi.util.ProductNutritionInfo
+import com.example.babbogi.util.toFloat2
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -25,7 +26,23 @@ object NutritionApi {
         retrofit.create(NutritionApiService::class.java)
     }
 
-    suspend fun getNutrition(prodName: String): NutritionInfo {
-        return retrofitService.getNutrition(prodName.replace(" ", "_")).I2790
+    suspend fun getNutrition(prodName: String): List<ProductNutritionInfo> {
+        val nutrition = retrofitService.getNutrition(prodName.replace(" ", "_")).I2790
+        return if (nutrition.row == null)
+            emptyList()
+        else
+            nutrition.row.map { row ->
+                ProductNutritionInfo(
+                    row.NUTR_CONT1.toFloat2(),
+                    row.NUTR_CONT2.toFloat2(),
+                    row.NUTR_CONT3.toFloat2(),
+                    row.NUTR_CONT4.toFloat2(),
+                    row.NUTR_CONT5.toFloat2(),
+                    row.NUTR_CONT6.toFloat2(),
+                    row.NUTR_CONT7.toFloat2(),
+                    row.NUTR_CONT8.toFloat2(),
+                    row.NUTR_CONT9.toFloat2(),
+                )
+            }
     }
 }
