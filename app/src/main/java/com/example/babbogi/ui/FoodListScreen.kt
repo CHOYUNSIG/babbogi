@@ -11,6 +11,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,8 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.babbogi.ScreenEnum
 import com.example.babbogi.R
+import com.example.babbogi.ScreenEnum
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.TitleBar
@@ -37,6 +40,7 @@ import com.example.babbogi.util.ProductNutritionInfo
 import com.example.babbogi.util.nutrition
 import com.example.babbogi.util.nutritionNameResource
 import com.example.babbogi.util.nutritionUnit
+import com.example.babbogi.util.testProduct
 import com.example.babbogi.util.testProductList
 import com.example.babbogi.util.toProductNutritionInfo
 
@@ -63,11 +67,7 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
             )
             index.value = null
         },
-        onDeleteClicked = {
-            val i = index.value
-            if (i != null) viewModel.deleteProduct(i)
-            index.value = null
-        },
+        onDeleteClicked = { viewModel.deleteProduct(it) },
         onSubmitClicked = { navController.navigate(ScreenEnum.Home.name) },
         onFoodCardClicked = { index.value = it }
     )
@@ -79,7 +79,8 @@ fun FoodCard(
     amount: Int,
     onClick: () -> Unit,
     onIncrease: () -> Unit,
-    onDecrease: () -> Unit
+    onDecrease: () -> Unit,
+    onDelete: () -> Unit
 ) {
     ElevatedCard(
         modifier = Modifier
@@ -98,23 +99,32 @@ fun FoodCard(
                 Text(text = product.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, overflow = TextOverflow.Ellipsis)
             }
             Row (
-                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth(0.8f)
             ) {
-                Button(onClick = onDecrease) { Text(text = "-") }
-                Box(modifier = Modifier.padding(16.dp)) { Text(text = amount.toString(), fontSize = 16.sp) }
-                Button(onClick = onIncrease) { Text(text = "+") }
+                Row (verticalAlignment = Alignment.CenterVertically) {
+                    Button(onClick = onDecrease) { Text(text = "-") }
+                    Box(modifier = Modifier.padding(16.dp)) { Text(text = amount.toString(), fontSize = 16.sp) }
+                    Button(onClick = onIncrease) { Text(text = "+") }
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_delete_24),
+                        contentDescription = "Delete",
+                    )
+                }
             }
         }
     }
 }
 
+@Preview
 @Composable
 fun FoodPopup(
-    product: Product,
-    onModifyClicked: (List<String>) -> Unit,
-    onDeleteClicked: () -> Unit
+    product: Product = testProduct,
+    onModifyClicked: (List<String>) -> Unit = {},
 ) {
-    val inputText = remember { mutableStateOf(List(9) { product.nutrition?.get(it).toString() } ) }
+    val inputText = remember { mutableStateOf(List(9) { product.nutrition?.get(it)?.toString()?: "" } ) }
 
     Dialog(onDismissRequest = {}) {
         ElevatedCard(
@@ -161,9 +171,6 @@ fun FoodPopup(
                         Button(onClick = { onModifyClicked(inputText.value) }, modifier = Modifier.padding(start = 8.dp)) {
                             Text(text = "Modify")
                         }
-                        Button(onClick = onDeleteClicked, modifier = Modifier.padding(start = 8.dp)) {
-                            Text(text = "Delete")
-                        }
                     }
                 }
             }
@@ -175,10 +182,10 @@ fun FoodPopup(
 @Composable
 fun FoodList(
     productList: List<Pair<Product, Int>> = testProductList,
-    index: Int? = 1,
+    index: Int? = null,
     onAmountChanged: (index: Int, amount: Int) -> Unit = { _, _ -> },
     onModifyClicked: (List<String>) -> Unit = {},
-    onDeleteClicked: () -> Unit = {},
+    onDeleteClicked: (index: Int) -> Unit = {},
     onSubmitClicked: () -> Unit = {},
     onFoodCardClicked: (index: Int) -> Unit = {}
 ) {
@@ -196,6 +203,7 @@ fun FoodList(
                     onIncrease = { onAmountChanged(index, 1) },
                     onDecrease = { onAmountChanged(index, -1) },
                     onClick = { onFoodCardClicked(index) },
+                    onDelete = { onDeleteClicked(index) }
                 )
             }
         }
@@ -210,7 +218,6 @@ fun FoodList(
             FoodPopup(
                 product = productList[index].first,
                 onModifyClicked = { onModifyClicked(it) },
-                onDeleteClicked = onDeleteClicked
             )
         }
     }

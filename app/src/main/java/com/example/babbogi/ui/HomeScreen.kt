@@ -79,8 +79,7 @@ fun DateSelector() {
                 )
             }
             ElevatedCard(
-                modifier = Modifier
-                    .width(250.dp),
+                modifier = Modifier.width(250.dp),
                 colors = CardDefaults.elevatedCardColors(containerColor = Color(0xF7F7F7FF)),
                 elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
             ) {

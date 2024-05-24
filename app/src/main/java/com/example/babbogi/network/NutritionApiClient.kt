@@ -3,6 +3,7 @@ package com.example.babbogi.network
 import com.example.babbogi.BuildConfig
 import com.example.babbogi.network.response.NutritionApiResponse
 import com.example.babbogi.util.ProductNutritionInfo
+import com.example.babbogi.util.nutrition
 import com.example.babbogi.util.toFloat2
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -27,21 +28,23 @@ object NutritionApi {
     }
 
     suspend fun getNutrition(prodName: String): List<ProductNutritionInfo> {
-        val nutrition = retrofitService.getNutrition(prodName.replace(" ", "_")).I2790
-        return if (nutrition.row == null)
+        val response = retrofitService.getNutrition(prodName.replace(" ", "_")).I2790
+        return if (response.row == null)
             emptyList()
         else
-            nutrition.row.map { row ->
+            response.row.map { row ->
                 ProductNutritionInfo(
-                    row.NUTR_CONT1.toFloat2(),
-                    row.NUTR_CONT2.toFloat2(),
-                    row.NUTR_CONT3.toFloat2(),
-                    row.NUTR_CONT4.toFloat2(),
-                    row.NUTR_CONT5.toFloat2(),
-                    row.NUTR_CONT6.toFloat2(),
-                    row.NUTR_CONT7.toFloat2(),
-                    row.NUTR_CONT8.toFloat2(),
-                    row.NUTR_CONT9.toFloat2(),
+                    mapOf(
+                        nutrition[0] to row.NUTR_CONT1.toFloat2(),
+                        nutrition[1] to row.NUTR_CONT2.toFloat2(),
+                        nutrition[2] to row.NUTR_CONT3.toFloat2(),
+                        nutrition[3] to row.NUTR_CONT4.toFloat2(),
+                        nutrition[4] to row.NUTR_CONT5.toFloat2(),
+                        nutrition[5] to row.NUTR_CONT6.toFloat2(),
+                        nutrition[6] to row.NUTR_CONT7.toFloat2(),
+                        nutrition[7] to row.NUTR_CONT8.toFloat2(),
+                        nutrition[8] to row.NUTR_CONT9.toFloat2(),
+                    )
                 )
             }
     }

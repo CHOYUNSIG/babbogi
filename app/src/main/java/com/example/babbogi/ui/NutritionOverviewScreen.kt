@@ -24,7 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.TitleBar
-import com.example.babbogi.util.PersonalNutritionState
+import com.example.babbogi.util.NutritionState
+import com.example.babbogi.util.testNutritionState
 import com.example.babbogi.util.nutrition
 import com.example.babbogi.util.nutritionNameResource
 
@@ -74,7 +75,9 @@ fun CircularGraphCard(percentage: Float, color: Color, name: String) {
 
 @Preview
 @Composable
-fun NutritionOverview() {
+fun NutritionOverview(
+    nutritionState: NutritionState = testNutritionState
+) {
     Column(modifier = Modifier.background(color = Color.White)) {
         TitleBar("영양 정보")
         LazyColumn(
@@ -82,8 +85,8 @@ fun NutritionOverview() {
                 .fillMaxSize()
                 .background(color = Color.White)
         ) {
-            items(PersonalNutritionState.size) { index ->
-                val nutritionInfo = PersonalNutritionState[nutrition[index]]!!
+            items(9) { index ->
+                val nutritionInfo = nutritionState[index]
                 CircularGraphCard(
                     percentage = nutritionInfo.getPercentage(),
                     color = Color(0xFF7FE26E),

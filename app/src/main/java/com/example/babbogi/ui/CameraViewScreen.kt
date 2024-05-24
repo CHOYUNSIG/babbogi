@@ -1,7 +1,6 @@
 package com.example.babbogi.ui
 
 import android.Manifest
-import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
@@ -22,7 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,8 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
-import com.example.babbogi.ScreenEnum
 import com.example.babbogi.R
+import com.example.babbogi.ScreenEnum
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.util.Product
@@ -58,7 +56,7 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
 
     PermissionRequired(
         permissionState = cameraPermission,
-        permissionNotGrantedContent = { SideEffect { cameraPermission.launchPermissionRequest() } },
+        permissionNotGrantedContent = { LaunchedEffect(key1 = null) { cameraPermission.launchPermissionRequest() } },
         permissionNotAvailableContent = { CameraPermissionDenied() }
     ) {
         // 카메라 사용 설정
@@ -69,8 +67,6 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
             cameraController.bindToLifecycle(lifecycleOwner)
             cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
             previewView.controller = cameraController
-            Log.d("CameraScreen", "Executed")
-            // 바코드 얻어오기 시작
             viewModel.asyncGetBarcodeFromCamera(cameraController, executor)
         }
 
@@ -192,24 +188,22 @@ fun CameraView(
     onCaptureClicked: () -> Unit = {},
     onGotoListClicked: () -> Unit = {},
 ) {
-    if (barcode != null)
-        Box(
-            contentAlignment = Alignment.TopCenter,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(30.dp)
-        ) {
-            BarcodeCard(barcode)
-        }
-    if (isProductFetching || product != null)
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 30.dp)
-        ) {
-            NutritionPopup(isProductFetching, product, onAddClicked, onCancelClicked)
-        }
+    if (barcode != null) Box(
+        contentAlignment = Alignment.TopCenter,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(30.dp)
+    ) {
+        BarcodeCard(barcode)
+    }
+    if (isProductFetching || product != null) Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(horizontal = 30.dp)
+    ) {
+        NutritionPopup(isProductFetching, product, onAddClicked, onCancelClicked)
+    }
     Box(
         contentAlignment = Alignment.BottomCenter,
         modifier = Modifier
@@ -221,7 +215,7 @@ fun CameraView(
             modifier = Modifier.fillMaxWidth()
         ) {
             CustomIconButton(onCaptureClicked, R.drawable.baseline_camera_alt_24)
-            CustomIconButton(onGotoListClicked, R.drawable.baseline_send_24)
+            CustomIconButton(onGotoListClicked, R.drawable.baseline_list_24)
         }
     }
 }

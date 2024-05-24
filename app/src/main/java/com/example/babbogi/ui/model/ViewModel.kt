@@ -90,7 +90,10 @@ class BabbogiViewModel: ViewModel() {
         _isProductFetching.value = true
         viewModelScope.launch {
             val products = BarcodeApi.getProducts(barcode)
-            if (products.isEmpty()) return@launch
+            if (products.isEmpty()) {
+                _isProductFetching.value = false
+                return@launch
+            }
             val prodName = products.first().name
             _product.value = Product(
                 prodName,
@@ -133,7 +136,7 @@ class BabbogiViewModel: ViewModel() {
 
     // 리스트 서버 전송
     fun sendList() {
-
+        /* TODO */
         _productList.value = emptyList()
     }
 }

@@ -26,10 +26,10 @@ object BarcodeApi {
     }
 
     suspend fun getProducts(barcode: String): List<Product> {
-        val product = retrofitService.getProducts(barcode).C005
-        return if (product.row == null)
+        val response = retrofitService.getProducts(barcode).C005
+        return if (response.row == null)
             emptyList()
         else
-            product.row.map { row -> Product(row.PRDLST_NM, row.BAR_CD, null) }
+            response.row.map { row -> Product(row.PRDLST_NM, row.BAR_CD, null) }
     }
 }
