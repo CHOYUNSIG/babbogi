@@ -2,8 +2,8 @@ package com.example.babbogi.network
 
 import com.example.babbogi.BuildConfig
 import com.example.babbogi.network.response.NutritionApiResponse
+import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.ProductNutritionInfo
-import com.example.babbogi.util.nutrition
 import com.example.babbogi.util.toFloat2
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -35,15 +35,15 @@ object NutritionApi {
             response.row.map { row ->
                 ProductNutritionInfo(
                     mapOf(
-                        nutrition[0] to row.NUTR_CONT1.toFloat2(),
-                        nutrition[1] to row.NUTR_CONT2.toFloat2(),
-                        nutrition[2] to row.NUTR_CONT3.toFloat2(),
-                        nutrition[3] to row.NUTR_CONT4.toFloat2(),
-                        nutrition[4] to row.NUTR_CONT5.toFloat2(),
-                        nutrition[5] to row.NUTR_CONT6.toFloat2(),
-                        nutrition[6] to row.NUTR_CONT7.toFloat2(),
-                        nutrition[7] to row.NUTR_CONT8.toFloat2(),
-                        nutrition[8] to row.NUTR_CONT9.toFloat2(),
+                        // Nutrition.Calorie to row.NUTR_CONT1.toFloat2(),
+                        Nutrition.Carbohydrate to row.NUTR_CONT2.toFloat2(),
+                        Nutrition.Protein to row.NUTR_CONT3.toFloat2(),
+                        Nutrition.Fat to row.NUTR_CONT4.toFloat2(),
+                        Nutrition.Sugar to row.NUTR_CONT5.toFloat2(),
+                        Nutrition.Salt to row.NUTR_CONT6.toFloat2(),
+                        Nutrition.Cholesterol to row.NUTR_CONT7.toFloat2(),
+                        Nutrition.SaturatedFattyAcids to row.NUTR_CONT8.toFloat2(),
+                        Nutrition.TransFat to row.NUTR_CONT9.toFloat2(),
                     )
                 )
             }

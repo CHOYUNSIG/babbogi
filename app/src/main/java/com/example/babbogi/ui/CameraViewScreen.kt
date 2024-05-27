@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,9 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.babbogi.R
-import com.example.babbogi.ScreenEnum
+import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomIconButton
+import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.testProduct
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -82,7 +84,7 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
             onAddClicked = { viewModel.enrollProduct(); viewModel.truncateProduct() },
             onCancelClicked = { viewModel.truncateProduct() },
             onCaptureClicked = { viewModel.asyncGetProductFromBarcode() },
-            onGotoListClicked = { navController.navigate(ScreenEnum.FoodList.name) },
+            onGotoListClicked = { navController.navigate(Screen.FoodList.name) },
         )
     }
 }
@@ -157,7 +159,11 @@ fun NutritionPopup(isProductFetching: Boolean, product: Product?, onAddClicked: 
                 if (product.nutrition != null)
                     Text(
                         modifier = Modifier.padding(bottom = 8.dp),
-                        text = product.nutrition.toString()
+                        text = product.nutrition.toString(
+                            List(Nutrition.entries.size) {
+                                stringResource(id = Nutrition.entries[it].res)
+                            }
+                        )
                     )
                 else
                     Text(text = "There's no nutrition info.")

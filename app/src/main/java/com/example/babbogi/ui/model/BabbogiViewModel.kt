@@ -3,18 +3,20 @@ package com.example.babbogi.ui.model
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.view.LifecycleCameraController
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.babbogi.network.BarcodeApi
 import com.example.babbogi.network.NutritionApi
+import com.example.babbogi.util.HealthState
+import com.example.babbogi.util.NutritionState
 import com.example.babbogi.util.Product
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.util.concurrent.ExecutorService
 
 // 바코드 유효 인정 시간, 나노초 단위
@@ -31,17 +33,23 @@ class BabbogiViewModel: ViewModel() {
     )
 
     // 상태 선언
-    private var _validBarcode: MutableState<String?> = mutableStateOf(null)
-    private var _productList: MutableState<List<Pair<Product, Int>>> = mutableStateOf(emptyList())
-    private var _product: MutableState<Product?> = mutableStateOf(null)
-    private var _recognizedBarcode = mutableStateOf(emptyMap<String, Long>())
-    private var _isRecognizing = mutableStateOf(false)
-    private var _isProductFetching = mutableStateOf(false)
+    private val _validBarcode = mutableStateOf<String?>(null)
+    private val _productList = mutableStateOf<List<Pair<Product, Int>>>(emptyList())
+    private val _product = mutableStateOf<Product?>(null)
+    private val _recognizedBarcode = mutableStateOf(emptyMap<String, Long>())
+    private val _isRecognizing = mutableStateOf(false)
+    private val _isProductFetching = mutableStateOf(false)
+    private val _dailyFoodList = mutableStateOf<List<Product>>(emptyList())
+    private val _nutritionState = mutableStateOf(NutritionState())
+    private val _healthState = mutableStateOf<HealthState?>(null)
 
     val validBarcode: String? get() = _validBarcode.value // 현재 인식 중인 바코드
     val product: Product? get() = _product.value // 현재 인식된 제품
     val productList: List<Pair<Product, Int>> get() = _productList.value // 인식된 제품 리스트
     val isProductFetching: Boolean get() = _isProductFetching.value // 제품 정보를 얻어오고 있는 상태인가?
+    val dailyFoodList: List<Product> get() = _dailyFoodList.value // 하루에 섭취한 음식 리스트
+    val nutritionState: NutritionState get() = _nutritionState.value // 하루의 영양 상태
+    val healthState: HealthState? get() = _healthState.value
 
     // 카메라를 이용해 바코드 정보를 가져옴 (비동기)
     @OptIn(ExperimentalGetImage::class)
@@ -138,5 +146,16 @@ class BabbogiViewModel: ViewModel() {
     fun sendList() {
         /* TODO */
         _productList.value = emptyList()
+    }
+
+    // 서버에서 해당 날짜의 섭취한 음식 정보 받아오기(비동기)
+    fun asyncGetFoodListFromServer(date: LocalDate) {
+        /* TODO */
+    }
+
+    // 서버로 건강 정보를 전송한다(비동기)
+    fun asyncSendHealthStateToServer(healthState: HealthState) {
+        /* TODO */
+        _healthState.value = healthState
     }
 }

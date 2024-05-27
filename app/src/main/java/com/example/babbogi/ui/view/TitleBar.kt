@@ -9,16 +9,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 //맨 위 앱 이름
+@Preview
 @Composable
-fun TitleBar(title: String) {
+fun TitleBar(title: String = "제목 바") {
     Box (
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = Color.White)
             .padding(16.dp)
     ) {
         Text (

@@ -22,7 +22,7 @@ import com.example.babbogi.ui.NutritionOverviewScreen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 
-enum class ScreenEnum {
+enum class Screen {
     Home,
     NutritionOverview,
     Camera,
@@ -58,12 +58,12 @@ fun MainApp(viewModel: BabbogiViewModel) {
 
     NavHost(
         navController = navController,
-        startDestination = ScreenEnum.Home.name
+        startDestination = Screen.Home.name
     ) {
-        composable(route = ScreenEnum.Home.name) { HomeScreen(viewModel, navController) }
-        composable(route = ScreenEnum.NutritionOverview.name) { NutritionOverviewScreen(viewModel, navController) }
-        composable(route = ScreenEnum.Camera.name) { CameraViewScreen(viewModel, navController) }
-        composable(route = ScreenEnum.FoodList.name) { FoodListScreen(viewModel, navController) }
-        composable(route = ScreenEnum.HealthProfile.name) { HealthProfileScreen(viewModel, navController) }
+        composable(route = Screen.Home.name) { HomeScreen(viewModel, navController) }
+        composable(route = Screen.NutritionOverview.name) { NutritionOverviewScreen(viewModel, navController) }
+        composable(route = Screen.Camera.name) { CameraViewScreen(viewModel, navController) }
+        composable(route = Screen.FoodList.name) { FoodListScreen(viewModel, navController) }
+        composable(route = Screen.HealthProfile.name) { HealthProfileScreen(viewModel, navController) }
     }
 }

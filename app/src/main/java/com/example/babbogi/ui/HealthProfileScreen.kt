@@ -1,14 +1,15 @@
 package com.example.babbogi.ui
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,238 +37,130 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.babbogi.R
 import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.TitleBar
-import java.time.LocalDate
+import com.example.babbogi.util.AdultDisease
+import com.example.babbogi.util.Gender
+import com.example.babbogi.util.HealthState
+import com.example.babbogi.util.testHealthState
+import com.example.babbogi.util.toFloat2
 
 @Composable
 fun HealthProfileScreen(viewModel: BabbogiViewModel, navController: NavController) {
-    var UserHight: Float = 0.0F
-    var UserWeght: Float = 0.0F
-    var UserAge : LocalDate
-    var UserSex: String = ""
-    var UserAdultDisease: Boolean = false
-
-    HealthProfile()
+    HealthProfile(
+        healthState = viewModel.healthState,
+        onModifyClicked = {
+            viewModel.asyncSendHealthStateToServer(it)
+            navController.popBackStack()
+        },
+    )
 }
 
 @Composable
-fun InputHeight(onSubmit: (Float) -> Unit) {
-    val height = remember { mutableStateOf("") }
-    Box(
+fun InputHolder(
+    content: String,
+    holder: @Composable () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
+            .padding(16.dp)
             .fillMaxWidth()
-            .background(color = Color.White)
+            .height(80.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically  // Align items vertically in the center
-        ) {
-            Box(
-                modifier = Modifier
-                    .weight(30.0F)
-            ) {
-                Text(
-                    text = "키",
-                    fontSize = 20.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
-                    )
-            }
-            Box(
-                modifier = Modifier
-                    .weight(100.0F)
-            ) {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { /*값 업데이트*/ },
-                    label = { Text("본인의 키를 입력하시오") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    enabled = true,
-                    textStyle = TextStyle(
-                        fontSize = 20.sp,
-                    )
-                )
-            }
+        Box(modifier = Modifier.width(100.dp)) {
+            Text(
+                text = content,
+                fontSize = 20.sp,
+                color = Color.Black,
+                fontWeight = FontWeight.Bold,
+            )
         }
+        Box { holder() }
     }
 }
 
 @Composable
-fun InputWeight(onSubmit: (Float) -> Unit) {
-    val weight = remember { mutableStateOf("") }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Color.White)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically  // Align items vertically in the center
-        ) {
-            Box(
-                modifier = Modifier
-                    .weight(30.0F)
-            ) {
-                Text(
-                    text = "몸무게",
-                    fontSize = 20.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
-                    )
-            }
-            Box(
-                modifier = Modifier
-                    .weight(100.0F)
-            ){
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { /*값 업데이트*/ },
-                    label = { Text("본인의 몸무게를 입력하시오") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    enabled = true,
-                    textStyle = TextStyle(
-                        fontSize = 20.sp,
-                    )
-                )
-            }
-        }
-    }
-}
+fun Selector(
+    options: List<String>,
+    index: Int?,
+    onChange: (index: Int) -> Unit
+) {
+    var selected: String? by remember { mutableStateOf(if (index != null) options[index] else null) }
 
-@Composable
-fun InputGender(onSubmit: (Float) -> Unit) {
-    var selectedGender by remember { mutableStateOf("None") }
-    val options = listOf("남성", "여성")
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Color.White)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        options.forEachIndexed { index, gender ->
             Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .weight(30.0F)
-            ) {
-                Text(
-                    text = "성별",
-                    fontSize = 20.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .weight(100.0F)
-            ) {
-                Row {
-                    options.forEach { gender ->
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .clickable { selectedGender = gender }
-                                .weight(100.0F)
-                                .height(45.dp)
-                        ) {
-                            Canvas(modifier = Modifier.matchParentSize()) {
-                                drawRoundRect(
-                                    color = if (selectedGender == gender) Color(0xFF21A642) else Color(0x20000000),
-                                    topLeft = Offset.Zero,
-                                    size = Size(size.width, size.height),
-                                    cornerRadius = CornerRadius(0f, 0f),
-                                    style = Stroke(width = 5f),
-                                )
-                            }
-                            Text(
-                                text = gender,
-                                fontSize = 20.sp,
-                                color = Color.Black,
-                                fontWeight = FontWeight.Normal
-                            )
-                        }
+                    .clickable {
+                        selected = gender
+                        onChange(index)
                     }
-
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun InputAdultDisease(){
-    var expanded by remember { mutableStateOf(false) }
-    var selectedDisease by remember { mutableStateOf("") }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Color.White)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically  // Align items vertically in the center
-        ) {
-            Box(
-                modifier = Modifier
-                    .weight(30.0F)
+                    .height(45.dp)
+                    .weight(1f)
             ) {
+                Canvas(modifier = Modifier.matchParentSize()) {
+                    drawRoundRect(
+                        color = if (selected == gender) Color(0xFF21A642) else Color(0x20000000),
+                        topLeft = Offset.Zero,
+                        size = Size(size.width, size.height),
+                        cornerRadius = CornerRadius(0f, 0f),
+                        style = Stroke(width = 5f),
+                    )
+                }
                 Text(
-                    text = "성인병",
+                    text = gender,
                     fontSize = 20.sp,
                     color = Color.Black,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Normal
                 )
             }
-            DropDown()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropDown(){
-    val list = listOf("해당 없음", "당뇨", "고혈압")
-    var selectedText by remember { mutableStateOf(list[0]) }
+fun DropDown(
+    options: List<String>,
+    index: Int?,
+    onChange: (index: Int?) -> Unit
+) {
+    val realOptions = listOf("해당 없음") + options
+    var selectedText: String? by remember { mutableStateOf(if (index != null) options[index] else null) }
     var isExpended by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .padding(start = 10.dp)
+    ExposedDropdownMenuBox(
+        expanded = isExpended,
+        onExpandedChange = { isExpended = !isExpended }
     ) {
-        ExposedDropdownMenuBox(
+        TextField(
+            modifier = Modifier.menuAnchor(),
+            value = selectedText?: realOptions.first(),
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpended) }
+        )
+        ExposedDropdownMenu(
             expanded = isExpended,
-            onExpandedChange ={isExpended = !isExpended}
+            onDismissRequest = {isExpended = false},
         ) {
-            TextField(
-                modifier = Modifier.menuAnchor(),
-                value = selectedText,
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpended)}
-            )
-            ExposedDropdownMenu(
-                expanded = isExpended,
-                onDismissRequest = {isExpended = false},
-            ) {
-                list.forEachIndexed{ index, text ->
-                    DropdownMenuItem(
-                        text = { Text(text = text) },
-                        onClick = {
-                            selectedText = list[index]
-                            isExpended = false
-                        },
+            realOptions.forEachIndexed { index, text ->
+                DropdownMenuItem(
+                    text = { Text(text = text) },
+                    onClick = {
+                        selectedText = text
+                        isExpended = false
+                        if (index > 1)
+                            onChange(index - 1)
+                        else
+                            onChange(null)
+                    },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
-                    )
-                }
+                )
             }
         }
     }
@@ -275,12 +168,76 @@ fun DropDown(){
 
 @Preview
 @Composable
-fun HealthProfile() {
-    Column (modifier = Modifier.background(color = Color.White)) {
+fun HealthProfile(
+    healthState: HealthState? = testHealthState,
+    onModifyClicked: (HealthState) -> Unit = {}
+) {
+    var heightText by remember { mutableStateOf(healthState?.height?.toString() ?: "") }
+    var weightText by remember { mutableStateOf(healthState?.weight?.toString() ?: "") }
+    var gender by remember { mutableStateOf(healthState?.gender) }
+    var adultDisease by remember { mutableStateOf(healthState?.adultDisease) }
+
+    Column {
         TitleBar("건강 정보")
-        InputHeight(onSubmit = {})
-        InputWeight(onSubmit = {})
-        InputGender(onSubmit = {})
-        InputAdultDisease()
+        InputHolder("키") {
+            OutlinedTextField(
+                value = heightText,
+                onValueChange = { heightText = it },
+                label = { Text("본인의 키를 입력하시오") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true,
+                textStyle = TextStyle(fontSize = 20.sp)
+            )
+        }
+        InputHolder("몸무게") {
+            OutlinedTextField(
+                value = weightText,
+                onValueChange = { weightText = it },
+                label = { Text("본인의 몸무게를 입력하시오") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true,
+                textStyle = TextStyle(fontSize = 20.sp)
+            )
+        }
+        InputHolder("성별") {
+            Selector(
+                options = Gender.entries.map { it.toString() }.toList(),
+                index = gender?.ordinal,
+                onChange = { gender = Gender.entries[it] }
+            )
+        }
+        InputHolder("성인병") {
+            DropDown(
+                options = AdultDisease.entries.map { it.toString() }.toList(),
+                index = adultDisease?.ordinal,
+                onChange = { if (it == null) adultDisease = null else adultDisease = AdultDisease.entries[it] }
+            )
+        }
+    }
+    Box(
+        contentAlignment = Alignment.BottomEnd,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(50.dp)
+    ) {
+        CustomIconButton(
+            onClick = lambda@ {
+                val h = heightText.toFloat2(healthState?.height ?: 0f)
+                val w = weightText.toFloat2(healthState?.weight ?: 0f)
+                val g = gender
+                if (g == null || h < 10f || w < 10f) return@lambda
+                onModifyClicked(
+                    HealthState(
+                        height = h,
+                        weight = w,
+                        gender = g,
+                        adultDisease = adultDisease
+                    )
+                )
+            },
+            icon = R.drawable.baseline_send_24
+        )
     }
 }

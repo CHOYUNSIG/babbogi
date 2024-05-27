@@ -20,6 +20,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -38,72 +43,82 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.babbogi.ScreenEnum
 import com.example.babbogi.R
+import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.ui.view.NutritionCircularGraph
 import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.util.HealthState
+import com.example.babbogi.util.Nutrition
+import com.example.babbogi.util.NutritionState
+import com.example.babbogi.util.Product
+import com.example.babbogi.util.testHealthState
+import com.example.babbogi.util.testNutritionState
 import java.time.LocalDate
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(viewModel: BabbogiViewModel, navController: NavController) {
+    var today by remember { mutableStateOf(LocalDate.now()) }
+    LaunchedEffect(key1 = null) { viewModel.asyncGetFoodListFromServer(today) }
+
     Home(
-        onInputUserDataClicked = { navController.navigate(ScreenEnum.HealthProfile.name) },
-        onEnrollClicked = { navController.navigate(ScreenEnum.Camera.name) }
+        today = today,
+        healthState = viewModel.healthState,
+        nutritionState = viewModel.nutritionState,
+        foodList = viewModel.dailyFoodList,
+        onDateChanged = { today = today.plusDays(it.toLong()) },
+        onCardClicked = { navController.navigate(Screen.NutritionOverview.name) },
+        onInputUserDataClicked = { navController.navigate(Screen.HealthProfile.name) },
+        onEnrollClicked = { navController.navigate(Screen.Camera.name) }
     )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 //날짜 선택
-fun DateSelector() {
-    val today = LocalDate.now()  // 현재 날짜를 가져옴
-    Box(
+fun DateSelector(
+    today: LocalDate,
+    onDateChanged: (Int) -> Unit
+) {
+    Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Color.White)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,  // 가로 중앙 정렬
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,  // 가로 중앙 정렬
-            verticalAlignment = Alignment.CenterVertically
+        IconButton(onClick = { onDateChanged(-1) }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_chevron_left_24),
+                contentDescription = "이전",
+            )
+        }
+        ElevatedCard(
+            modifier = Modifier.width(250.dp),
+            colors = CardDefaults.elevatedCardColors(containerColor = Color(0xF7F7F7FF)),
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
         ) {
-            IconButton(
-                onClick = { /*전날 페이지*/ },
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_chevron_left_24),
-                    contentDescription = "이전",
+                Text(
+                    text = today.toString(),
+                    color = Color.DarkGray,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Normal,
+                    textAlign = TextAlign.Center
                 )
             }
-            ElevatedCard(
-                modifier = Modifier.width(250.dp),
-                colors = CardDefaults.elevatedCardColors(containerColor = Color(0xF7F7F7FF)),
-                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = today.toString(),
-                        color = Color.DarkGray,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Normal,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-            IconButton(onClick = { /*다음날 페이지*/ }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_chevron_right_24),
-                    contentDescription = "다음"
-                )
-            }
+        }
+        IconButton(onClick = { onDateChanged(1) }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_chevron_right_24),
+                contentDescription = "다음"
+            )
         }
     }
 }
@@ -178,7 +193,37 @@ fun InputUserData(onInputUserDataClicked: () -> Unit) {
 }
 
 @Composable
-fun MealList(onEnrollClicked: () -> Unit) {
+fun NutritionAbstraction(nutritionState: NutritionState, onClick: () -> Unit) {
+    Box(modifier = Modifier.padding(16.dp)) {
+        ElevatedButton(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RectangleShape,
+            colors = ButtonDefaults.elevatedButtonColors(containerColor = Color.White),
+            elevation = ButtonDefaults.elevatedButtonElevation(
+                defaultElevation = 3.dp,  // 기본 고도
+                pressedElevation = 8.dp,  // 버튼이 눌렸을 때의 고도
+                focusedElevation = 6.dp,  // 포커스가 맞춰졌을 때의 고도
+                hoveredElevation = 6.dp   // 호버링 했을 때의 고도
+            )
+        ) {
+            Row {
+                listOf(Nutrition.Carbohydrate, Nutrition.Protein, Nutrition.Fat).forEach {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = stringResource(id = it.res))
+                        NutritionCircularGraph(nutrition = it, intake = nutritionState[it])
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MealList(
+    foodList: List<Product>,
+    onEnrollClicked: () -> Unit
+) {
     ElevatedCard(
         modifier = Modifier
             .padding(16.dp),
@@ -191,7 +236,9 @@ fun MealList(onEnrollClicked: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
@@ -222,13 +269,22 @@ fun MealList(onEnrollClicked: () -> Unit) {
 @Preview
 @Composable
 fun Home(
+    today: LocalDate = LocalDate.now(),
+    healthState: HealthState? = testHealthState,
+    nutritionState: NutritionState = testNutritionState,
+    foodList: List<Product> = emptyList(),
+    onCardClicked: () -> Unit = {},
+    onDateChanged: (Int) -> Unit = {},
     onInputUserDataClicked: () -> Unit = {},
     onEnrollClicked: () -> Unit = {}
 ) {
-    Column (modifier = Modifier.background(color = Color.White)) {
+    Column {
         TitleBar(stringResource(id = R.string.app_name))
-        DateSelector()
-        InputUserData(onInputUserDataClicked)
-        MealList(onEnrollClicked)
+        DateSelector(today, onDateChanged)
+        if (healthState == null)
+            InputUserData(onInputUserDataClicked)
+        else
+            NutritionAbstraction(nutritionState, onCardClicked)
+        MealList(foodList, onEnrollClicked)
     }
 }

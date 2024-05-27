@@ -27,6 +27,8 @@ android {
         // API keys
         buildConfigField "String", "BARCODE_API_KEY", properties['barcode_api_key']
         buildConfigField "String", "NUTRITION_API_KEY", properties['nutrition_api_key']
+        buildConfigField "String", "SERVER_URL", properties['server_url']
+        buildConfigField "String", "SERVER_API_KEY", properties['server_api_key']
     }
 
     buildTypes {

@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -16,8 +18,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -31,31 +35,29 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.babbogi.R
-import com.example.babbogi.ScreenEnum
+import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.ProductNutritionInfo
-import com.example.babbogi.util.nutrition
-import com.example.babbogi.util.nutritionNameResource
-import com.example.babbogi.util.nutritionUnit
 import com.example.babbogi.util.testProduct
 import com.example.babbogi.util.testProductList
 import com.example.babbogi.util.toProductNutritionInfo
 
 @Composable
 fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
-    val index = remember { mutableStateOf<Int?>(null) }
+    var index: Int? by remember { mutableStateOf(null) }
 
     FoodList(
         productList = viewModel.productList,
-        index = index.value,
+        index = index,
         onAmountChanged = { i, amount ->
             viewModel.modifyProduct(index = i, amount = viewModel.productList[i].second + amount)
         },
         onModifyClicked = lambda@ { list ->
-            val i = index.value ?: return@lambda
+            val i = index ?: return@lambda
             val productInfo = viewModel.productList[i].first
             viewModel.modifyProduct(
                 index = i,
@@ -65,11 +67,14 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
                     list.toProductNutritionInfo(productInfo.nutrition?: ProductNutritionInfo())
                 )
             )
-            index.value = null
+            index = null
         },
         onDeleteClicked = { viewModel.deleteProduct(it) },
-        onSubmitClicked = { navController.navigate(ScreenEnum.Home.name) },
-        onFoodCardClicked = { index.value = it }
+        onSubmitClicked = {
+            viewModel.sendList()
+            navController.navigate(Screen.Home.name)
+        },
+        onFoodCardClicked = { index = it }
     )
 }
 
@@ -95,8 +100,21 @@ fun FoodCard(
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
-            Box (modifier = Modifier.padding(vertical = 16.dp)){
-                Text(text = product.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, overflow = TextOverflow.Ellipsis)
+            Column (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = product.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = product.nutrition?.toString(List(Nutrition.entries.size) { stringResource(id = Nutrition.entries[it].res) }) ?: "",
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
             Row (
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -124,16 +142,15 @@ fun FoodPopup(
     product: Product = testProduct,
     onModifyClicked: (List<String>) -> Unit = {},
 ) {
-    val inputText = remember { mutableStateOf(List(9) { product.nutrition?.get(it)?.toString()?: "" } ) }
+    var inputText by remember { mutableStateOf(List(Nutrition.entries.size) { product.nutrition?.get(it)?.toString()?: "" } ) }
 
     Dialog(onDismissRequest = {}) {
         ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
         ) {
-            Box(
-                modifier = Modifier.padding(16.dp)
-            ) {
+            Box(modifier = Modifier.padding(16.dp)) {
                 Column {
                     Text(
                         text = product.name,
@@ -141,25 +158,25 @@ fun FoodPopup(
                         fontSize = 20.sp,
                         modifier = Modifier.padding(8.dp)
                     )
-                    repeat(9) {
+                    repeat(Nutrition.entries.size) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             OutlinedTextField(
-                                value = inputText.value[it],
+                                value = inputText[it],
                                 onValueChange = { changedText ->
-                                    inputText.value = inputText.value.mapIndexed { i, p ->
+                                    inputText = inputText.mapIndexed { i, p ->
                                         if (i == it) changedText else p
                                     }
                                 },
-                                label = { Text(stringResource(id = nutritionNameResource[nutrition[it]]!!)) },
+                                label = { Text(stringResource(id = Nutrition.entries[it].res)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(0.7f),
                                 enabled = true,
                             )
-                            Text(text = nutritionUnit[nutrition[it]]!!, fontSize = 20.sp)
+                            Text(text = Nutrition.entries[it].unit, fontSize = 20.sp)
                         }
                     }
                     Row(
@@ -168,7 +185,7 @@ fun FoodPopup(
                             .fillMaxWidth()
                             .padding(top = 16.dp)
                     ) {
-                        Button(onClick = { onModifyClicked(inputText.value) }, modifier = Modifier.padding(start = 8.dp)) {
+                        Button(onClick = { onModifyClicked(inputText) }, modifier = Modifier.padding(start = 8.dp)) {
                             Text(text = "Modify")
                         }
                     }
@@ -191,30 +208,29 @@ fun FoodList(
 ) {
     Column {
         TitleBar("섭취 리스트")
-        Column(
+        Row(
+            horizontalArrangement = Arrangement.Center,
             modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .align(Alignment.CenterHorizontally)
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+                .padding(vertical = 16.dp)
         ) {
-            productList.forEachIndexed { index, (productInfo, amount) ->
-                FoodCard(
-                    product = productInfo,
-                    amount = amount,
-                    onIncrease = { onAmountChanged(index, 1) },
-                    onDecrease = { onAmountChanged(index, -1) },
-                    onClick = { onFoodCardClicked(index) },
-                    onDelete = { onDeleteClicked(index) }
-                )
+            Column(modifier = Modifier.fillMaxWidth(0.8f)) {
+                productList.forEachIndexed { index, (productInfo, amount) ->
+                    FoodCard(
+                        product = productInfo,
+                        amount = amount,
+                        onIncrease = { onAmountChanged(index, 1) },
+                        onDecrease = { onAmountChanged(index, -1) },
+                        onClick = { onFoodCardClicked(index) },
+                        onDelete = { onDeleteClicked(index) }
+                    )
+                }
             }
         }
     }
     if (index != null) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(50.dp)
-        ) {
+        Box(modifier = Modifier.padding(50.dp)) {
             FoodPopup(
                 product = productList[index].first,
                 onModifyClicked = { onModifyClicked(it) },
