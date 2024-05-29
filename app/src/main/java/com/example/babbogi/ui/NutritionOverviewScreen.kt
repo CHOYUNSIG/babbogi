@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +20,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -46,6 +53,20 @@ fun NutritionOverviewScreen(viewModel: BabbogiViewModel, navController: NavContr
 
 @Composable
 fun CircularGraphCard(nutrition: Nutrition, intake: IntakeState) {
+    val targetValue = remember { (intake.getRatio() * 100).roundToInt() }
+    var animatedValue by remember { mutableStateOf(0) }
+
+    // 애니메이션을 시작하는 LaunchedEffect
+    LaunchedEffect(targetValue) {
+        animate(
+            initialValue = 0F,
+            targetValue = targetValue.toFloat(),
+            animationSpec = tween(durationMillis = 1000) // 1초 동안 애니메이션
+        ) { value, _ ->
+            animatedValue = value.toInt()
+        }
+    }
+
     ElevatedCard(
         modifier = Modifier.padding(16.dp),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
@@ -73,13 +94,14 @@ fun CircularGraphCard(nutrition: Nutrition, intake: IntakeState) {
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Text(text = "오늘은 적정량의")
-                    Text(text = (intake.getRatio() * 100).roundToInt().toString() + "%", fontSize = 32.sp)
+                    Text(text = "$animatedValue%", fontSize = 32.sp)
                     Text(text = "를 드셨습니다.")
                 }
             }
         }
     }
 }
+
 
 @Preview
 @Composable
