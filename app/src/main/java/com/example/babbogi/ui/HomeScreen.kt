@@ -9,11 +9,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -54,6 +58,7 @@ import com.example.babbogi.util.NutritionState
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.testHealthState
 import com.example.babbogi.util.testNutritionState
+import com.example.babbogi.util.testProductList
 import java.time.LocalDate
 
 
@@ -67,11 +72,21 @@ fun HomeScreen(viewModel: BabbogiViewModel, navController: NavController) {
         today = today,
         healthState = viewModel.healthState,
         nutritionState = viewModel.nutritionState,
-        foodList = viewModel.dailyFoodList,
-        onDateChanged = { today = today.plusDays(it.toLong()) },
-        onCardClicked = { navController.navigate(Screen.NutritionOverview.name) },
+        foodList = viewModel.dailyFoodList[today],
+        onDateChanged = {
+            today = today.plusDays(it.toLong())
+            if (!viewModel.dailyFoodList.containsKey(today))
+                viewModel.asyncGetFoodListFromServer(today)
+        },
+        onNutritionCardClicked = { navController.navigate(Screen.NutritionOverview.name) },
+        onHealthCardClicked = { navController.navigate(Screen.HealthProfile.name) },
         onInputUserDataClicked = { navController.navigate(Screen.HealthProfile.name) },
-        onEnrollClicked = { navController.navigate(Screen.Camera.name) }
+        onEnrollClicked = {
+            if (viewModel.healthState == null)
+                navController.navigate(Screen.HealthProfile.name)
+            else
+                navController.navigate(Screen.Camera.name)
+        }
     )
 }
 
@@ -192,26 +207,92 @@ fun InputUserData(onInputUserDataClicked: () -> Unit) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NutritionAbstraction(nutritionState: NutritionState, onClick: () -> Unit) {
     Box(modifier = Modifier.padding(16.dp)) {
-        ElevatedButton(
+        ElevatedCard(
             onClick = onClick,
             modifier = Modifier.fillMaxWidth(),
-            shape = RectangleShape,
-            colors = ButtonDefaults.elevatedButtonColors(containerColor = Color.White),
-            elevation = ButtonDefaults.elevatedButtonElevation(
-                defaultElevation = 3.dp,  // 기본 고도
-                pressedElevation = 8.dp,  // 버튼이 눌렸을 때의 고도
-                focusedElevation = 6.dp,  // 포커스가 맞춰졌을 때의 고도
-                hoveredElevation = 6.dp   // 호버링 했을 때의 고도
-            )
         ) {
-            Row {
-                listOf(Nutrition.Carbohydrate, Nutrition.Protein, Nutrition.Fat).forEach {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = stringResource(id = it.res))
-                        NutritionCircularGraph(nutrition = it, intake = nutritionState[it])
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "오늘(${LocalDate.now()})의 영양 상태",
+                    modifier = Modifier.padding(16.dp),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                Row(modifier = Modifier.padding(16.dp)) {
+                    listOf(Nutrition.Carbohydrate, Nutrition.Protein, Nutrition.Fat).forEach {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = stringResource(id = it.res))
+                            NutritionCircularGraph(nutrition = it, intake = nutritionState[it])
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HealthAbstraction(
+    healthState: HealthState,
+    onClick: () -> Unit
+) {
+    Box(modifier = Modifier.padding(16.dp)) {
+        ElevatedCard(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp, horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = "사용자 건강 정보",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600,
+                    )
+                    IconButton(
+                        onClick = onClick,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(160.dp),
+                            painter = painterResource(id = R.drawable.baseline_mode_24),
+                            contentDescription = "정보 수정하기 아이콘"
+                        )
+                    }
+                }
+                Column(modifier = Modifier.padding(16.dp)) {
+                    listOf(
+                        listOf("키", healthState.height.toString(), "cm"),
+                        listOf("몸무게", healthState.weight.toString(), "kg"),
+                        listOf("나이", healthState.age.toString(), "세"),
+                        listOf("성별", healthState.gender.toString(), ""),
+                        listOf("성인병", healthState.adultDisease?.toString() ?: "없음", ""),
+                    ).forEach { (attribute, value, unit) ->
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = attribute)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = value)
+                                Text(text = unit, color = Color.Gray)
+                            }
+                        }
                     }
                 }
             }
@@ -221,15 +302,10 @@ fun NutritionAbstraction(nutritionState: NutritionState, onClick: () -> Unit) {
 
 @Composable
 fun MealList(
-    foodList: List<Product>,
+    foodList: List<Pair<Product, Int>>?,
     onEnrollClicked: () -> Unit
 ) {
-    ElevatedCard(
-        modifier = Modifier
-            .padding(16.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = Color(0xF7F7F7FF)),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
-    ) {
+    ElevatedCard(modifier = Modifier.padding(16.dp)) {
         Column {
             Box(
                 contentAlignment = Alignment.TopStart,
@@ -238,7 +314,7 @@ fun MealList(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(vertical = 8.dp, horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
@@ -261,6 +337,69 @@ fun MealList(
                     }
                 }
             }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(500.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                if (foodList == null)
+                    Row (
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier
+                            .size(50.dp)
+                            .padding(16.dp))
+                    }
+                else if (foodList.isEmpty())
+                    Text("섭취한 음식이 없어요!", color = Color.Gray, modifier = Modifier.padding(16.dp))
+                else
+                    foodList.forEach { (product, amount) ->
+                        Row(modifier = Modifier.padding(16.dp)) {
+                            ElevatedCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp),
+                                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp),
+                            ) {
+                                Column (
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp)
+                                ) {
+                                    Column (
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(
+                                                text = product.name,
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.Bold,
+                                            )
+                                            Text(
+                                                text = "x$amount",
+                                                fontSize = 20.sp,
+                                            )
+                                        }
+                                        Text(
+                                            text = product.nutrition?.toString(List(Nutrition.entries.size) { stringResource(id = Nutrition.entries[it].res) }) ?: "",
+                                            modifier = Modifier.padding(vertical = 8.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+            }
         }
     }
 }
@@ -272,19 +411,22 @@ fun Home(
     today: LocalDate = LocalDate.now(),
     healthState: HealthState? = testHealthState,
     nutritionState: NutritionState = testNutritionState,
-    foodList: List<Product> = emptyList(),
-    onCardClicked: () -> Unit = {},
+    foodList: List<Pair<Product, Int>>? = testProductList,
+    onNutritionCardClicked: () -> Unit = {},
+    onHealthCardClicked: () -> Unit = {},
     onDateChanged: (Int) -> Unit = {},
     onInputUserDataClicked: () -> Unit = {},
     onEnrollClicked: () -> Unit = {}
 ) {
-    Column {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         TitleBar(stringResource(id = R.string.app_name))
-        DateSelector(today, onDateChanged)
         if (healthState == null)
             InputUserData(onInputUserDataClicked)
-        else
-            NutritionAbstraction(nutritionState, onCardClicked)
-        MealList(foodList, onEnrollClicked)
+        else {
+            NutritionAbstraction(nutritionState, onNutritionCardClicked)
+            HealthAbstraction(healthState, onHealthCardClicked)
+        }
+        DateSelector(today, onDateChanged)
+        MealList(if (healthState == null) emptyList() else foodList, onEnrollClicked)
     }
 }

@@ -40,7 +40,7 @@ val testProduct = Product(
     "8801104212403",
     ProductNutritionInfo(
         mapOf(
-            // Nutrition.Calorie to 140f,
+            Nutrition.Calorie to 140f,
             Nutrition.Carbohydrate to 23f,
             Nutrition.Protein to 3.5f,
             Nutrition.Fat to 4f,

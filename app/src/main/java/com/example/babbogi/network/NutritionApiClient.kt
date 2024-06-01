@@ -35,7 +35,7 @@ object NutritionApi {
             response.row.map { row ->
                 ProductNutritionInfo(
                     mapOf(
-                        // Nutrition.Calorie to row.NUTR_CONT1.toFloat2(),
+                        Nutrition.Calorie to row.NUTR_CONT1.toFloat2(),
                         Nutrition.Carbohydrate to row.NUTR_CONT2.toFloat2(),
                         Nutrition.Protein to row.NUTR_CONT3.toFloat2(),
                         Nutrition.Fat to row.NUTR_CONT4.toFloat2(),

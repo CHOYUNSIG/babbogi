@@ -14,6 +14,7 @@ enum class Gender {
 data class HealthState (
     val height: Float,
     val weight: Float,
+    val age: Int,
     val gender: Gender,
     val adultDisease: AdultDisease?,
 )
@@ -23,6 +24,7 @@ data class HealthState (
 val testHealthState = HealthState(
     170f,
     60f,
+    30,
     Gender.Male,
     AdultDisease.HighBloodPressure
 )

@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -38,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.babbogi.R
+import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.TitleBar
@@ -47,13 +50,14 @@ import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.testHealthState
 import com.example.babbogi.util.toFloat2
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HealthProfileScreen(viewModel: BabbogiViewModel, navController: NavController) {
     HealthProfile(
         healthState = viewModel.healthState,
         onModifyClicked = {
-            viewModel.asyncSendHealthStateToServer(it)
-            navController.popBackStack()
+            viewModel.asyncChangeHealthStateWithServer(it)
+            navController.navigate(Screen.Loading.name)
         },
     )
 }
@@ -174,6 +178,7 @@ fun HealthProfile(
 ) {
     var heightText by remember { mutableStateOf(healthState?.height?.toString() ?: "") }
     var weightText by remember { mutableStateOf(healthState?.weight?.toString() ?: "") }
+    var ageText by remember { mutableStateOf(healthState?.age?.toString() ?: "") }
     var gender by remember { mutableStateOf(healthState?.gender) }
     var adultDisease by remember { mutableStateOf(healthState?.adultDisease) }
 
@@ -195,6 +200,17 @@ fun HealthProfile(
                 value = weightText,
                 onValueChange = { weightText = it },
                 label = { Text("본인의 몸무게를 입력하시오") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true,
+                textStyle = TextStyle(fontSize = 20.sp)
+            )
+        }
+        InputHolder("나이") {
+            OutlinedTextField(
+                value = ageText,
+                onValueChange = { ageText = it },
+                label = { Text("본인의 나이를 입력하시오") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true,
@@ -226,13 +242,15 @@ fun HealthProfile(
             onClick = lambda@ {
                 val h = heightText.toFloat2(healthState?.height ?: 0f)
                 val w = weightText.toFloat2(healthState?.weight ?: 0f)
+                val a = try { ageText.toInt() } catch (e: NumberFormatException) {0}
                 val g = gender
-                if (g == null || h < 10f || w < 10f) return@lambda
+                if (g == null || h < 10f || w < 10f || a <= 0) return@lambda
                 onModifyClicked(
                     HealthState(
                         height = h,
                         weight = w,
                         gender = g,
+                        age = a,
                         adultDisease = adultDisease
                     )
                 )

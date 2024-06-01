@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +49,7 @@ import com.example.babbogi.util.testProduct
 import com.example.babbogi.util.testProductList
 import com.example.babbogi.util.toProductNutritionInfo
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
     var index: Int? by remember { mutableStateOf(null) }
@@ -71,8 +75,8 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
         },
         onDeleteClicked = { viewModel.deleteProduct(it) },
         onSubmitClicked = {
-            viewModel.sendList()
-            navController.navigate(Screen.Home.name)
+            viewModel.asyncSendListToServer()
+            navController.navigate(Screen.Loading.name)
         },
         onFoodCardClicked = { index = it }
     )
@@ -216,16 +220,19 @@ fun FoodList(
                 .padding(vertical = 16.dp)
         ) {
             Column(modifier = Modifier.fillMaxWidth(0.8f)) {
-                productList.forEachIndexed { index, (productInfo, amount) ->
-                    FoodCard(
-                        product = productInfo,
-                        amount = amount,
-                        onIncrease = { onAmountChanged(index, 1) },
-                        onDecrease = { onAmountChanged(index, -1) },
-                        onClick = { onFoodCardClicked(index) },
-                        onDelete = { onDeleteClicked(index) }
-                    )
-                }
+                if (productList.isEmpty())
+                    Text(text = "카메라로 식품의 바코드를 찍으세요!\n이곳에 표시됩니다.", color = Color.Gray)
+                else
+                    productList.forEachIndexed { index, (productInfo, amount) ->
+                        FoodCard(
+                            product = productInfo,
+                            amount = amount,
+                            onIncrease = { onAmountChanged(index, 1) },
+                            onDecrease = { onAmountChanged(index, -1) },
+                            onClick = { onFoodCardClicked(index) },
+                            onDelete = { onDeleteClicked(index) }
+                        )
+                    }
             }
         }
     }

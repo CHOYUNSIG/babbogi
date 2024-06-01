@@ -8,11 +8,11 @@ enum class Nutrition(
     val unit: String,
     val defaultRecommend: Float,
 ) {
-//    Calorie(
-//        res = R.string.calorie,
-//        unit = "kcal",
-//        defaultRecommend = 2200f,
-//    ),
+    Calorie(
+        res = R.string.calorie,
+        unit = "kcal",
+        defaultRecommend = 2200f,
+    ),
     Carbohydrate(
         res = R.string.carbohydrate,
         unit = "g",

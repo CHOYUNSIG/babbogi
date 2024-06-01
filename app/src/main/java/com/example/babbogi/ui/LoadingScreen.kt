@@ -9,18 +9,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.babbogi.R
+import com.example.babbogi.Screen
+import com.example.babbogi.ui.model.BabbogiViewModel
 
-@Preview
 @Composable
-fun LoadingScreen(){
+fun LoadingScreen(viewModel: BabbogiViewModel, navController: NavController) {
+    if (!viewModel.isServerResponsing)
+        navController.navigate(Screen.Home.name) {
+            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+        }
     Loading()
 }
 
+@Preview
 @Composable
 fun Loading() {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId = R.raw.loading))
