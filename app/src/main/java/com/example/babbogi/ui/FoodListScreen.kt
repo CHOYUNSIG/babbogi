@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -60,15 +61,15 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
         onAmountChanged = { i, amount ->
             viewModel.modifyProduct(index = i, amount = viewModel.productList[i].second + amount)
         },
-        onModifyClicked = lambda@ { list ->
+        onModifyClicked = lambda@ { name, nutrition ->
             val i = index ?: return@lambda
             val productInfo = viewModel.productList[i].first
             viewModel.modifyProduct(
                 index = i,
                 product = Product(
-                    productInfo.name,
+                    name,
                     productInfo.barcode,
-                    list.toProductNutritionInfo(productInfo.nutrition?: ProductNutritionInfo())
+                    nutrition.toProductNutritionInfo(productInfo.nutrition?: ProductNutritionInfo())
                 )
             )
             index = null
@@ -109,12 +110,23 @@ fun FoodCard(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                Text(
-                    text = product.name,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = product.name,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Icon(
+                        modifier = Modifier.size(30.dp),
+                        painter = painterResource(id = R.drawable.baseline_mode_24),
+                        contentDescription = "정보 수정하기 아이콘"
+                    )
+                }
                 Text(
                     text = product.nutrition?.toString(List(Nutrition.entries.size) { stringResource(id = Nutrition.entries[it].res) }) ?: "",
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -144,9 +156,10 @@ fun FoodCard(
 @Composable
 fun FoodPopup(
     product: Product = testProduct,
-    onModifyClicked: (List<String>) -> Unit = {},
+    onModifyClicked: (name: String, nutrition: List<String>) -> Unit = { _, _ -> },
 ) {
-    var inputText by remember { mutableStateOf(List(Nutrition.entries.size) { product.nutrition?.get(it)?.toString()?: "" } ) }
+    var prodNameText by remember { mutableStateOf(product.name) }
+    var nutritionText by remember { mutableStateOf(List(Nutrition.entries.size) { product.nutrition?.get(it)?.toString()?: "" } ) }
 
     Dialog(onDismissRequest = {}) {
         ElevatedCard(
@@ -156,11 +169,13 @@ fun FoodPopup(
         ) {
             Box(modifier = Modifier.padding(16.dp)) {
                 Column {
-                    Text(
-                        text = product.name,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(8.dp)
+                    OutlinedTextField(
+                        value = prodNameText,
+                        onValueChange = { prodNameText = it },
+                        label = { Text("상품명") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = true,
                     )
                     repeat(Nutrition.entries.size) {
                         Row(
@@ -169,9 +184,9 @@ fun FoodPopup(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             OutlinedTextField(
-                                value = inputText[it],
+                                value = nutritionText[it],
                                 onValueChange = { changedText ->
-                                    inputText = inputText.mapIndexed { i, p ->
+                                    nutritionText = nutritionText.mapIndexed { i, p ->
                                         if (i == it) changedText else p
                                     }
                                 },
@@ -189,7 +204,7 @@ fun FoodPopup(
                             .fillMaxWidth()
                             .padding(top = 16.dp)
                     ) {
-                        Button(onClick = { onModifyClicked(inputText) }, modifier = Modifier.padding(start = 8.dp)) {
+                        Button(onClick = { onModifyClicked(prodNameText, nutritionText) }, modifier = Modifier.padding(start = 8.dp)) {
                             Text(text = "Modify")
                         }
                     }
@@ -205,7 +220,7 @@ fun FoodList(
     productList: List<Pair<Product, Int>> = testProductList,
     index: Int? = null,
     onAmountChanged: (index: Int, amount: Int) -> Unit = { _, _ -> },
-    onModifyClicked: (List<String>) -> Unit = {},
+    onModifyClicked: (name: String, nutrition: List<String>) -> Unit = { _, _ -> },
     onDeleteClicked: (index: Int) -> Unit = {},
     onSubmitClicked: () -> Unit = {},
     onFoodCardClicked: (index: Int) -> Unit = {}
@@ -240,7 +255,7 @@ fun FoodList(
         Box(modifier = Modifier.padding(50.dp)) {
             FoodPopup(
                 product = productList[index].first,
-                onModifyClicked = { onModifyClicked(it) },
+                onModifyClicked = onModifyClicked,
             )
         }
     }

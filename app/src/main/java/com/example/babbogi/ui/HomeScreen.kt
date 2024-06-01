@@ -256,23 +256,18 @@ fun HealthAbstraction(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp, horizontal = 16.dp)
+                        .padding(16.dp)
                 ) {
                     Text(
                         text = "사용자 건강 정보",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.W600,
                     )
-                    IconButton(
-                        onClick = onClick,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(160.dp),
-                            painter = painterResource(id = R.drawable.baseline_mode_24),
-                            contentDescription = "정보 수정하기 아이콘"
-                        )
-                    }
+                    Icon(
+                        modifier = Modifier.size(30.dp),
+                        painter = painterResource(id = R.drawable.baseline_mode_24),
+                        contentDescription = "정보 수정하기 아이콘"
+                    )
                 }
                 Column(modifier = Modifier.padding(16.dp)) {
                     listOf(
