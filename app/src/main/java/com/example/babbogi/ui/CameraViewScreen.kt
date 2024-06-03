@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -80,13 +81,26 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
             AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
         }
 
+        var showDialog by remember { mutableStateOf(false) }
+
         CameraView(
             barcode = viewModel.validBarcode,
+            showDialog = showDialog,
             isProductFetching = viewModel.isProductFetching,
             product = viewModel.product,
-            onAddClicked = { viewModel.enrollProduct(); viewModel.truncateProduct() },
-            onCancelClicked = { viewModel.truncateProduct() },
-            onCaptureClicked = { viewModel.asyncGetProductFromBarcode() },
+            onAddClicked = {
+                viewModel.enrollProduct()
+                viewModel.truncateProduct()
+                showDialog = false
+            },
+            onCancelClicked = {
+                viewModel.truncateProduct()
+                showDialog = false
+            },
+            onCaptureClicked = {
+                viewModel.asyncGetProductFromBarcode()
+                showDialog = true
+            },
             onGotoListClicked = { navController.navigate(Screen.FoodList.name) },
         )
     }
@@ -134,10 +148,20 @@ fun BarcodeCard(barcode: String) {
 }
 
 @Composable
-fun NutritionPopup(isProductFetching: Boolean, product: Product?, onAddClicked: () -> Unit, onCancelClicked: () -> Unit) {
-    var ItemNotFoundDialog by remember { mutableStateOf(isProductFetching) }
-
-    ElevatedCard(
+fun NutritionPopup(
+    isProductFetching: Boolean,
+    product: Product?,
+    onAddClicked: () -> Unit,
+    onCancelClicked: () -> Unit
+) {
+    if (!isProductFetching && product == null) AlertDialogExample(
+        onDismissRequest = {},
+        onConfirmation = onCancelClicked,
+        dialogTitle = "찾을 수 없음",
+        dialogText = "해당 상품은 찾을 수 없는 상품입니다.",
+        iconResId = R.drawable.baseline_not_find_30
+    )
+    else ElevatedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -146,14 +170,14 @@ fun NutritionPopup(isProductFetching: Boolean, product: Product?, onAddClicked: 
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            if (ItemNotFoundDialog)
-                AlertDialogExample(
-                    onDismissRequest={ItemNotFoundDialog = false},
-                    onConfirmation={ItemNotFoundDialog = false},
-                    dialogTitle="찾을 수 없음",
-                    dialogText="해당 상품은 찾을 수 없는 상품입니다.",
-                    iconResId = R.drawable.baseline_not_find_30
-                )
+            if (isProductFetching) Row (
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                CircularProgressIndicator(modifier = Modifier
+                    .size(50.dp)
+                    .padding(16.dp))
+            }
             else if (product != null) {
                 Text(
                     modifier = Modifier.padding(bottom = 8.dp),
@@ -191,7 +215,8 @@ fun NutritionPopup(isProductFetching: Boolean, product: Product?, onAddClicked: 
 @Composable
 fun CameraView(
     barcode: String? = testProduct.barcode,
-    isProductFetching: Boolean = true,
+    showDialog: Boolean = true,
+    isProductFetching: Boolean = false,
     product: Product? = testProduct,
     onAddClicked: () -> Unit = {},
     onCancelClicked: () -> Unit = {},
@@ -206,7 +231,7 @@ fun CameraView(
     ) {
         BarcodeCard(barcode)
     }
-    if (isProductFetching || product != null) Box(
+    if (showDialog) Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxHeight()
