@@ -20,7 +20,7 @@ import com.example.babbogi.ui.model.BabbogiViewModel
 
 @Composable
 fun LoadingScreen(viewModel: BabbogiViewModel, navController: NavController) {
-    if (!viewModel.isServerResponsing)
+    if (!viewModel.isServerResponding)
         navController.navigate(Screen.Home.name) {
             popUpTo(navController.graph.startDestinationId) { inclusive = true }
         }
