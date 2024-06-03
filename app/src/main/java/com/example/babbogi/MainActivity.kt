@@ -4,14 +4,12 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.ViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -23,7 +21,7 @@ import com.example.babbogi.ui.LoadingScreen
 import com.example.babbogi.ui.NutritionOverviewScreen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
-import com.example.babbogi.util.DataPreference
+import com.example.babbogi.ui.model.DataPreference
 
 enum class Screen {
     Loading,

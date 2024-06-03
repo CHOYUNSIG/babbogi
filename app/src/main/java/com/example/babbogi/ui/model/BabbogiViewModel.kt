@@ -12,7 +12,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.babbogi.network.BarcodeApi
 import com.example.babbogi.network.NutritionApi
 import com.example.babbogi.network.ServerApi
-import com.example.babbogi.util.DataPreference
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.NutritionState
 import com.example.babbogi.util.Product

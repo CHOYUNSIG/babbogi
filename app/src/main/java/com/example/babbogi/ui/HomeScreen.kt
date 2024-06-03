@@ -424,11 +424,9 @@ fun Home(
     onEnrollClicked: () -> Unit = {}
 ) {
     val refreshState = rememberPullToRefreshState()
-    if (refreshState.isRefreshing)
-        LaunchedEffect(true) {
-            onRefresh()
-            refreshState.endRefresh()
-        }
+    if (refreshState.isRefreshing) {
+        LaunchedEffect(true) { onRefresh() }
+    }
 
     Box(modifier = Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {

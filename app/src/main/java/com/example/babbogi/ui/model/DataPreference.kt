@@ -1,8 +1,10 @@
-package com.example.babbogi.util
+package com.example.babbogi.ui.model
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.example.babbogi.util.HealthState
+import com.example.babbogi.util.NutritionState
 import com.google.gson.Gson
 
 object DataPreference {

@@ -41,7 +41,7 @@ import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomIconButton
-import com.example.babbogi.util.AlertDialogExample
+import com.example.babbogi.ui.view.AlertDialog
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.testProduct
@@ -154,7 +154,7 @@ fun NutritionPopup(
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit
 ) {
-    if (!isProductFetching && product == null) AlertDialogExample(
+    if (!isProductFetching && product == null) AlertDialog(
         onDismissRequest = {},
         onConfirmation = onCancelClicked,
         dialogTitle = "찾을 수 없음",

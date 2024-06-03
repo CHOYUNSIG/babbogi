@@ -1,7 +1,7 @@
 package com.example.babbogi.network.firebase
 
 import android.util.Log
-import com.example.babbogi.util.DataPreference
+import com.example.babbogi.ui.model.DataPreference
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
