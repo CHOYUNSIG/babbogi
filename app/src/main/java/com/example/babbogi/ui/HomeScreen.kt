@@ -1,6 +1,7 @@
 package com.example.babbogi.ui
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,9 +22,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -73,6 +80,10 @@ fun HomeScreen(viewModel: BabbogiViewModel, navController: NavController) {
         healthState = viewModel.healthState,
         nutritionState = viewModel.nutritionState,
         foodList = viewModel.dailyFoodList[today],
+        onRefresh = {
+            viewModel.asyncGetHealthStateFromServer()
+            viewModel.asyncGetNutritionStateFromServer()
+        },
         onDateChanged = {
             today = today.plusDays(it.toLong())
             if (!viewModel.dailyFoodList.containsKey(today))
@@ -399,6 +410,7 @@ fun MealList(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
@@ -407,21 +419,35 @@ fun Home(
     healthState: HealthState? = testHealthState,
     nutritionState: NutritionState = testNutritionState,
     foodList: List<Pair<Product, Int>>? = testProductList,
+    onRefresh: () -> Unit = {},
     onNutritionCardClicked: () -> Unit = {},
     onHealthCardClicked: () -> Unit = {},
     onDateChanged: (Int) -> Unit = {},
     onInputUserDataClicked: () -> Unit = {},
     onEnrollClicked: () -> Unit = {}
 ) {
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        TitleBar(stringResource(id = R.string.app_name))
-        if (healthState == null)
-            InputUserData(onInputUserDataClicked)
-        else {
-            NutritionAbstraction(nutritionState, onNutritionCardClicked)
-            HealthAbstraction(healthState, onHealthCardClicked)
+    val refreshState = rememberPullToRefreshState()
+    if (refreshState.isRefreshing)
+        LaunchedEffect(true) {
+            onRefresh()
+            refreshState.endRefresh()
         }
-        DateSelector(today, onDateChanged)
-        MealList(if (healthState == null) emptyList() else foodList, onEnrollClicked)
+
+    Box(modifier = Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
+        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            TitleBar(stringResource(id = R.string.app_name))
+            if (healthState == null)
+                InputUserData(onInputUserDataClicked)
+            else {
+                NutritionAbstraction(nutritionState, onNutritionCardClicked)
+                HealthAbstraction(healthState, onHealthCardClicked)
+            }
+            DateSelector(today, onDateChanged)
+            MealList(if (healthState == null) emptyList() else foodList, onEnrollClicked)
+        }
+        PullToRefreshContainer(
+            state = refreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }

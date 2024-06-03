@@ -1,7 +1,6 @@
 package com.example.babbogi.ui.model
 
 import android.os.Build
-import android.provider.ContactsContract.Data
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -46,10 +45,13 @@ class BabbogiViewModel: ViewModel() {
     private val _dailyFoodList = mutableStateOf<Map<LocalDate, List<Pair<Product, Int>>>>(emptyMap())
     private val _nutritionState = mutableStateOf(DataPreference.getNutritionState() ?: NutritionState())
     private val _healthState = mutableStateOf(DataPreference.getHealthState())
+
     private val _isRecognizing = mutableStateOf(false)
     private val _isProductFetching = mutableStateOf(false)
-    private val _isDailyListFetching = mutableStateOf(false)
     private val _isServerResponding = mutableStateOf(false)
+    private val _isDailyFoodLoading = mutableStateOf(false)
+    private val _isNutritionStateLoading = mutableStateOf(false)
+    private val _isHealthStateLoading = mutableStateOf(false)
 
     val validBarcode: String? get() = _validBarcode.value // 현재 인식 중인 바코드
     val product: Product? get() = _product.value // 현재 인식된 제품
@@ -57,9 +59,12 @@ class BabbogiViewModel: ViewModel() {
     val dailyFoodList: Map<LocalDate, List<Pair<Product, Int>>> get() = _dailyFoodList.value // 하루에 섭취한 음식 리스트
     val nutritionState: NutritionState get() = _nutritionState.value // 하루의 영양 상태
     val healthState: HealthState? get() = _healthState.value  // 사용자 건강 상태
-    val isProductFetching: Boolean get() = _isProductFetching.value // 제품 정보를 얻어오고 있는 상태인가?
-    val isDailyListFetching: Boolean get() = _isDailyListFetching.value // 일일 섭취 리스트를 얻어오고 있는가?
-    val isServerResponsing: Boolean get() = _isServerResponding.value // 서버와 통신하고 있는 상태인가?
+
+    val isProductFetching: Boolean get() = _isProductFetching.value
+    val isServerResponding: Boolean get() = _isServerResponding.value
+    val isDailyFoodLoading: Boolean get() = _isDailyFoodLoading.value
+    val isNutritionStateLoading: Boolean get() = _isNutritionStateLoading.value
+    val isHealthStateLoading: Boolean get() = _isHealthStateLoading.value
 
     // 카메라를 이용해 바코드 정보를 가져옴 (비동기)
     @OptIn(ExperimentalGetImage::class)
@@ -107,18 +112,26 @@ class BabbogiViewModel: ViewModel() {
         if (_isProductFetching.value || barcode == null) return
         _isProductFetching.value = true
         viewModelScope.launch {
-            val products = BarcodeApi.getProducts(barcode)
-            if (products.isEmpty()) {
-                _isProductFetching.value = false
-                return@launch
+            try {
+                val products = BarcodeApi.getProducts(barcode)
+                if (products.isEmpty()) {
+                    _isProductFetching.value = false
+                    return@launch
+                }
+                val prodName = products.first().name
+                _product.value = Product(
+                    prodName,
+                    barcode,
+                    try { NutritionApi.getNutrition(prodName).first() } catch (e: NoSuchElementException) { null },
+                )
             }
-            val prodName = products.first().name
-            _product.value = Product(
-                prodName,
-                barcode,
-                try { NutritionApi.getNutrition(prodName).first() } catch (e: NoSuchElementException) { null },
-            )
-            _isProductFetching.value = false
+            catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot get product info")
+            }
+            finally {
+                _isProductFetching.value = false
+            }
         }
     }
 
@@ -179,8 +192,8 @@ class BabbogiViewModel: ViewModel() {
     // 서버에서 해당 날짜의 섭취한 음식 정보 받아오기 (비동기)
     @RequiresApi(Build.VERSION_CODES.O)
     fun asyncGetFoodListFromServer(date: LocalDate) {
-        if (_isServerResponding.value) return
-        _isServerResponding.value = true
+        if (_isDailyFoodLoading.value) return
+        _isDailyFoodLoading.value = true
         viewModelScope.launch {
             try {
                 val id = DataPreference.getID()!!
@@ -193,7 +206,7 @@ class BabbogiViewModel: ViewModel() {
                 Log.d("ViewModel", "Cannot get list from server.")
             }
             finally {
-                _isServerResponding.value = false
+                _isDailyFoodLoading.value = false
             }
         }
     }
@@ -224,10 +237,30 @@ class BabbogiViewModel: ViewModel() {
         }
     }
 
+    // 서버에서 현재 건강 상태를 얻어온다. (비동기)
+    fun asyncGetHealthStateFromServer() {
+        _isHealthStateLoading.value = true
+        viewModelScope.launch {
+            try {
+                val id = DataPreference.getID()!!
+                val healthState = ServerApi.getHealthState(id)
+                _healthState.value = healthState
+                DataPreference.saveHealthState(healthState)
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot get user state from server")
+            }
+            finally {
+                _isHealthStateLoading.value = true
+            }
+        }
+    }
+
     // 서버에서 현재 영양 상태를 얻어온다. (비동기)
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun asyncGetNutritionStateFromServer() {
-        _isServerResponding.value = true
+    fun asyncGetNutritionStateFromServer() {
+        _isNutritionStateLoading.value = true
         viewModelScope.launch {
             try {
                 val id = DataPreference.getID()!!
@@ -240,7 +273,7 @@ class BabbogiViewModel: ViewModel() {
                 Log.d("ViewModel", "Cannot load nutrition state.")
             }
             finally {
-                _isServerResponding.value = false
+                _isNutritionStateLoading.value = false
             }
         }
     }
