@@ -118,7 +118,7 @@ fun Selector(
                 Text(
                     text = gender,
                     fontSize = 20.sp,
-                    color = Color.Black,
+                    color = if (selected == gender) Color(0xFF21A642) else Color(0x20000000),
                     fontWeight = FontWeight.Normal
                 )
             }
@@ -192,7 +192,7 @@ fun HealthProfile(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true,
-                textStyle = TextStyle(fontSize = 20.sp)
+                textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
             )
         }
         InputHolder("몸무게") {
@@ -203,7 +203,7 @@ fun HealthProfile(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true,
-                textStyle = TextStyle(fontSize = 20.sp)
+                textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
             )
         }
         InputHolder("나이") {
@@ -214,7 +214,7 @@ fun HealthProfile(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true,
-                textStyle = TextStyle(fontSize = 20.sp)
+                textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
             )
         }
         InputHolder("성별") {

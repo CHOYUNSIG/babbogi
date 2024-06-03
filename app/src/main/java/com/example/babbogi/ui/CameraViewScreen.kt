@@ -15,13 +15,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,6 +40,7 @@ import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomIconButton
+import com.example.babbogi.util.AlertDialogExample
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.testProduct
@@ -132,6 +135,8 @@ fun BarcodeCard(barcode: String) {
 
 @Composable
 fun NutritionPopup(isProductFetching: Boolean, product: Product?, onAddClicked: () -> Unit, onCancelClicked: () -> Unit) {
+    var ItemNotFoundDialog by remember { mutableStateOf(isProductFetching) }
+
     ElevatedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         modifier = Modifier.fillMaxWidth()
@@ -141,15 +146,14 @@ fun NutritionPopup(isProductFetching: Boolean, product: Product?, onAddClicked: 
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            if (isProductFetching)
-                Row (
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    CircularProgressIndicator(modifier = Modifier
-                        .size(50.dp)
-                        .padding(16.dp))
-                }
+            if (ItemNotFoundDialog)
+                AlertDialogExample(
+                    onDismissRequest={ItemNotFoundDialog = false},
+                    onConfirmation={ItemNotFoundDialog = false},
+                    dialogTitle="찾을 수 없음",
+                    dialogText="해당 상품은 찾을 수 없는 상품입니다.",
+                    iconResId = R.drawable.baseline_not_find_30
+                )
             else if (product != null) {
                 Text(
                     modifier = Modifier.padding(bottom = 8.dp),
@@ -187,7 +191,7 @@ fun NutritionPopup(isProductFetching: Boolean, product: Product?, onAddClicked: 
 @Composable
 fun CameraView(
     barcode: String? = testProduct.barcode,
-    isProductFetching: Boolean = false,
+    isProductFetching: Boolean = true,
     product: Product? = testProduct,
     onAddClicked: () -> Unit = {},
     onCancelClicked: () -> Unit = {},
