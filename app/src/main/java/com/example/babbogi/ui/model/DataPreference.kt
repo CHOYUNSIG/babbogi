@@ -15,6 +15,9 @@ object DataPreference {
         sharedPreferences = context.getSharedPreferences("babbogi", Context.MODE_PRIVATE)
     }
 
+    fun completeTutorial() = sharedPreferences.edit().putBoolean("tutorial", true).apply()
+    fun isTutorialComplete() = sharedPreferences.getBoolean("tutorial", false)
+
     fun saveToken(token: String) {
         sharedPreferences.edit().putString("token", token).apply()
         Log.d("DataPreference", "token is saved.\nToken: $token")
