@@ -16,7 +16,7 @@ import com.example.babbogi.R
 
 
 @Composable
-fun AlertDialog(
+fun AlertDialogExample(
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
     dialogTitle: String,
@@ -47,7 +47,7 @@ fun AlertDialog(
 @Preview
 @Composable
 fun PreviewDialog(){
-    AlertDialog(
+    AlertDialogExample(
         onDismissRequest={},
         onConfirmation={},
         dialogTitle="찾을 수 없음",

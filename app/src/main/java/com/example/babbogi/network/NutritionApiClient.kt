@@ -42,7 +42,7 @@ object NutritionApi {
                         Nutrition.Sugar to row.NUTR_CONT5.toFloat2(),
                         Nutrition.Salt to row.NUTR_CONT6.toFloat2(),
                         Nutrition.Cholesterol to row.NUTR_CONT7.toFloat2(),
-                        Nutrition.SaturatedFattyAcids to row.NUTR_CONT8.toFloat2(),
+                        Nutrition.SaturatedFat to row.NUTR_CONT8.toFloat2(),
                         Nutrition.TransFat to row.NUTR_CONT9.toFloat2(),
                     )
                 )

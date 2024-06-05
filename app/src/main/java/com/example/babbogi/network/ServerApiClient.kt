@@ -6,8 +6,10 @@ import androidx.annotation.RequiresApi
 import com.example.babbogi.BuildConfig
 import com.example.babbogi.network.response.ServerConsumeFormat
 import com.example.babbogi.network.response.ServerNutritionFormat
-import com.example.babbogi.network.response.ServerProductFormat
 import com.example.babbogi.network.response.ServerUserStateFormat
+import com.example.babbogi.network.response.toMap
+import com.example.babbogi.network.response.toRemainingMap
+import com.example.babbogi.network.response.toServerNutritionFormat
 import com.example.babbogi.util.AdultDisease
 import com.example.babbogi.util.Gender
 import com.example.babbogi.util.HealthState
@@ -21,6 +23,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Query
 import java.time.LocalDate
 
@@ -54,7 +57,7 @@ interface ServerApiService {
     @POST("consumptions")
     suspend fun postProductList(
         @Query(value = "userId") id: Long,
-        @Body body: List<ServerProductFormat>
+        @Body body: List<ServerNutritionFormat>
     ): List<ServerConsumeFormat>
 
     @POST("User")
@@ -62,6 +65,12 @@ interface ServerApiService {
         @Query(value = "token") token: String,
         @Body body: ServerUserStateFormat
     ): String
+
+    @PUT("User")
+    suspend fun putNutritionRecommend(
+        @Query(value = "id") id: Long,
+        @Body nutrition: ServerNutritionFormat
+    ): ServerNutritionFormat
 }
 
 object ServerApi {
@@ -89,7 +98,7 @@ object ServerApi {
                         Nutrition.TransFat to it.transfat!!.toFloat(),
                         Nutrition.Cholesterol to it.cholesterol!!.toFloat(),
                         Nutrition.Carbohydrate to it.carbohydrate!!.toFloat(),
-                        Nutrition.SaturatedFattyAcids to it.saturatedfat!!.toFloat(),
+                        Nutrition.SaturatedFat to it.saturatedfat!!.toFloat(),
                     )
                 )
             ) to it.foodCount
@@ -108,61 +117,34 @@ object ServerApi {
                 else -> Gender.entries.random()
             },
             age = response.age,
-            adultDisease = if (response.disease == "null") null else AdultDisease.valueOf(response.disease)
+            adultDisease = when (response.disease) {
+                "diabetes" -> AdultDisease.Diabetes
+                "highbloodpressure" -> AdultDisease.HighBloodPressure
+                else -> null
+            }
         )
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getNutritionState(id: Long): NutritionState {
-        val recommend = retrofitService.getNutritionRecommend(id)
+        val recommend = retrofitService.getNutritionRecommend(id).toMap()
         val response = retrofitService.getConsumeList(id, LocalDate.now().toString()).drop(1)
         Log.d("ServerApi", "getNutritionState($id)")
         if (response.isEmpty())
             return NutritionState(
-                mapOf(
-                    Nutrition.Fat to IntakeState(recommend.fat.toFloat()),
-                    Nutrition.Salt to IntakeState(recommend.natrium.toFloat()),
-                    Nutrition.Sugar to IntakeState(recommend.sugar.toFloat()),
-                    Nutrition.Calorie to IntakeState(recommend.kcal.toFloat()),
-                    Nutrition.Protein to IntakeState(recommend.protein.toFloat()),
-                    Nutrition.TransFat to IntakeState(recommend.transfat.toFloat()),
-                    Nutrition.Cholesterol to IntakeState(recommend.cholesterol.toFloat()),
-                    Nutrition.Carbohydrate to IntakeState(recommend.carbohydrate.toFloat()),
-                    Nutrition.SaturatedFattyAcids to IntakeState(recommend.saturatedfat.toFloat()),
-                )
+                Nutrition.entries.associateWith { IntakeState(recommend[it]!!) }
             )
-        val remain = response.maxBy { it.id }
-        Log.d("debug", remain.toString())
+        val remain = response.maxBy { it.id }.toRemainingMap()
+        Log.d("ServerApi", "remain: $remain")
+        Log.d("ServerApi", "recommend: $recommend")
         return NutritionState(
-            mapOf(
-                Nutrition.Fat to IntakeState(recommend.fat.toFloat(), recommend.fat.toFloat() - remain.remainingFat.toFloat()),
-                Nutrition.Salt to IntakeState(recommend.natrium.toFloat(), recommend.natrium.toFloat() - remain.remainingNatrium.toFloat()),
-                Nutrition.Sugar to IntakeState(recommend.sugar.toFloat(), recommend.sugar.toFloat() - remain.remainingSugar.toFloat()),
-                Nutrition.Calorie to IntakeState(recommend.kcal.toFloat(), recommend.kcal.toFloat() - remain.remainingkcal.toFloat()),
-                Nutrition.Protein to IntakeState(recommend.protein.toFloat(), recommend.protein.toFloat() - remain.remainingProtein.toFloat()),
-                Nutrition.TransFat to IntakeState(recommend.transfat.toFloat(), recommend.transfat.toFloat() - remain.remainingTransfat.toFloat()),
-                Nutrition.Cholesterol to IntakeState(recommend.cholesterol.toFloat(), recommend.cholesterol.toFloat() - remain.remainingCholesterol.toFloat()),
-                Nutrition.Carbohydrate to IntakeState(recommend.carbohydrate.toFloat(), recommend.carbohydrate.toFloat() - remain.remainingCarbohydrate.toFloat()),
-                Nutrition.SaturatedFattyAcids to IntakeState(recommend.saturatedfat.toFloat(), recommend.saturatedfat.toFloat() - remain.remainingSaturatedfat.toFloat()),
-            )
+            Nutrition.entries.associateWith { IntakeState(recommend[it]!!, recommend[it]!! - remain[it]!!) }
         )
     }
 
     suspend fun postProductList(id: Long, productList: List<Pair<Product, Int>>) {
         retrofitService.postProductList(id, productList.map { (product, amount) ->
-            ServerProductFormat(
-                foodName = product.name,
-                foodCount = amount,
-                fat = product.nutrition?.get(Nutrition.Fat)?.toDouble() ?: 0.0,
-                kcal = product.nutrition?.get(Nutrition.Cholesterol)?.toDouble() ?: 0.0,
-                sugar = product.nutrition?.get(Nutrition.Sugar)?.toDouble() ?: 0.0,
-                natrium = product.nutrition?.get(Nutrition.Salt)?.toDouble() ?: 0.0,
-                protein = product.nutrition?.get(Nutrition.Protein)?.toDouble() ?: 0.0,
-                transfat = product.nutrition?.get(Nutrition.TransFat)?.toDouble() ?: 0.0,
-                cholesterol = product.nutrition?.get(Nutrition.Cholesterol)?.toDouble() ?: 0.0,
-                carbohydrate = product.nutrition?.get(Nutrition.Carbohydrate)?.toDouble() ?: 0.0,
-                saturatedfat = product.nutrition?.get(Nutrition.SaturatedFattyAcids)?.toDouble() ?: 0.0,
-            )
+            product.toServerNutritionFormat(amount)
         })
         Log.d("ServerApi", "postProductList($id, productList)")
     }
@@ -178,10 +160,20 @@ object ServerApi {
                 Gender.Male -> "M"
                 Gender.Female -> "F"
             },
-            disease = healthState.adultDisease?.name ?: "null"
+            disease = when (healthState.adultDisease) {
+                null -> "null"
+                AdultDisease.Diabetes -> "diabetes"
+                AdultDisease.HighBloodPressure -> "highbloodpressure"
+            }
         ))
         Log.d("ServerApi", "postHealthState($id, $token, healthState)")
         return response.toLong()
+    }
+
+    suspend fun putNutritionRecommend(id: Long, nutrition: Map<Nutrition, Float>) {
+        Log.d("ServerApi", nutrition.toServerNutritionFormat(id).toString())
+        retrofitService.putNutritionRecommend(id, nutrition.toServerNutritionFormat(id))
+        Log.d("ServerApi", "putNutritionRecommend($id, $nutrition)")
     }
 }
 

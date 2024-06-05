@@ -43,8 +43,8 @@ enum class Nutrition(
         unit = "mg",
         defaultRecommend = 300f,
     ),
-    SaturatedFattyAcids (
-        res = R.string.saturated_fatty_acids,
+    SaturatedFat (
+        res = R.string.saturated_fat,
         unit = "g",
         defaultRecommend = 15f,
     ),
