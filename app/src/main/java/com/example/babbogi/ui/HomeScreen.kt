@@ -1,5 +1,6 @@
 package com.example.babbogi.ui
 
+import android.Manifest
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
@@ -54,6 +55,8 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.ui.model.DataPreference
+import com.example.babbogi.ui.view.NutritionBarGraph
 import com.example.babbogi.ui.view.NutritionCircularGraph
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.HealthState
@@ -63,14 +66,28 @@ import com.example.babbogi.util.Product
 import com.example.babbogi.util.testHealthState
 import com.example.babbogi.util.testNutritionState
 import com.example.babbogi.util.testProductList
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 import java.time.LocalDate
 
 
+@OptIn(ExperimentalPermissionsApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(viewModel: BabbogiViewModel, navController: NavController) {
     var today by remember { mutableStateOf(LocalDate.now()) }
     LaunchedEffect(key1 = null) { viewModel.asyncGetFoodListFromServer(today) }
+
+    // 튜토리얼 페이지
+    if (!DataPreference.isTutorialComplete())
+        navController.navigate(Screen.Tutorial.name)
+
+    // 알림 권한 설정
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val notificationPermission = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
+        if (!notificationPermission.hasPermission)
+            LaunchedEffect(key1 = null) { notificationPermission.launchPermissionRequest() }
+    }
 
     Home(
         today = today,
@@ -233,6 +250,10 @@ fun NutritionAbstraction(nutritionState: NutritionState, onClick: () -> Unit) {
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                 )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = stringResource(id = Nutrition.Calorie.res))
+                    NutritionBarGraph(nutrition = Nutrition.Calorie, intake = nutritionState[Nutrition.Calorie])
+                }
                 Row(modifier = Modifier.padding(16.dp)) {
                     listOf(Nutrition.Carbohydrate, Nutrition.Protein, Nutrition.Fat).forEach {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -252,30 +273,27 @@ fun HealthAbstraction(
     onClick: () -> Unit
 ) {
     Box(modifier = Modifier.padding(16.dp)) {
-        ElevatedCard(
-            onClick = onClick,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
+        ElevatedCard {
+            Column {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(vertical = 8.dp, horizontal = 16.dp)
                 ) {
                     Text(
                         text = "사용자 건강 정보",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.W600,
                     )
-                    Icon(
-                        modifier = Modifier.size(30.dp),
-                        painter = painterResource(id = R.drawable.baseline_mode_24),
-                        contentDescription = "정보 수정하기 아이콘"
-                    )
+                    IconButton(onClick = onClick) {
+                        Icon(
+                            modifier = Modifier.size(30.dp),
+                            painter = painterResource(id = R.drawable.baseline_mode_24),
+                            contentDescription = "정보 수정하기 아이콘"
+                        )
+                    }
                 }
                 Column(modifier = Modifier.padding(16.dp)) {
                     listOf(
@@ -293,7 +311,7 @@ fun HealthAbstraction(
                             Text(text = attribute)
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(text = value)
-                                Text(text = unit, color = Color.Gray)
+                                Text(text = unit)
                             }
                         }
                     }
@@ -425,7 +443,10 @@ fun Home(
 ) {
     val refreshState = rememberPullToRefreshState()
     if (refreshState.isRefreshing) {
-        LaunchedEffect(true) { onRefresh() }
+        LaunchedEffect(true) {
+            onRefresh()
+            refreshState.endRefresh()
+        }
     }
 
     Box(modifier = Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
