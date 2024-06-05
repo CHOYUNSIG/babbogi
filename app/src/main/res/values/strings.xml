@@ -9,6 +9,6 @@
     <string name="sugar">당</string>
     <string name="salt">나트륨</string>
     <string name="cholesterol">콜레스테롤</string>
-    <string name="saturated_fatty_acids">포화지방산</string>
+    <string name="saturated_fat">포화지방</string>
     <string name="trans_fat">트랜스지방</string>
 </resources>

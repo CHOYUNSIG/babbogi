@@ -2,6 +2,7 @@ package com.example.babbogi
 
 import android.os.Build
 import android.os.Bundle
+import android.provider.ContactsContract.Data
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -15,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.babbogi.ui.CameraViewScreen
 import com.example.babbogi.ui.FoodListScreen
+import com.example.babbogi.ui.GuidePageScreen
 import com.example.babbogi.ui.HealthProfileScreen
 import com.example.babbogi.ui.HomeScreen
 import com.example.babbogi.ui.LoadingScreen
@@ -24,6 +26,7 @@ import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.model.DataPreference
 
 enum class Screen {
+    Tutorial,
     Loading,
     Home,
     NutritionOverview,
@@ -65,6 +68,7 @@ fun MainApp(viewModel: BabbogiViewModel) {
         navController = navController,
         startDestination = Screen.Home.name
     ) {
+        composable(route = Screen.Tutorial.name) { GuidePageScreen(viewModel, navController) }
         composable(route = Screen.Loading.name) { LoadingScreen(viewModel, navController) }
         composable(route = Screen.Home.name) { HomeScreen(viewModel, navController) }
         composable(route = Screen.NutritionOverview.name) { NutritionOverviewScreen(viewModel, navController) }

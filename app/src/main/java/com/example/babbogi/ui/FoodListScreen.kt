@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,6 +42,7 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.ui.view.ButtonContainerBar
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.Nutrition
@@ -61,6 +63,10 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
         onAmountChanged = { i, amount ->
             viewModel.modifyProduct(index = i, amount = viewModel.productList[i].second + amount)
         },
+        onAddFoodClicked = {
+            viewModel.addProduct()
+            index = viewModel.productList.lastIndex
+        },
         onModifyClicked = lambda@ { name, nutrition ->
             val i = index ?: return@lambda
             val productInfo = viewModel.productList[i].first
@@ -74,6 +80,7 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
             )
             index = null
         },
+        onDismiss = { index = null },
         onDeleteClicked = { viewModel.deleteProduct(it) },
         onSubmitClicked = {
             viewModel.asyncSendListToServer()
@@ -157,11 +164,12 @@ fun FoodCard(
 fun FoodPopup(
     product: Product = testProduct,
     onModifyClicked: (name: String, nutrition: List<String>) -> Unit = { _, _ -> },
+    onDismiss: () -> Unit = {},
 ) {
     var prodNameText by remember { mutableStateOf(product.name) }
     var nutritionText by remember { mutableStateOf(List(Nutrition.entries.size) { product.nutrition?.get(it)?.toString()?: "" } ) }
 
-    Dialog(onDismissRequest = {}) {
+    Dialog(onDismissRequest = onDismiss) {
         ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
@@ -173,7 +181,7 @@ fun FoodPopup(
                         value = prodNameText,
                         onValueChange = { prodNameText = it },
                         label = { Text("상품명") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
                         modifier = Modifier.fillMaxWidth(),
                         enabled = true,
                     )
@@ -191,7 +199,7 @@ fun FoodPopup(
                                     }
                                 },
                                 label = { Text(stringResource(id = Nutrition.entries[it].res)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                                 modifier = Modifier.fillMaxWidth(0.7f),
                                 enabled = true,
                             )
@@ -220,7 +228,9 @@ fun FoodList(
     productList: List<Pair<Product, Int>> = testProductList,
     index: Int? = null,
     onAmountChanged: (index: Int, amount: Int) -> Unit = { _, _ -> },
+    onAddFoodClicked: () -> Unit = {},
     onModifyClicked: (name: String, nutrition: List<String>) -> Unit = { _, _ -> },
+    onDismiss: () -> Unit = {},
     onDeleteClicked: (index: Int) -> Unit = {},
     onSubmitClicked: () -> Unit = {},
     onFoodCardClicked: (index: Int) -> Unit = {}
@@ -235,8 +245,17 @@ fun FoodList(
                 .padding(vertical = 16.dp)
         ) {
             Column(modifier = Modifier.fillMaxWidth(0.8f)) {
+                ButtonContainerBar(
+                    text = "수동 입력",
+                    icon = R.drawable.ic_add_box_24,
+                    onClick = onAddFoodClicked
+                )
                 if (productList.isEmpty())
-                    Text(text = "카메라로 식품의 바코드를 찍으세요!\n이곳에 표시됩니다.", color = Color.Gray)
+                    Text(
+                        text = "카메라로 식품의 바코드를 찍으세요!\n이곳에 표시됩니다.",
+                        modifier = Modifier.padding(16.dp),
+                        color = Color.Gray
+                    )
                 else
                     productList.forEachIndexed { index, (productInfo, amount) ->
                         FoodCard(
@@ -256,6 +275,7 @@ fun FoodList(
             FoodPopup(
                 product = productList[index].first,
                 onModifyClicked = onModifyClicked,
+                onDismiss = onDismiss
             )
         }
     }

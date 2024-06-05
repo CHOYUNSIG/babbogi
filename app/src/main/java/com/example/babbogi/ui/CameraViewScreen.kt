@@ -36,12 +36,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomIconButton
-import com.example.babbogi.ui.view.AlertDialog
+import com.example.babbogi.ui.view.AlertDialogExample
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.testProduct
@@ -98,8 +99,10 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
                 showDialog = false
             },
             onCaptureClicked = {
-                viewModel.asyncGetProductFromBarcode()
-                showDialog = true
+                if (viewModel.validBarcode != null) {
+                    viewModel.asyncGetProductFromBarcode()
+                    showDialog = true
+                }
             },
             onGotoListClicked = { navController.navigate(Screen.FoodList.name) },
         )
@@ -154,56 +157,58 @@ fun NutritionPopup(
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit
 ) {
-    if (!isProductFetching && product == null) AlertDialog(
+    if (!isProductFetching && product == null) AlertDialogExample(
         onDismissRequest = {},
         onConfirmation = onCancelClicked,
         dialogTitle = "찾을 수 없음",
         dialogText = "해당 상품은 찾을 수 없는 상품입니다.",
         iconResId = R.drawable.baseline_not_find_30
     )
-    else ElevatedCard(
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
+    else Dialog(onDismissRequest = onCancelClicked) {
+        ElevatedCard(
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            if (isProductFetching) Row (
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
             ) {
-                CircularProgressIndicator(modifier = Modifier
-                    .size(50.dp)
-                    .padding(16.dp))
-            }
-            else if (product != null) {
-                Text(
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    fontWeight = FontWeight.Bold,
-                    text = product.name
-                )
-                if (product.nutrition != null)
-                    Text(
-                        modifier = Modifier.padding(bottom = 8.dp),
-                        text = product.nutrition.toString(
-                            List(Nutrition.entries.size) {
-                                stringResource(id = Nutrition.entries[it].res)
-                            }
-                        )
-                    )
-                else
-                    Text(text = "There's no nutrition info.")
-                Row(
-                    horizontalArrangement = Arrangement.End,
+                if (isProductFetching) Row (
+                    horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Button(onClick = onAddClicked, modifier = Modifier.padding(start = 8.dp)) {
-                        Text(text = "Add")
-                    }
-                    Button(onClick = onCancelClicked, modifier = Modifier.padding(start = 8.dp)) {
-                        Text(text = "Cancel")
+                    CircularProgressIndicator(modifier = Modifier
+                        .size(50.dp)
+                        .padding(16.dp))
+                }
+                else if (product != null) {
+                    Text(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        fontWeight = FontWeight.Bold,
+                        text = product.name
+                    )
+                    if (product.nutrition != null)
+                        Text(
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            text = product.nutrition.toString(
+                                List(Nutrition.entries.size) {
+                                    stringResource(id = Nutrition.entries[it].res)
+                                }
+                            )
+                        )
+                    else
+                        Text(text = "There's no nutrition info.")
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(onClick = onAddClicked, modifier = Modifier.padding(start = 8.dp)) {
+                            Text(text = "Add")
+                        }
+                        Button(onClick = onCancelClicked, modifier = Modifier.padding(start = 8.dp)) {
+                            Text(text = "Cancel")
+                        }
                     }
                 }
             }

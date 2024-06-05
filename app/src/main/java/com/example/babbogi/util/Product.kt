@@ -47,7 +47,7 @@ val testProduct = Product(
             Nutrition.Sugar to 21f,
             Nutrition.Salt to 120f,
             Nutrition.Cholesterol to 15f,
-            Nutrition.SaturatedFattyAcids to 3f,
+            Nutrition.SaturatedFat to 3f,
             Nutrition.TransFat to 0f,
         )
     )

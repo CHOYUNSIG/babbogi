@@ -18,7 +18,10 @@ data class IntakeState(
     val recommended: Float,
     val ingested: Float = 0.0f,
 ) {
-    fun getRatio() = ingested / recommended
+    fun getRatio(): Float {
+        val result = ingested / recommended
+        return if (result.isNaN()) 0.0f else result
+    }
 }
 
 

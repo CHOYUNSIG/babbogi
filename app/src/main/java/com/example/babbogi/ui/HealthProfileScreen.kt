@@ -1,6 +1,7 @@
 package com.example.babbogi.ui
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -158,7 +160,7 @@ fun DropDown(
                     onClick = {
                         selectedText = text
                         isExpended = false
-                        if (index > 1)
+                        if (index > 0)
                             onChange(index - 1)
                         else
                             onChange(null)
@@ -189,7 +191,7 @@ fun HealthProfile(
                 value = heightText,
                 onValueChange = { heightText = it },
                 label = { Text("본인의 키를 입력하시오") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true,
                 textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
@@ -200,7 +202,7 @@ fun HealthProfile(
                 value = weightText,
                 onValueChange = { weightText = it },
                 label = { Text("본인의 몸무게를 입력하시오") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true,
                 textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
@@ -211,7 +213,7 @@ fun HealthProfile(
                 value = ageText,
                 onValueChange = { ageText = it },
                 label = { Text("본인의 나이를 입력하시오") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true,
                 textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
@@ -228,7 +230,9 @@ fun HealthProfile(
             DropDown(
                 options = AdultDisease.entries.map { it.toString() }.toList(),
                 index = adultDisease?.ordinal,
-                onChange = { if (it == null) adultDisease = null else adultDisease = AdultDisease.entries[it] }
+                onChange = {
+                    if (it == null) adultDisease = null else adultDisease = AdultDisease.entries[it]
+                }
             )
         }
     }

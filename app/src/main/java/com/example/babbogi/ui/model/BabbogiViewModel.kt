@@ -1,6 +1,7 @@
 package com.example.babbogi.ui.model
 
 import android.os.Build
+import android.provider.ContactsContract.Data
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -12,7 +13,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.babbogi.network.BarcodeApi
 import com.example.babbogi.network.NutritionApi
 import com.example.babbogi.network.ServerApi
+import com.example.babbogi.network.response.ServerNutritionFormat
 import com.example.babbogi.util.HealthState
+import com.example.babbogi.util.IntakeState
+import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionState
 import com.example.babbogi.util.Product
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -51,6 +55,7 @@ class BabbogiViewModel: ViewModel() {
     private val _isDailyFoodLoading = mutableStateOf(false)
     private val _isNutritionStateLoading = mutableStateOf(false)
     private val _isHealthStateLoading = mutableStateOf(false)
+    private val _isNutritionRecommendationChanging = mutableStateOf(false)
 
     val validBarcode: String? get() = _validBarcode.value // 현재 인식 중인 바코드
     val product: Product? get() = _product.value // 현재 인식된 제품
@@ -64,6 +69,15 @@ class BabbogiViewModel: ViewModel() {
     val isDailyFoodLoading: Boolean get() = _isDailyFoodLoading.value
     val isNutritionStateLoading: Boolean get() = _isNutritionStateLoading.value
     val isHealthStateLoading: Boolean get() = _isHealthStateLoading.value
+
+    fun truncateIntake() {
+        val nutrition = _nutritionState.value
+        val newNutrition = NutritionState(
+            Nutrition.entries.associateWith { IntakeState(nutrition[it].recommended) }
+        )
+        _nutritionState.value = newNutrition
+        DataPreference.saveNutritionState(newNutrition)
+    }
 
     // 카메라를 이용해 바코드 정보를 가져옴 (비동기)
     @OptIn(ExperimentalGetImage::class)
@@ -139,6 +153,13 @@ class BabbogiViewModel: ViewModel() {
         _product.value = null
     }
 
+    // 리스트에 빈 음식 추가
+    fun addProduct() {
+        _productList.value = _productList.value.plus(
+            Product("", "", null) to 1
+        )
+    }
+
     // 현재 인식된 제춤 리스트에 추가
     fun enrollProduct() {
         val product = _product.value
@@ -174,9 +195,9 @@ class BabbogiViewModel: ViewModel() {
                 val id = DataPreference.getID()!!
                 ServerApi.postProductList(id, productList)
                 val nutritionState = ServerApi.getNutritionState(id)
+                DataPreference.saveNutritionState(nutritionState)
                 _productList.value = emptyList()
                 _nutritionState.value = nutritionState
-                DataPreference.saveNutritionState(nutritionState)
             }
             catch (e: Exception) {
                 e.printStackTrace()
@@ -220,11 +241,11 @@ class BabbogiViewModel: ViewModel() {
                 val token = DataPreference.getToken()!!
                 val newId = ServerApi.postHealthState(id, token, healthState)
                 val nutritionState = ServerApi.getNutritionState(newId)
-                _healthState.value = healthState
-                _nutritionState.value = nutritionState
                 DataPreference.saveID(newId)
                 DataPreference.saveHealthState(healthState)
                 DataPreference.saveNutritionState(nutritionState)
+                _healthState.value = healthState
+                _nutritionState.value = nutritionState
             }
             catch (e: Exception) {
                 e.printStackTrace()
@@ -251,7 +272,7 @@ class BabbogiViewModel: ViewModel() {
                 Log.d("ViewModel", "Cannot get user state from server")
             }
             finally {
-                _isHealthStateLoading.value = true
+                _isHealthStateLoading.value = false
             }
         }
     }
@@ -264,8 +285,8 @@ class BabbogiViewModel: ViewModel() {
             try {
                 val id = DataPreference.getID()!!
                 val nutritionState = ServerApi.getNutritionState(id)
-                _nutritionState.value = nutritionState
                 DataPreference.saveNutritionState(nutritionState)
+                _nutritionState.value = nutritionState
             }
             catch (e: Exception) {
                 e.printStackTrace()
@@ -273,6 +294,28 @@ class BabbogiViewModel: ViewModel() {
             }
             finally {
                 _isNutritionStateLoading.value = false
+            }
+        }
+    }
+
+    // 권장 섭취량을 수정하고 서버에 수정한 권장 섭취량을 전송한다.
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun asyncChangeNutritionRecommendation(recommend: Map<Nutrition, Float>) {
+        _isNutritionRecommendationChanging.value = true
+        viewModelScope.launch {
+            try {
+                val id = DataPreference.getID()!!
+                ServerApi.putNutritionRecommend(id, recommend)
+                val nutritionState = ServerApi.getNutritionState(id)
+                DataPreference.saveNutritionState(nutritionState)
+                _nutritionState.value = nutritionState
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot put nutrition recommend.")
+            }
+            finally {
+                _isNutritionRecommendationChanging.value = false
             }
         }
     }

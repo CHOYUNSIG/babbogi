@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -12,36 +14,62 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.example.babbogi.R
 import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.ui.view.ButtonContainerBar
 import com.example.babbogi.ui.view.NutritionCircularGraph
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.IntakeState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionState
 import com.example.babbogi.util.testNutritionState
+import com.example.babbogi.util.toFloat2
 import kotlin.math.roundToInt
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NutritionOverviewScreen(viewModel: BabbogiViewModel, navController: NavController) {
+    var showDialog by remember { mutableStateOf(false) }
+
     NutritionOverview(
-        nutritionState = viewModel.nutritionState
+        nutritionState = viewModel.nutritionState,
+        showDialog = showDialog,
+        onButtonClicked = { showDialog = true },
+        onModify = { list ->
+            val pre = viewModel.nutritionState
+            viewModel.asyncChangeNutritionRecommendation(
+                list.mapIndexed { index, recommend ->
+                    Nutrition.entries[index] to recommend.toFloat2(pre[index].recommended)
+                }.toMap()
+            )
+            showDialog = false
+        },
+        onDismiss = { showDialog = false },
     )
 }
 
@@ -79,7 +107,10 @@ fun CircularGraphCard(nutrition: Nutrition, intake: IntakeState) {
                             .padding(vertical = 16.dp)
                     ) {
                         Text(text = stringResource(id = nutrition.res))
-                        Text(text = "/${"%.1f".format(intake.recommended)}${nutrition.unit}")
+                        Text(
+                            text = "/${"%.1f".format(intake.recommended)}${nutrition.unit}",
+                            fontSize = 12.sp,
+                        )
                     }
                 }
                 Column(
@@ -98,13 +129,93 @@ fun CircularGraphCard(nutrition: Nutrition, intake: IntakeState) {
 
 @Preview
 @Composable
-fun NutritionOverview(nutritionState: NutritionState = testNutritionState) {
+fun NutritionModifyPopup(
+    nutritionState: NutritionState = testNutritionState,
+    onModifyClicked: (nutrition: List<String>) -> Unit = {},
+    onDismiss: () -> Unit = {},
+) {
+    var nutritionText by remember { mutableStateOf(List(Nutrition.entries.size) { nutritionState[it].recommended.toString() } ) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        ElevatedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+        ) {
+            Box(modifier = Modifier.padding(16.dp)) {
+                Column {
+                    Text(
+                        text = "권장 섭취량 설정",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                    repeat(Nutrition.entries.size) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                value = nutritionText[it],
+                                onValueChange = { changedText ->
+                                    nutritionText = nutritionText.mapIndexed { i, p ->
+                                        if (i == it) changedText else p
+                                    }
+                                },
+                                label = { Text(stringResource(id = Nutrition.entries[it].res)) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                                modifier = Modifier.fillMaxWidth(0.7f),
+                                enabled = true,
+                            )
+                            Text(text = Nutrition.entries[it].unit, fontSize = 20.sp)
+                        }
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                    ) {
+                        Button(onClick = { onModifyClicked(nutritionText) }, modifier = Modifier.padding(start = 8.dp)) {
+                            Text(text = "Modify")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun NutritionOverview(
+    nutritionState: NutritionState = testNutritionState,
+    showDialog: Boolean = false,
+    onButtonClicked: () -> Unit = {},
+    onModify: (nutrition: List<String>) -> Unit = {},
+    onDismiss: () -> Unit = {},
+) {
     Column {
         TitleBar("영양 정보")
         Column(modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
         ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .padding(8.dp)) {
+                    ButtonContainerBar(
+                        text = "권장 섭취량 수정",
+                        icon = R.drawable.baseline_mode_24,
+                        onClick = onButtonClicked
+                    )
+                }
+            }
             repeat(Nutrition.entries.size) { index ->
                 CircularGraphCard(
                     nutrition = Nutrition.entries[index],
@@ -113,4 +224,9 @@ fun NutritionOverview(nutritionState: NutritionState = testNutritionState) {
             }
         }
     }
+    if (showDialog) NutritionModifyPopup(
+        nutritionState = nutritionState,
+        onModifyClicked = onModify,
+        onDismiss = onDismiss,
+    )
 }
