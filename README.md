@@ -1,4 +1,4 @@
-8<div align=center>
+<div align=center>
   <h1>밥보기</h1>
   <div>안드로이드 영양소 관리 앱</div>
 </div>
