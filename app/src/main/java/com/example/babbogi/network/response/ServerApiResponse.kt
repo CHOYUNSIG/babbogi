@@ -1,7 +1,11 @@
 package com.example.babbogi.network.response
 
+import com.example.babbogi.util.AdultDisease
+import com.example.babbogi.util.Gender
+import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
+import com.example.babbogi.util.ProductNutritionInfo
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -60,6 +64,39 @@ data class ServerConsumeFormat(
     val date: String,
 )
 
+fun ServerUserStateFormat.toHealthState(): HealthState {
+    return HealthState(
+        height = this.height.toFloat(),
+        weight = this.weight.toFloat(),
+        gender = when (this.gender) {
+            "M" -> Gender.Male
+            "F" -> Gender.Female
+            else -> Gender.entries.random()
+        },
+        age = this.age,
+        adultDisease = when (this.disease) {
+            "diabetes" -> AdultDisease.Diabetes
+            "highbloodpressure" -> AdultDisease.HighBloodPressure
+            else -> null
+        }
+    )
+}
+
+fun HealthState.toServerUserStateFormat(id: Long?): ServerUserStateFormat {
+    return ServerUserStateFormat(
+        id = id,
+        name = "babbogi_app",
+        height = this.height.toDouble(),
+        weight = this.weight.toDouble(),
+        age = this.age,
+        gender = when (this.gender) {
+            Gender.Male -> "M"
+            Gender.Female -> "F"
+        },
+        disease = this.adultDisease?.name?.lowercase() ?: "null"
+    )
+}
+
 fun ServerNutritionFormat.toMap(): Map<Nutrition, Float> {
     return mapOf(
         Nutrition.Fat to this.fat.toFloat(),
@@ -74,6 +111,20 @@ fun ServerNutritionFormat.toMap(): Map<Nutrition, Float> {
     )
 }
 
+fun ServerConsumeFormat.toMap(): Map<Nutrition, Float> {
+    return mapOf(
+        Nutrition.Fat to this.fat!!.toFloat(),
+        Nutrition.Salt to this.natrium!!.toFloat(),
+        Nutrition.Sugar to this.sugar!!.toFloat(),
+        Nutrition.Calorie to this.kcal!!.toFloat(),
+        Nutrition.Protein to this.protein!!.toFloat(),
+        Nutrition.TransFat to this.transfat!!.toFloat(),
+        Nutrition.Cholesterol to this.cholesterol!!.toFloat(),
+        Nutrition.Carbohydrate to this.carbohydrate!!.toFloat(),
+        Nutrition.SaturatedFat to this.saturatedfat!!.toFloat(),
+    )
+}
+
 fun ServerConsumeFormat.toRemainingMap(): Map<Nutrition, Float> {
     return mapOf(
         Nutrition.Fat to this.remainingFat.toFloat(),
@@ -85,6 +136,14 @@ fun ServerConsumeFormat.toRemainingMap(): Map<Nutrition, Float> {
         Nutrition.Cholesterol to this.remainingCholesterol.toFloat(),
         Nutrition.Carbohydrate to this.remainingCarbohydrate.toFloat(),
         Nutrition.SaturatedFat to this.remainingSaturatedfat.toFloat(),
+    )
+}
+
+fun ServerConsumeFormat.toProduct(): Product {
+    return Product(
+        name = this.foodName!!,
+        barcode = "",
+        ProductNutritionInfo(this.toMap())
     )
 }
 

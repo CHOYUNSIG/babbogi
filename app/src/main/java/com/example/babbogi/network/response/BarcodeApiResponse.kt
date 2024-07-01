@@ -1,5 +1,6 @@
 package com.example.babbogi.network.response
 
+import com.example.babbogi.util.Product
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,4 +27,10 @@ data class C005_row(
     val SITE_ADDR: String,
     val CLSBIZ_DT: String,
     val BAR_CD: String
+)
+
+fun C005_row.toProduct(): Product = Product(
+    name = PRDLST_NM,
+    barcode = BAR_CD,
+    null
 )
