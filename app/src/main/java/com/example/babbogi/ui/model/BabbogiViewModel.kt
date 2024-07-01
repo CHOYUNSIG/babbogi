@@ -1,7 +1,6 @@
 package com.example.babbogi.ui.model
 
 import android.os.Build
-import android.provider.ContactsContract.Data
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -13,7 +12,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.babbogi.network.BarcodeApi
 import com.example.babbogi.network.NutritionApi
 import com.example.babbogi.network.ServerApi
-import com.example.babbogi.network.response.ServerNutritionFormat
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.IntakeState
 import com.example.babbogi.util.Nutrition
@@ -27,9 +25,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.util.concurrent.ExecutorService
 
-// 바코드 유효 인정 시간, 나노초 단위
-private const val validRecognitionNanoTime = 200_000_000
-
 
 class BabbogiViewModel: ViewModel() {
     // ML Kit 바코드 인식기
@@ -41,30 +36,26 @@ class BabbogiViewModel: ViewModel() {
     )
 
     // 상태 선언
-    private val _validBarcode = mutableStateOf<String?>(null)
     private val _productList = mutableStateOf<List<Pair<Product, Int>>>(emptyList())
     private val _product = mutableStateOf<Product?>(null)
-    private val _recognizedBarcode = mutableStateOf(emptyMap<String, Long>())
     private val _dailyFoodList = mutableStateOf<Map<LocalDate, List<Pair<Product, Int>>>>(emptyMap())
     private val _nutritionState = mutableStateOf(DataPreference.getNutritionState() ?: NutritionState())
     private val _healthState = mutableStateOf(DataPreference.getHealthState())
-
-    private val _isRecognizing = mutableStateOf(false)
-    private val _isProductFetching = mutableStateOf(false)
+    private val _isFetchingProduct = mutableStateOf(false)
+    private val _isFetchingSuccess = mutableStateOf<Boolean?>(null)
     private val _isServerResponding = mutableStateOf(false)
     private val _isDailyFoodLoading = mutableStateOf(false)
     private val _isNutritionStateLoading = mutableStateOf(false)
     private val _isHealthStateLoading = mutableStateOf(false)
     private val _isNutritionRecommendationChanging = mutableStateOf(false)
 
-    val validBarcode: String? get() = _validBarcode.value // 현재 인식 중인 바코드
     val product: Product? get() = _product.value // 현재 인식된 제품
     val productList: List<Pair<Product, Int>> get() = _productList.value // 인식된 제품 리스트
     val dailyFoodList: Map<LocalDate, List<Pair<Product, Int>>> get() = _dailyFoodList.value // 하루에 섭취한 음식 리스트
     val nutritionState: NutritionState get() = _nutritionState.value // 하루의 영양 상태
     val healthState: HealthState? get() = _healthState.value  // 사용자 건강 상태
-
-    val isProductFetching: Boolean get() = _isProductFetching.value
+    val isFetchingProduct: Boolean get() = _isFetchingProduct.value
+    val isFetchingSuccess: Boolean? get() = _isFetchingSuccess.value
     val isServerResponding: Boolean get() = _isServerResponding.value
     val isDailyFoodLoading: Boolean get() = _isDailyFoodLoading.value
     val isNutritionStateLoading: Boolean get() = _isNutritionStateLoading.value
@@ -79,73 +70,55 @@ class BabbogiViewModel: ViewModel() {
         DataPreference.saveNutritionState(newNutrition)
     }
 
-    // 카메라를 이용해 바코드 정보를 가져옴 (비동기)
+    // 카메라를 이용해 상품 정보를 가져오기 시작함 (비동기)
     @OptIn(ExperimentalGetImage::class)
-    fun asyncGetBarcodeFromCamera(
+    fun asyncStartCameraRoutine(
         cameraController: LifecycleCameraController,
         executor: ExecutorService
     ) {
-        if (_isRecognizing.value) return
-        _isRecognizing.value = true
-        cameraController.setImageAnalysisAnalyzer(executor) { imageProxy ->
-            imageProxy.image?.let { image ->
-                barcodeRecognizer.process(
-                    InputImage.fromMediaImage(image, imageProxy.imageInfo.rotationDegrees)
-                ).addOnSuccessListener { task ->
-                    val time = System.nanoTime()
-                    val preBarcodes = _recognizedBarcode.value
-                    // 인식된 바코드와 인식된 시간 저장
-                    _recognizedBarcode.value = emptyMap<String, Long>().toMutableMap().also { newMap ->
-                        task.forEach lambda@ { barcode ->
-                            val code = barcode.rawValue.toString()
-                            if (code.isEmpty()) return@lambda
-                            newMap[code] = preBarcodes[code] ?: time
-                        }
-                    }.toMap()
-                    // 인식된 시간을 바탕으로 정확히 인식된 바코드를 추출
-                    _validBarcode.value = _recognizedBarcode.value
-                        .filter { (_, generatedTime) -> time - generatedTime > validRecognitionNanoTime }
-                        .toList().maxByOrNull { it.second }?.first
-                    imageProxy.close()
-                    _isRecognizing.value = false
-                }.addOnCanceledListener {
-                    imageProxy.close()
-                    _isRecognizing.value = false
-                }.addOnFailureListener {
-                    imageProxy.close()
-                    _isRecognizing.value = false
+        cameraController.setImageAnalysisAnalyzer(executor) analyzing@ { imageProxy ->
+            val image = imageProxy.image
+            if (_isFetchingSuccess.value != null || _isFetchingProduct.value || image == null) {
+                imageProxy.close()
+                return@analyzing
+            }
+            barcodeRecognizer.process(
+                InputImage.fromMediaImage(image, imageProxy.imageInfo.rotationDegrees)
+            ).addOnCompleteListener { task ->
+                viewModelScope.launch {
+                    _isFetchingProduct.value = true
+                    var success: Boolean? = null
+                    try {
+                        val barcode = task.result.firstOrNull { raw ->
+                            raw.rawValue != null && raw.rawValue!!.isNotEmpty()
+                        }?.rawValue ?: return@launch
+                        Log.d("ViewModel", "Barcode: $barcode")
+                        success = false
+                        val prodName = BarcodeApi.getProducts(barcode).firstOrNull()?.name ?: return@launch
+                        _product.value = Product(
+                            prodName,
+                            barcode,
+                            NutritionApi.getNutrition(prodName).firstOrNull(),
+                        )
+                        success = true
+                    }
+                    catch (e: Exception) {
+                        e.printStackTrace()
+                        Log.d("ViewModel", "Cannot get product info")
+                    }
+                    finally {
+                        _isFetchingProduct.value = false
+                        _isFetchingSuccess.value = success
+                        imageProxy.close()
+                    }
                 }
             }
         }
     }
 
-    // 바코드 번호로 품명과 영양 정보를 가져옴 (비동기)
-    fun asyncGetProductFromBarcode() {
-        val barcode = _validBarcode.value
-        if (_isProductFetching.value || barcode == null) return
-        _isProductFetching.value = true
-        viewModelScope.launch {
-            try {
-                val products = BarcodeApi.getProducts(barcode)
-                if (products.isEmpty()) {
-                    _isProductFetching.value = false
-                    return@launch
-                }
-                val prodName = products.first().name
-                _product.value = Product(
-                    prodName,
-                    barcode,
-                    try { NutritionApi.getNutrition(prodName).first() } catch (e: NoSuchElementException) { null },
-                )
-            }
-            catch (e: Exception) {
-                e.printStackTrace()
-                Log.d("ViewModel", "Cannot get product info")
-            }
-            finally {
-                _isProductFetching.value = false
-            }
-        }
+    // 사용자가 바코드 인식 결과를 인지함
+    fun confirmFetchingResult() {
+        _isFetchingSuccess.value = null
     }
 
     // 현재 인식된 제품 버리기
@@ -160,7 +133,7 @@ class BabbogiViewModel: ViewModel() {
         )
     }
 
-    // 현재 인식된 제춤 리스트에 추가
+    // 현재 인식된 제품 리스트에 추가
     fun enrollProduct() {
         val product = _product.value
         if (product != null)

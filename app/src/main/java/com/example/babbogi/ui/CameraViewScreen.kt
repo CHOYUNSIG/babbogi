@@ -21,10 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -70,11 +67,11 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
         val previewView = remember { PreviewView(context) }
         val cameraController = remember { LifecycleCameraController(context) }
         val executor = remember { Executors.newSingleThreadExecutor() }
-        LaunchedEffect(key1 = null) {
+        LaunchedEffect(key1 = true) {
             cameraController.bindToLifecycle(lifecycleOwner)
             cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
             previewView.controller = cameraController
-            viewModel.asyncGetBarcodeFromCamera(cameraController, executor)
+            viewModel.asyncStartCameraRoutine(cameraController, executor)
         }
 
         // 카메라 화면
@@ -82,27 +79,18 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
             AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
         }
 
-        var showDialog by remember { mutableStateOf(false) }
-
         CameraView(
-            barcode = viewModel.validBarcode,
-            showDialog = showDialog,
-            isProductFetching = viewModel.isProductFetching,
+            isProductFetching = viewModel.isFetchingProduct,
+            isFetchingSuccess = viewModel.isFetchingSuccess,
             product = viewModel.product,
             onAddClicked = {
                 viewModel.enrollProduct()
                 viewModel.truncateProduct()
-                showDialog = false
+                viewModel.confirmFetchingResult()
             },
             onCancelClicked = {
                 viewModel.truncateProduct()
-                showDialog = false
-            },
-            onCaptureClicked = {
-                if (viewModel.validBarcode != null) {
-                    viewModel.asyncGetProductFromBarcode()
-                    showDialog = true
-                }
+                viewModel.confirmFetchingResult()
             },
             onGotoListClicked = { navController.navigate(Screen.FoodList.name) },
         )
@@ -136,35 +124,14 @@ fun CameraPermissionDenied() {
 }
 
 @Composable
-fun BarcodeCard(barcode: String) {
-    ElevatedCard(
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        modifier = Modifier.fillMaxWidth(0.8f)
-    ) {
-        Column {
-            Text(
-                text = barcode,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-    }
-}
-
-@Composable
 fun NutritionPopup(
     isProductFetching: Boolean,
+    isFetchingSuccess: Boolean?,
     product: Product?,
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit
 ) {
-    if (!isProductFetching && product == null) AlertDialogExample(
-        onDismissRequest = {},
-        onConfirmation = onCancelClicked,
-        dialogTitle = "찾을 수 없음",
-        dialogText = "해당 상품은 찾을 수 없는 상품입니다.",
-        iconResId = R.drawable.baseline_not_find_30
-    )
-    else Dialog(onDismissRequest = onCancelClicked) {
+    if (isProductFetching || isFetchingSuccess == true) Dialog(onDismissRequest = onCancelClicked) {
         ElevatedCard(
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             modifier = Modifier.fillMaxWidth()
@@ -214,35 +181,37 @@ fun NutritionPopup(
             }
         }
     }
+    else AlertDialogExample(
+        onDismissRequest = onCancelClicked,
+        onConfirmation = onCancelClicked,
+        dialogTitle = "찾을 수 없음",
+        dialogText = "해당 상품은 찾을 수 없는 상품입니다.",
+        iconResId = R.drawable.baseline_not_find_30
+    )
 }
 
-@Preview
 @Composable
 fun CameraView(
-    barcode: String? = testProduct.barcode,
-    showDialog: Boolean = true,
-    isProductFetching: Boolean = false,
-    product: Product? = testProduct,
-    onAddClicked: () -> Unit = {},
-    onCancelClicked: () -> Unit = {},
-    onCaptureClicked: () -> Unit = {},
-    onGotoListClicked: () -> Unit = {},
+    isProductFetching: Boolean,
+    isFetchingSuccess: Boolean?,
+    product: Product?,
+    onAddClicked: () -> Unit,
+    onCancelClicked: () -> Unit,
+    onGotoListClicked: () -> Unit,
 ) {
-    if (barcode != null) Box(
-        contentAlignment = Alignment.TopCenter,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(30.dp)
-    ) {
-        BarcodeCard(barcode)
-    }
-    if (showDialog) Box(
+    if (isProductFetching || isFetchingSuccess != null) Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxHeight()
             .padding(horizontal = 30.dp)
     ) {
-        NutritionPopup(isProductFetching, product, onAddClicked, onCancelClicked)
+        NutritionPopup(
+            isProductFetching = isProductFetching,
+            isFetchingSuccess = isFetchingSuccess,
+            product = product,
+            onAddClicked = onAddClicked,
+            onCancelClicked = onCancelClicked,
+        )
     }
     Box(
         contentAlignment = Alignment.BottomCenter,
@@ -251,11 +220,23 @@ fun CameraView(
             .padding(50.dp)
     ) {
         Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.End,
             modifier = Modifier.fillMaxWidth()
         ) {
-            CustomIconButton(onCaptureClicked, R.drawable.baseline_camera_alt_24)
             CustomIconButton(onGotoListClicked, R.drawable.baseline_list_24)
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewCameraView() {
+    CameraView(
+        isProductFetching = false,
+        isFetchingSuccess = false,
+        product = testProduct,
+        onAddClicked = {},
+        onCancelClicked = {},
+        onGotoListClicked = {},
+    )
 }
