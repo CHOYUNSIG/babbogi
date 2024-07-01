@@ -187,14 +187,13 @@ fun NutritionModifyPopup(
     }
 }
 
-@Preview
 @Composable
 fun NutritionOverview(
-    nutritionState: NutritionState = testNutritionState,
-    showDialog: Boolean = false,
-    onButtonClicked: () -> Unit = {},
-    onModify: (nutrition: List<String>) -> Unit = {},
-    onDismiss: () -> Unit = {},
+    nutritionState: NutritionState,
+    showDialog: Boolean,
+    onButtonClicked: () -> Unit,
+    onModify: (nutrition: List<String>) -> Unit,
+    onDismiss: () -> Unit,
 ) {
     Column {
         TitleBar("영양 정보")
@@ -228,5 +227,17 @@ fun NutritionOverview(
         nutritionState = nutritionState,
         onModifyClicked = onModify,
         onDismiss = onDismiss,
+    )
+}
+
+@Preview
+@Composable
+fun PreviewNutritionOverview() {
+    NutritionOverview(
+        nutritionState = testNutritionState,
+        showDialog = false,
+        onButtonClicked = {},
+        onModify = {},
+        onDismiss = {},
     )
 }
