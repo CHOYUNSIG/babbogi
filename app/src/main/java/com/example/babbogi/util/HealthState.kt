@@ -19,7 +19,6 @@ data class HealthState (
     val adultDisease: AdultDisease?,
 )
 
-
 // 테스트용 건강 상태
 val testHealthState = HealthState(
     170f,

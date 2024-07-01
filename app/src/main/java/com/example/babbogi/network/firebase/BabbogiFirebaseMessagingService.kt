@@ -17,7 +17,7 @@ import com.google.firebase.messaging.RemoteMessage
 import java.util.concurrent.atomic.AtomicInteger
 
 class BabbogiFirebaseMessagingService: FirebaseMessagingService() {
-    private val channel_id = "Channel ID"
+    private val channelId = "Channel ID"
 
     object NotificationID {
         private val c = AtomicInteger(0)
@@ -37,13 +37,13 @@ class BabbogiFirebaseMessagingService: FirebaseMessagingService() {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pendingIntent = PendingIntent.getActivity(this, 0, intent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
-        val notificationBuilder = NotificationCompat.Builder(this, channel_id)
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle(notification.title)
             .setContentText(notification.body)
             .setContentIntent(pendingIntent)
             .setSmallIcon(R.mipmap.ic_launcher_round)
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channel = NotificationChannel(channel_id, "Channel", NotificationManager.IMPORTANCE_DEFAULT)
+        val channel = NotificationChannel(channelId, "Channel", NotificationManager.IMPORTANCE_DEFAULT)
         notificationManager.createNotificationChannel(channel)
 
         // Unique ID for each notification

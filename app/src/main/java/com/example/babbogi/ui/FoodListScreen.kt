@@ -159,7 +159,6 @@ fun FoodCard(
     }
 }
 
-@Preview
 @Composable
 fun FoodPopup(
     product: Product = testProduct,
@@ -222,18 +221,17 @@ fun FoodPopup(
     }
 }
 
-@Preview
 @Composable
 fun FoodList(
-    productList: List<Pair<Product, Int>> = testProductList,
-    index: Int? = null,
-    onAmountChanged: (index: Int, amount: Int) -> Unit = { _, _ -> },
-    onAddFoodClicked: () -> Unit = {},
-    onModifyClicked: (name: String, nutrition: List<String>) -> Unit = { _, _ -> },
-    onDismiss: () -> Unit = {},
-    onDeleteClicked: (index: Int) -> Unit = {},
-    onSubmitClicked: () -> Unit = {},
-    onFoodCardClicked: (index: Int) -> Unit = {}
+    productList: List<Pair<Product, Int>>,
+    index: Int?,
+    onAmountChanged: (index: Int, amount: Int) -> Unit,
+    onAddFoodClicked: () -> Unit,
+    onModifyClicked: (name: String, nutrition: List<String>) -> Unit,
+    onDismiss: () -> Unit,
+    onDeleteClicked: (index: Int) -> Unit,
+    onSubmitClicked: () -> Unit,
+    onFoodCardClicked: (index: Int) -> Unit,
 ) {
     Column {
         TitleBar("섭취 리스트")
@@ -287,4 +285,20 @@ fun FoodList(
     ) {
         CustomIconButton(onSubmitClicked, R.drawable.baseline_send_24)
     }
+}
+
+@Preview
+@Composable
+fun PreviewFoodList() {
+    FoodList(
+        productList = testProductList,
+        index = 3,
+        onAmountChanged = { _, _ -> },
+        onAddFoodClicked = {},
+        onModifyClicked = { _, _ -> },
+        onDismiss = {},
+        onDeleteClicked = {},
+        onSubmitClicked = {},
+        onFoodCardClicked = {},
+    )
 }

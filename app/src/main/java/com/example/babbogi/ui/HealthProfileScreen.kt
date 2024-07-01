@@ -1,7 +1,6 @@
 package com.example.babbogi.ui
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -172,11 +171,10 @@ fun DropDown(
     }
 }
 
-@Preview
 @Composable
 fun HealthProfile(
-    healthState: HealthState? = testHealthState,
-    onModifyClicked: (HealthState) -> Unit = {}
+    healthState: HealthState?,
+    onModifyClicked: (HealthState) -> Unit,
 ) {
     var heightText by remember { mutableStateOf(healthState?.height?.toString() ?: "") }
     var weightText by remember { mutableStateOf(healthState?.weight?.toString() ?: "") }
@@ -262,4 +260,13 @@ fun HealthProfile(
             icon = R.drawable.baseline_send_24
         )
     }
+}
+
+@Preview
+@Composable
+fun PreviewHealthProfile() {
+    HealthProfile(
+        healthState = testHealthState,
+        onModifyClicked = {},
+    )
 }

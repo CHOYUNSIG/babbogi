@@ -427,19 +427,18 @@ fun MealList(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
-@Preview
 @Composable
 fun Home(
-    today: LocalDate = LocalDate.now(),
-    healthState: HealthState? = testHealthState,
-    nutritionState: NutritionState = testNutritionState,
-    foodList: List<Pair<Product, Int>>? = testProductList,
-    onRefresh: () -> Unit = {},
-    onNutritionCardClicked: () -> Unit = {},
-    onHealthCardClicked: () -> Unit = {},
-    onDateChanged: (Int) -> Unit = {},
-    onInputUserDataClicked: () -> Unit = {},
-    onEnrollClicked: () -> Unit = {}
+    today: LocalDate,
+    healthState: HealthState?,
+    nutritionState: NutritionState,
+    foodList: List<Pair<Product, Int>>?,
+    onRefresh: () -> Unit,
+    onNutritionCardClicked: () -> Unit,
+    onHealthCardClicked: () -> Unit,
+    onDateChanged: (Int) -> Unit,
+    onInputUserDataClicked: () -> Unit,
+    onEnrollClicked: () -> Unit,
 ) {
     val refreshState = rememberPullToRefreshState()
     if (refreshState.isRefreshing) {
@@ -466,4 +465,21 @@ fun Home(
             modifier = Modifier.align(Alignment.TopCenter)
         )
     }
+}
+
+@Preview
+@Composable
+fun PreviewHome() {
+    Home(
+        today= LocalDate.now(),
+        healthState = testHealthState,
+        nutritionState = testNutritionState,
+        foodList = testProductList,
+        onRefresh = {},
+        onNutritionCardClicked = {},
+        onHealthCardClicked = {},
+        onDateChanged = {},
+        onInputUserDataClicked = {},
+        onEnrollClicked = {}
+    )
 }

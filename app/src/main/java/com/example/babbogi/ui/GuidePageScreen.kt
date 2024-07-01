@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -59,7 +58,9 @@ fun GuidePageScreen(viewModel: BabbogiViewModel, navController: NavController) {
         ),
         onComplete = {
             DataPreference.completeTutorial()
-            navController.navigate(Screen.Home.name)
+            navController.navigate(Screen.Home.name) {
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+            }
         }
     )
 }
@@ -72,9 +73,7 @@ fun CustomSlider(
     backwardIcon: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
     forwardIcon: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
     dotsSize: Dp = 10.dp,
-    pagerPaddingValues: PaddingValues = PaddingValues(horizontal = 65.dp),
     imageCornerRadius: Dp = 16.dp,
-    imageHeight: Dp = 250.dp,
 ) {
     val pagerState = rememberPagerState(pageCount = { sliderList.size })
     val scope = rememberCoroutineScope()
@@ -144,18 +143,10 @@ fun CustomSlider(
     }
 }
 
-@Preview
 @Composable
 fun GuidePage(
-    list: List<Int> = listOf(
-        R.drawable.guide_page1,
-        R.drawable.guide_page2,
-        R.drawable.guide_page3,
-        R.drawable.guide_page4,
-        R.drawable.guide_page5,
-        R.drawable.guide_page6,
-    ),
-    onComplete: () -> Unit = {}
+    list: List<Int>,
+    onComplete: () -> Unit,
 ) {
     Box(
         contentAlignment = Alignment.Center,
@@ -169,4 +160,20 @@ fun GuidePage(
     ) {
         CustomIconButton(onClick = onComplete, icon = R.drawable.baseline_check_24)
     }
+}
+
+@Preview
+@Composable
+fun PreviewGuidePage() {
+    GuidePage(
+        list = listOf(
+            R.drawable.guide_page1,
+            R.drawable.guide_page2,
+            R.drawable.guide_page3,
+            R.drawable.guide_page4,
+            R.drawable.guide_page5,
+            R.drawable.guide_page6,
+        ),
+        onComplete = {},
+    )
 }

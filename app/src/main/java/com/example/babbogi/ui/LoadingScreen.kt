@@ -27,7 +27,6 @@ fun LoadingScreen(viewModel: BabbogiViewModel, navController: NavController) {
     Loading()
 }
 
-@Preview
 @Composable
 fun Loading() {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId = R.raw.loading))
@@ -41,4 +40,10 @@ fun Loading() {
             modifier = Modifier.size(150.dp) // 크기를 150x150 dp로 설정
         )
     }
+}
+
+@Preview
+@Composable
+fun PreviewLoading() {
+    Loading()
 }

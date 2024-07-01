@@ -2,7 +2,6 @@ package com.example.babbogi
 
 import android.os.Build
 import android.os.Bundle
-import android.provider.ContactsContract.Data
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -22,8 +21,8 @@ import com.example.babbogi.ui.HomeScreen
 import com.example.babbogi.ui.LoadingScreen
 import com.example.babbogi.ui.NutritionOverviewScreen
 import com.example.babbogi.ui.model.BabbogiViewModel
-import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.model.DataPreference
+import com.example.babbogi.ui.theme.BabbogiTheme
 
 enum class Screen {
     Tutorial,
