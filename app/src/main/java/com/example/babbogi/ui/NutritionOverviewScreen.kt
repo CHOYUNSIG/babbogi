@@ -17,8 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +40,7 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.ButtonContainerBar
+import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.NutritionCircularGraph
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.IntakeState
@@ -89,10 +88,7 @@ fun CircularGraphCard(nutrition: Nutrition, intake: IntakeState) {
         }
     }
 
-    ElevatedCard(
-        modifier = Modifier.padding(16.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
-    ) {
+    ElevatedCardWithDefault(modifier = Modifier.padding(16.dp)) {
         Box(modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
@@ -137,7 +133,7 @@ fun NutritionModifyPopup(
     var nutritionText by remember { mutableStateOf(List(Nutrition.entries.size) { nutritionState[it].recommended.toString() } ) }
 
     Dialog(onDismissRequest = onDismiss) {
-        ElevatedCard(
+        ElevatedCardWithDefault(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
@@ -210,6 +206,7 @@ fun NutritionOverview(
                     .padding(8.dp)) {
                     ButtonContainerBar(
                         text = "권장 섭취량 수정",
+                        descriptor = "권장 섭취량 수정 버튼",
                         icon = R.drawable.baseline_mode_24,
                         onClick = onButtonClicked
                     )

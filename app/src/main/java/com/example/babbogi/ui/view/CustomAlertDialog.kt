@@ -1,6 +1,5 @@
 package com.example.babbogi.ui.view
 
-
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
@@ -14,9 +13,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.babbogi.R
 
-
 @Composable
-fun AlertDialogExample(
+fun CustomAlertDialog(
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
     dialogTitle: String,
@@ -46,8 +44,8 @@ fun AlertDialogExample(
 
 @Preview
 @Composable
-fun PreviewDialog(){
-    AlertDialogExample(
+fun PreviewCustomAlertDialog(){
+    CustomAlertDialog(
         onDismissRequest={},
         onConfirmation={},
         dialogTitle="찾을 수 없음",

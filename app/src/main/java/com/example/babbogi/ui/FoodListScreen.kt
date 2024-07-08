@@ -14,8 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -44,6 +42,7 @@ import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.ButtonContainerBar
 import com.example.babbogi.ui.view.CustomIconButton
+import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
@@ -99,11 +98,10 @@ fun FoodCard(
     onDecrease: () -> Unit,
     onDelete: () -> Unit
 ) {
-    ElevatedCard(
+    ElevatedCardWithDefault(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp),
         onClick = onClick
     ) {
         Column (
@@ -169,7 +167,7 @@ fun FoodPopup(
     var nutritionText by remember { mutableStateOf(List(Nutrition.entries.size) { product.nutrition?.get(it)?.toString()?: "" } ) }
 
     Dialog(onDismissRequest = onDismiss) {
-        ElevatedCard(
+        ElevatedCardWithDefault(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
@@ -245,6 +243,7 @@ fun FoodList(
             Column(modifier = Modifier.fillMaxWidth(0.8f)) {
                 ButtonContainerBar(
                     text = "수동 입력",
+                    descriptor = "수동 입력 버튼",
                     icon = R.drawable.ic_add_box_24,
                     onClick = onAddFoodClicked
                 )

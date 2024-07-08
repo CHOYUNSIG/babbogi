@@ -39,7 +39,8 @@ import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomIconButton
-import com.example.babbogi.ui.view.AlertDialogExample
+import com.example.babbogi.ui.view.CustomAlertDialog
+import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.testProduct
@@ -132,10 +133,7 @@ fun NutritionPopup(
     onCancelClicked: () -> Unit
 ) {
     if (isProductFetching || isFetchingSuccess == true) Dialog(onDismissRequest = onCancelClicked) {
-        ElevatedCard(
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        ElevatedCardWithDefault(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
                     .padding(16.dp)
@@ -181,7 +179,7 @@ fun NutritionPopup(
             }
         }
     }
-    else AlertDialogExample(
+    else CustomAlertDialog(
         onDismissRequest = onCancelClicked,
         onConfirmation = onCancelClicked,
         dialogTitle = "찾을 수 없음",

@@ -17,15 +17,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.babbogi.R
 
-@Preview
 @Composable
 fun ButtonContainerBar(
-    text: String = "버튼 이름",
-    descriptor: String = text,
-    icon: Int = R.drawable.baseline_mode_24,
-    onClick: () -> Unit = {}
+    text: String,
+    descriptor: String,
+    icon: Int,
+    onClick: () -> Unit,
 ) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+    ElevatedCardWithDefault(modifier = Modifier.fillMaxWidth()) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -43,4 +42,15 @@ fun ButtonContainerBar(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewButtonContainerBar() {
+    ButtonContainerBar(
+        text = "버튼 이름",
+        descriptor = "버튼 이름",
+        icon = R.drawable.baseline_mode_24,
+        onClick = {},
+    )
 }

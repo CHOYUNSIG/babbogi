@@ -56,6 +56,7 @@ import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
 import com.example.babbogi.ui.model.DataPreference
+import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.NutritionBarGraph
 import com.example.babbogi.ui.view.NutritionCircularGraph
 import com.example.babbogi.ui.view.TitleBar
@@ -134,11 +135,7 @@ fun DateSelector(
                 contentDescription = "이전",
             )
         }
-        ElevatedCard(
-            modifier = Modifier.width(250.dp),
-            colors = CardDefaults.elevatedCardColors(containerColor = Color(0xF7F7F7FF)),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
-        ) {
+        ElevatedCardWithDefault(modifier = Modifier.width(250.dp)) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -236,7 +233,7 @@ fun InputUserData(onInputUserDataClicked: () -> Unit) {
 @Composable
 fun NutritionAbstraction(nutritionState: NutritionState, onClick: () -> Unit) {
     Box(modifier = Modifier.padding(16.dp)) {
-        ElevatedCard(
+        ElevatedCardWithDefault(
             onClick = onClick,
             modifier = Modifier.fillMaxWidth(),
         ) {
@@ -273,7 +270,7 @@ fun HealthAbstraction(
     onClick: () -> Unit
 ) {
     Box(modifier = Modifier.padding(16.dp)) {
-        ElevatedCard {
+        ElevatedCardWithDefault {
             Column {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -326,7 +323,7 @@ fun MealList(
     foodList: List<Pair<Product, Int>>?,
     onEnrollClicked: () -> Unit
 ) {
-    ElevatedCard(modifier = Modifier.padding(16.dp)) {
+    ElevatedCardWithDefault(modifier = Modifier.padding(16.dp)) {
         Column {
             Box(
                 contentAlignment = Alignment.TopStart,
@@ -379,11 +376,10 @@ fun MealList(
                 else
                     foodList.forEach { (product, amount) ->
                         Row(modifier = Modifier.padding(16.dp)) {
-                            ElevatedCard(
+                            ElevatedCardWithDefault(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(top = 16.dp),
-                                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp),
                             ) {
                                 Column (
                                     horizontalAlignment = Alignment.CenterHorizontally,
