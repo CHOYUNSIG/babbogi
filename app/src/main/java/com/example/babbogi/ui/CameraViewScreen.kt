@@ -14,9 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,8 +36,8 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.ui.model.BabbogiViewModel
-import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.CustomAlertDialog
+import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
@@ -231,7 +229,7 @@ fun CameraView(
 fun PreviewCameraView() {
     CameraView(
         isProductFetching = false,
-        isFetchingSuccess = false,
+        isFetchingSuccess = true,
         product = testProduct,
         onAddClicked = {},
         onCancelClicked = {},
