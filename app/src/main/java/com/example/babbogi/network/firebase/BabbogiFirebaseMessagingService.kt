@@ -11,7 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.babbogi.MainActivity
 import com.example.babbogi.R
-import com.example.babbogi.ui.model.DataPreference
+import com.example.babbogi.model.DataPreference
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import java.util.concurrent.atomic.AtomicInteger

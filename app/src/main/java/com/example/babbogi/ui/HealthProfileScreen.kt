@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,8 +43,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
-import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomIconButton
+import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.AdultDisease
 import com.example.babbogi.util.Gender
@@ -68,22 +70,24 @@ fun InputHolder(
     content: String,
     holder: @Composable () -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-            .height(80.dp)
-    ) {
-        Box(modifier = Modifier.width(100.dp)) {
-            Text(
-                text = content,
-                fontSize = 20.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Bold,
-            )
+    ElevatedCardWithDefault {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(horizontal =  16.dp, vertical = 5.dp)
+                .fillMaxWidth()
+                .height(80.dp)
+        ) {
+            Box(modifier = Modifier.width(100.dp)) {
+                Text(
+                    text = content,
+                    fontSize = 20.sp,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Box { holder() }
         }
-        Box { holder() }
     }
 }
 
@@ -140,7 +144,7 @@ fun DropDown(
 
     ExposedDropdownMenuBox(
         expanded = isExpended,
-        onExpandedChange = { isExpended = !isExpended }
+        onExpandedChange = { isExpended = !isExpended },
     ) {
         TextField(
             modifier = Modifier.menuAnchor(),
@@ -184,54 +188,59 @@ fun HealthProfile(
 
     Column {
         TitleBar("건강 정보")
-        InputHolder("키") {
-            OutlinedTextField(
-                value = heightText,
-                onValueChange = { heightText = it },
-                label = { Text("본인의 키를 입력하시오") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth(),
-                enabled = true,
-                textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
-            )
-        }
-        InputHolder("몸무게") {
-            OutlinedTextField(
-                value = weightText,
-                onValueChange = { weightText = it },
-                label = { Text("본인의 몸무게를 입력하시오") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth(),
-                enabled = true,
-                textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
-            )
-        }
-        InputHolder("나이") {
-            OutlinedTextField(
-                value = ageText,
-                onValueChange = { ageText = it },
-                label = { Text("본인의 나이를 입력하시오") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth(),
-                enabled = true,
-                textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
-            )
-        }
-        InputHolder("성별") {
-            Selector(
-                options = Gender.entries.map { it.toString() }.toList(),
-                index = gender?.ordinal,
-                onChange = { gender = Gender.entries[it] }
-            )
-        }
-        InputHolder("성인병") {
-            DropDown(
-                options = AdultDisease.entries.map { it.toString() }.toList(),
-                index = adultDisease?.ordinal,
-                onChange = {
-                    if (it == null) adultDisease = null else adultDisease = AdultDisease.entries[it]
-                }
-            )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(16.dp)
+        ) {
+            InputHolder("키") {
+                OutlinedTextField(
+                    value = heightText,
+                    onValueChange = { heightText = it },
+                    label = { Text("본인의 키를 입력하시오") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = true,
+                    textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
+                )
+            }
+            InputHolder("몸무게") {
+                OutlinedTextField(
+                    value = weightText,
+                    onValueChange = { weightText = it },
+                    label = { Text("본인의 몸무게를 입력하시오") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = true,
+                    textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
+                )
+            }
+            InputHolder("나이") {
+                OutlinedTextField(
+                    value = ageText,
+                    onValueChange = { ageText = it },
+                    label = { Text("본인의 나이를 입력하시오") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = true,
+                    textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
+                )
+            }
+            InputHolder("성별") {
+                Selector(
+                    options = Gender.entries.map { it.toString() }.toList(),
+                    index = gender?.ordinal,
+                    onChange = { gender = Gender.entries[it] }
+                )
+            }
+            InputHolder("성인병") {
+                DropDown(
+                    options = AdultDisease.entries.map { it.toString() }.toList(),
+                    index = adultDisease?.ordinal,
+                    onChange = {
+                        if (it == null) adultDisease = null else adultDisease = AdultDisease.entries[it]
+                    }
+                )
+            }
         }
     }
     Box(

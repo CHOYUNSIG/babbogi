@@ -29,10 +29,12 @@ fun CustomAlertDialog(
             )
         },
         title = { Text(text = dialogTitle) },
-        text = { Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) { Text(text = dialogText) } },
+        text = {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) { Text(text = dialogText) }
+        },
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onConfirmation) {
@@ -44,12 +46,12 @@ fun CustomAlertDialog(
 
 @Preview
 @Composable
-fun PreviewCustomAlertDialog(){
+fun PreviewCustomAlertDialog() {
     CustomAlertDialog(
-        onDismissRequest={},
-        onConfirmation={},
-        dialogTitle="찾을 수 없음",
-        dialogText="해당 상품은 찾을 수 없는 상품입니다.",
+        onDismissRequest = {},
+        onConfirmation = {},
+        dialogTitle = "찾을 수 없음",
+        dialogText = "해당 상품은 찾을 수 없는 상품입니다.",
         iconResId = R.drawable.baseline_not_find_30
     )
 }

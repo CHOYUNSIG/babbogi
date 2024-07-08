@@ -1,4 +1,4 @@
-package com.example.babbogi.ui.model
+package com.example.babbogi.model
 
 import android.os.Build
 import android.util.Log

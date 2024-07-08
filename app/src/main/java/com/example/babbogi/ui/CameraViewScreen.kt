@@ -35,7 +35,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
-import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.view.CustomAlertDialog
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
@@ -46,7 +46,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionRequired
 import com.google.accompanist.permissions.rememberPermissionState
 import java.util.concurrent.Executors
-
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -96,7 +95,6 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
     }
 }
 
-@Preview
 @Composable
 fun CameraPermissionDenied() {
     Box(

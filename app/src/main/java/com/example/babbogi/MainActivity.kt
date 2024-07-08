@@ -20,8 +20,8 @@ import com.example.babbogi.ui.HealthProfileScreen
 import com.example.babbogi.ui.HomeScreen
 import com.example.babbogi.ui.LoadingScreen
 import com.example.babbogi.ui.NutritionOverviewScreen
-import com.example.babbogi.ui.model.BabbogiViewModel
-import com.example.babbogi.ui.model.DataPreference
+import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.model.DataPreference
 import com.example.babbogi.ui.theme.BabbogiTheme
 
 enum class Screen {

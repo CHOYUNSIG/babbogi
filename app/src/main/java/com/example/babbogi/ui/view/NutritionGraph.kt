@@ -144,14 +144,15 @@ fun NutritionBarGraph(nutrition: Nutrition, intake: IntakeState) {
 @Composable
 fun NutritionPeriodBarGraph(
     nutrition: Nutrition,
-    data: Map<LocalDate, IntakeState>,
+    recommend: Float,
+    data: Map<LocalDate, Float>,
 ) {
     val producer = remember { CartesianChartModelProducer.build() }
     val xToDateMapKey = ExtraStore.Key<Map<Float, LocalDate>>()
     val xToDates = data.keys.associateBy { it.toEpochDay().toFloat() }
     LaunchedEffect(data) {
         producer.tryRunTransaction {
-            columnSeries { series(x = xToDates.keys, y = data.values.map { it.ingested }) }
+            columnSeries { series(x = xToDates.keys, y = data.values) }
             updateExtras { it[xToDateMapKey] = xToDates }
         }
     }
@@ -161,11 +162,11 @@ fun NutritionPeriodBarGraph(
             rememberColumnCartesianLayer(
                 columnProvider = ColumnCartesianLayer.ColumnProvider.series(
                     listOf(rememberLineComponent(
-                        thickness = 10.dp,
+                        thickness = 20.dp,
                         shape = Shape.Pill,
                         dynamicShader = DynamicShader.verticalGradient(
                             getColorListByRatio(
-                                data.values.map { it.getRatio() }.average().toFloat()
+                                (data.values.average() / recommend).toFloat()
                             ).toTypedArray()
                         ),
                     ))
@@ -186,7 +187,7 @@ fun NutritionPeriodBarGraph(
             ),
             decorations = listOf(
                 rememberHorizontalLine(
-                    y = { nutrition.defaultRecommend },
+                    y = { recommend },
                     line = rememberLineComponent(
                         thickness = 1.dp,
                         color = Color.Gray,
@@ -197,7 +198,7 @@ fun NutritionPeriodBarGraph(
                             fitStrategy = DashedShape.FitStrategy.Fixed,
                         )
                     ),
-                    labelComponent = rememberTextComponent()
+                    labelComponent = rememberTextComponent(),
                 )
             )
         ),
@@ -222,16 +223,17 @@ fun PreviewNutritionBarGraph() {
 @Composable
 fun PreviewPeriodBarGraph() {
     val data = mapOf(
-        LocalDate.now().minusDays(6) to IntakeState(2200f, 1600f),
-        LocalDate.now().minusDays(5) to IntakeState(2200f, 2400f),
-        LocalDate.now().minusDays(4) to IntakeState(2200f, 2200f),
-        LocalDate.now().minusDays(3) to IntakeState(2200f, 2300f),
-        LocalDate.now().minusDays(2) to IntakeState(2200f, 2400f),
-        LocalDate.now().minusDays(1) to IntakeState(2200f, 3000f),
-        LocalDate.now() to IntakeState(2200f, 1200f),
+        LocalDate.now().minusDays(6) to 1600f,
+        LocalDate.now().minusDays(5) to 2400f,
+        LocalDate.now().minusDays(4) to 2200f,
+        LocalDate.now().minusDays(3) to 2300f,
+        LocalDate.now().minusDays(2) to 2400f,
+        LocalDate.now().minusDays(1) to 3000f,
+        LocalDate.now() to 1200f,
     )
     NutritionPeriodBarGraph(
         nutrition = Nutrition.Calorie,
+        recommend = Nutrition.Calorie.defaultRecommend,
         data = data,
     )
 }

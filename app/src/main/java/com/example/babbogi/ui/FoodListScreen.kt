@@ -39,7 +39,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
-import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.view.ButtonContainerBar
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
@@ -98,12 +98,7 @@ fun FoodCard(
     onDecrease: () -> Unit,
     onDelete: () -> Unit
 ) {
-    ElevatedCardWithDefault(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp),
-        onClick = onClick
-    ) {
+    ElevatedCardWithDefault(onClick = onClick) {
         Column (
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -231,42 +226,42 @@ fun FoodList(
     onSubmitClicked: () -> Unit,
     onFoodCardClicked: (index: Int) -> Unit,
 ) {
-    Column {
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+    ) {
         TitleBar("섭취 리스트")
-        Row(
-            horizontalArrangement = Arrangement.Center,
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
         ) {
-            Column(modifier = Modifier.fillMaxWidth(0.8f)) {
-                ButtonContainerBar(
-                    text = "수동 입력",
-                    descriptor = "수동 입력 버튼",
-                    icon = R.drawable.ic_add_box_24,
-                    onClick = onAddFoodClicked
+            ButtonContainerBar(
+                text = "수동 입력",
+                descriptor = "수동 입력 버튼",
+                icon = R.drawable.ic_add_box_24,
+                onClick = onAddFoodClicked
+            )
+            if (productList.isEmpty())
+                Text(
+                    text = "카메라로 식품의 바코드를 찍으세요!\n이곳에 표시됩니다.",
+                    modifier = Modifier.padding(16.dp),
+                    color = Color.Gray
                 )
-                if (productList.isEmpty())
-                    Text(
-                        text = "카메라로 식품의 바코드를 찍으세요!\n이곳에 표시됩니다.",
-                        modifier = Modifier.padding(16.dp),
-                        color = Color.Gray
-                    )
-                else
-                    productList.forEachIndexed { index, (productInfo, amount) ->
-                        FoodCard(
-                            product = productInfo,
-                            amount = amount,
-                            onIncrease = { onAmountChanged(index, 1) },
-                            onDecrease = { onAmountChanged(index, -1) },
-                            onClick = { onFoodCardClicked(index) },
-                            onDelete = { onDeleteClicked(index) }
-                        )
-                    }
+            else productList.forEachIndexed { index, (productInfo, amount) ->
+                FoodCard(
+                    product = productInfo,
+                    amount = amount,
+                    onIncrease = { onAmountChanged(index, 1) },
+                    onDecrease = { onAmountChanged(index, -1) },
+                    onClick = { onFoodCardClicked(index) },
+                    onDelete = { onDeleteClicked(index) }
+                )
             }
         }
     }
+
     if (index != null) {
         Box(modifier = Modifier.padding(50.dp)) {
             FoodPopup(
@@ -276,6 +271,7 @@ fun FoodList(
             )
         }
     }
+
     Box(
         contentAlignment = Alignment.BottomEnd,
         modifier = Modifier
@@ -289,15 +285,19 @@ fun FoodList(
 @Preview
 @Composable
 fun PreviewFoodList() {
+    var index by remember {
+        mutableStateOf<Int?>(null)
+    }
+
     FoodList(
         productList = testProductList,
-        index = 3,
+        index = index,
         onAmountChanged = { _, _ -> },
         onAddFoodClicked = {},
-        onModifyClicked = { _, _ -> },
-        onDismiss = {},
+        onModifyClicked = { _, _ -> index = null },
+        onDismiss = { index = null },
         onDeleteClicked = {},
         onSubmitClicked = {},
-        onFoodCardClicked = {},
+        onFoodCardClicked = { index = it },
     )
 }

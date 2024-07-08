@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.babbogi.R
-import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.view.ButtonContainerBar
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.NutritionCircularGraph
@@ -88,7 +88,7 @@ fun CircularGraphCard(nutrition: Nutrition, intake: IntakeState) {
         }
     }
 
-    ElevatedCardWithDefault(modifier = Modifier.padding(16.dp)) {
+    ElevatedCardWithDefault {
         Box(modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
@@ -123,21 +123,16 @@ fun CircularGraphCard(nutrition: Nutrition, intake: IntakeState) {
     }
 }
 
-@Preview
 @Composable
 fun NutritionModifyPopup(
-    nutritionState: NutritionState = testNutritionState,
-    onModifyClicked: (nutrition: List<String>) -> Unit = {},
-    onDismiss: () -> Unit = {},
+    nutritionState: NutritionState,
+    onModifyClicked: (nutrition: List<String>) -> Unit,
+    onDismiss: () -> Unit,
 ) {
     var nutritionText by remember { mutableStateOf(List(Nutrition.entries.size) { nutritionState[it].recommended.toString() } ) }
 
     Dialog(onDismissRequest = onDismiss) {
-        ElevatedCardWithDefault(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-        ) {
+        ElevatedCardWithDefault(modifier = Modifier.verticalScroll(rememberScrollState())) {
             Box(modifier = Modifier.padding(16.dp)) {
                 Column {
                     Text(
@@ -192,34 +187,32 @@ fun NutritionOverview(
     onDismiss: () -> Unit,
 ) {
     Column {
-        TitleBar("영양 정보")
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxWidth()
+            TitleBar("영양 정보")
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.padding(16.dp)
             ) {
-                Row(modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .padding(8.dp)) {
-                    ButtonContainerBar(
-                        text = "권장 섭취량 수정",
-                        descriptor = "권장 섭취량 수정 버튼",
-                        icon = R.drawable.baseline_mode_24,
-                        onClick = onButtonClicked
+                ButtonContainerBar(
+                    text = "권장 섭취량 수정",
+                    descriptor = "권장 섭취량 수정 버튼",
+                    icon = R.drawable.baseline_mode_24,
+                    onClick = onButtonClicked
+                )
+                repeat(Nutrition.entries.size) { index ->
+                    CircularGraphCard(
+                        nutrition = Nutrition.entries[index],
+                        intake = nutritionState[index]
                     )
                 }
             }
-            repeat(Nutrition.entries.size) { index ->
-                CircularGraphCard(
-                    nutrition = Nutrition.entries[index],
-                    intake = nutritionState[index]
-                )
-            }
         }
     }
+
     if (showDialog) NutritionModifyPopup(
         nutritionState = nutritionState,
         onModifyClicked = onModify,
@@ -230,11 +223,13 @@ fun NutritionOverview(
 @Preview
 @Composable
 fun PreviewNutritionOverview() {
+    var showDialog by remember { mutableStateOf(false) }
+
     NutritionOverview(
         nutritionState = testNutritionState,
-        showDialog = false,
-        onButtonClicked = {},
-        onModify = {},
-        onDismiss = {},
+        showDialog = showDialog,
+        onButtonClicked = { showDialog = true },
+        onModify = { showDialog = false },
+        onDismiss = { showDialog = false },
     )
 }

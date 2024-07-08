@@ -38,12 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
-import com.example.babbogi.ui.model.BabbogiViewModel
-import com.example.babbogi.ui.model.DataPreference
+import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.model.DataPreference
 import com.example.babbogi.ui.view.CustomIconButton
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
-
 
 @Composable
 fun GuidePageScreen(viewModel: BabbogiViewModel, navController: NavController) {

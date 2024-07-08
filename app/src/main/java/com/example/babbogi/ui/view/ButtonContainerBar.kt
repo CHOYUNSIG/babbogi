@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,22 +22,20 @@ fun ButtonContainerBar(
     icon: Int,
     onClick: () -> Unit,
 ) {
-    ElevatedCardWithDefault(modifier = Modifier.fillMaxWidth()) {
+    ElevatedCardWithDefault(onClick = onClick) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(16.dp)
         ) {
             Text(text = text)
-            IconButton(onClick = onClick) {
-                Icon(
-                    modifier = Modifier.size(30.dp),
-                    contentDescription = descriptor,
-                    painter = painterResource(id = icon)
-                )
-            }
+            Icon(
+                modifier = Modifier.size(30.dp),
+                contentDescription = descriptor,
+                painter = painterResource(id = icon)
+            )
         }
     }
 }

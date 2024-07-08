@@ -48,7 +48,7 @@ fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            Row (
+            Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -56,20 +56,27 @@ fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
                     .padding(8.dp)
             ) {
                 IconButton(onClick = { today = today.minusMonths(1) }) {
-                    Icon(painter = painterResource(id = R.drawable.ic_chevron_left_24), contentDescription = "이전 달")
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_chevron_left_24),
+                        contentDescription = "이전 달"
+                    )
                 }
                 Text(
-                    text = today.year.toString() + " " + today.month.toString().lowercase().replaceFirstChar { it.uppercase() },
+                    text = today.year.toString() + " " + today.month.toString().lowercase()
+                        .replaceFirstChar { it.uppercase() },
                     fontSize = 24.sp,
                 )
                 IconButton(onClick = { today = today.plusMonths(1) }) {
-                    Icon(painter = painterResource(id = R.drawable.ic_chevron_right_24), contentDescription = "다음달")
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_chevron_right_24),
+                        contentDescription = "다음달"
+                    )
                 }
             }
             ElevatedCardWithDefault(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Column (
+                Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.padding(16.dp)
                 ) {
@@ -101,11 +108,9 @@ fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
                         ) {
                             repeat(7) {
                                 val now = day
-                                CalendarDay(
-                                    day = if (0 < day && day <= today.lengthOfMonth()) day else null,
+                                CalendarDay(day = if (0 < day && day <= today.lengthOfMonth()) day else null,
                                     isSelected = day == today.dayOfMonth,
-                                    onClick = { today = today.withDayOfMonth(now) }
-                                )
+                                    onClick = { today = today.withDayOfMonth(now) })
                                 day++
                             }
                         }
@@ -113,13 +118,11 @@ fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
                 }
             }
             Row(
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth()
+                horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()
             ) {
-                CustomIconButton(
-                    onClick = { onSubmit(today) },
-                    icon = R.drawable.baseline_check_24
-                )
+                Button(onClick = { onSubmit(today) }) {
+                    Text("Submit")
+                }
             }
         }
     }
@@ -136,10 +139,8 @@ fun CalendarDay(day: Int? = null, isSelected: Boolean = false, onClick: () -> Un
             Button(
                 onClick = onClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected)
-                        Color.Black.copy(alpha = 0.1f)
-                    else
-                        Color.Transparent,
+                    containerColor = if (isSelected) Color.Black.copy(alpha = 0.1f)
+                    else Color.Transparent,
                 ),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth(),

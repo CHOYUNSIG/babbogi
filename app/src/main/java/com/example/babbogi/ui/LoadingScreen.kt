@@ -16,7 +16,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.babbogi.R
 import com.example.babbogi.Screen
-import com.example.babbogi.ui.model.BabbogiViewModel
+import com.example.babbogi.model.BabbogiViewModel
 
 @Composable
 fun LoadingScreen(viewModel: BabbogiViewModel, navController: NavController) {
