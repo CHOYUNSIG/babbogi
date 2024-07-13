@@ -106,7 +106,7 @@ fun CameraPermissionDenied() {
             modifier = Modifier.fillMaxWidth(0.8f)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.baseline_camera_alt_24),
+                painter = painterResource(id = R.drawable.baseline_shooting_buuton_24),
                 contentDescription = "camera",
                 modifier = Modifier
                     .size(50.dp)
