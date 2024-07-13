@@ -16,6 +16,7 @@ import com.example.babbogi.network.response.toServerUserStateFormat
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.IntakeState
 import com.example.babbogi.util.Nutrition
+import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.NutritionState
 import com.example.babbogi.util.Product
 import com.google.gson.GsonBuilder
@@ -99,10 +100,9 @@ object ServerApi {
         Log.d("ServerApi", "getNutritionState($id)")
         val recommend = retrofitService.getNutritionRecommend(id).toMap()
         val response = retrofitService.getConsumeList(id, LocalDate.now().toString()).drop(1)
-        if (response.isEmpty())
-            return NutritionState(
-                Nutrition.entries.associateWith { IntakeState(recommend[it]!!) }
-            )
+        if (response.isEmpty()) return NutritionState(
+            Nutrition.entries.associateWith { IntakeState(recommend[it]!!) }
+        )
         val remain = response.maxBy { it.id }.toRemainingMap()
         return NutritionState(
             Nutrition.entries.associateWith { IntakeState(recommend[it]!!, recommend[it]!! - remain[it]!!) }
@@ -122,7 +122,7 @@ object ServerApi {
         return response.toLong()
     }
 
-    suspend fun putNutritionRecommend(id: Long, nutrition: Map<Nutrition, Float>) {
+    suspend fun putNutritionRecommend(id: Long, nutrition: NutritionMap<Float>) {
         Log.d("ServerApi", "putNutritionRecommend($id, $nutrition)")
         retrofitService.putNutritionRecommend(id, nutrition.toServerNutritionFormat(id))
     }

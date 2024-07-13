@@ -97,7 +97,6 @@ class BabbogiViewModel: ViewModel() {
                         val prodName = BarcodeApi.getProducts(barcode).firstOrNull()?.name ?: return@launch
                         _product.value = Product(
                             prodName,
-                            barcode,
                             NutritionApi.getNutrition(prodName).firstOrNull(),
                         )
                         success = true
@@ -129,7 +128,7 @@ class BabbogiViewModel: ViewModel() {
     // 리스트에 빈 음식 추가
     fun addProduct() {
         _productList.value = _productList.value.plus(
-            Product("", "", null) to 1
+            Product("", null) to 1
         )
     }
 

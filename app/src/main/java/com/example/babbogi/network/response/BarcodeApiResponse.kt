@@ -31,6 +31,5 @@ data class C005_row(
 
 fun C005_row.toProduct(): Product = Product(
     name = PRDLST_NM,
-    barcode = BAR_CD,
     null
 )

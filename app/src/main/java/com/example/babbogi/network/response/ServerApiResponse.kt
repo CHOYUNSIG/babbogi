@@ -4,8 +4,8 @@ import com.example.babbogi.util.AdultDisease
 import com.example.babbogi.util.Gender
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
+import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.Product
-import com.example.babbogi.util.ProductNutritionInfo
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -74,11 +74,11 @@ fun ServerUserStateFormat.toHealthState(): HealthState {
             else -> Gender.entries.random()
         },
         age = this.age,
-        adultDisease = when (this.disease) {
-            "diabetes" -> AdultDisease.Diabetes
-            "highbloodpressure" -> AdultDisease.HighBloodPressure
-            else -> null
-        }
+        adultDisease = AdultDisease.entries.map {
+            it.name.lowercase()
+        }.mapIndexed { index, s ->
+            s to AdultDisease.entries[index]
+        }.toMap()[this.disease]
     )
 }
 
@@ -97,7 +97,7 @@ fun HealthState.toServerUserStateFormat(id: Long?): ServerUserStateFormat {
     )
 }
 
-fun ServerNutritionFormat.toMap(): Map<Nutrition, Float> {
+fun ServerNutritionFormat.toMap(): NutritionMap<Float> {
     return mapOf(
         Nutrition.Fat to this.fat.toFloat(),
         Nutrition.Salt to this.natrium.toFloat(),
@@ -111,7 +111,7 @@ fun ServerNutritionFormat.toMap(): Map<Nutrition, Float> {
     )
 }
 
-fun ServerConsumeFormat.toMap(): Map<Nutrition, Float> {
+fun ServerConsumeFormat.toMap(): NutritionMap<Float> {
     return mapOf(
         Nutrition.Fat to this.fat!!.toFloat(),
         Nutrition.Salt to this.natrium!!.toFloat(),
@@ -125,7 +125,7 @@ fun ServerConsumeFormat.toMap(): Map<Nutrition, Float> {
     )
 }
 
-fun ServerConsumeFormat.toRemainingMap(): Map<Nutrition, Float> {
+fun ServerConsumeFormat.toRemainingMap(): NutritionMap<Float> {
     return mapOf(
         Nutrition.Fat to this.remainingFat.toFloat(),
         Nutrition.Salt to this.remainingNatrium.toFloat(),
@@ -142,12 +142,11 @@ fun ServerConsumeFormat.toRemainingMap(): Map<Nutrition, Float> {
 fun ServerConsumeFormat.toProduct(): Product {
     return Product(
         name = this.foodName!!,
-        barcode = "",
-        ProductNutritionInfo(this.toMap())
+        this.toMap()
     )
 }
 
-fun Map<Nutrition, Float>.toServerNutritionFormat(
+fun NutritionMap<Float>.toServerNutritionFormat(
     id: Long? = null,
 ): ServerNutritionFormat {
     return ServerNutritionFormat(

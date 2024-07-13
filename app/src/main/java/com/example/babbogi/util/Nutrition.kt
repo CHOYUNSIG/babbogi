@@ -54,3 +54,5 @@ enum class Nutrition(
         defaultRecommend = 2.2f,
     ),
 }
+
+typealias NutritionMap<T> = Map<Nutrition, T>

@@ -1,7 +1,7 @@
 package com.example.babbogi.network.response
 
 import com.example.babbogi.util.Nutrition
-import com.example.babbogi.util.ProductNutritionInfo
+import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.toFloat2
 import kotlinx.serialization.Serializable
 
@@ -44,16 +44,14 @@ data class I2790_row(
     val FOOD_CD: String
 )
 
-fun I2790_row.toProductNutritionInfo(): ProductNutritionInfo = ProductNutritionInfo(
-    mapOf(
-        Nutrition.Calorie to NUTR_CONT1.toFloat2(),
-        Nutrition.Carbohydrate to NUTR_CONT2.toFloat2(),
-        Nutrition.Protein to NUTR_CONT3.toFloat2(),
-        Nutrition.Fat to NUTR_CONT4.toFloat2(),
-        Nutrition.Sugar to NUTR_CONT5.toFloat2(),
-        Nutrition.Salt to NUTR_CONT6.toFloat2(),
-        Nutrition.Cholesterol to NUTR_CONT7.toFloat2(),
-        Nutrition.SaturatedFat to NUTR_CONT8.toFloat2(),
-        Nutrition.TransFat to NUTR_CONT9.toFloat2(),
-    )
+fun I2790_row.toNutritionMap(): NutritionMap<Float> = mapOf(
+    Nutrition.Calorie to NUTR_CONT1.toFloat2(),
+    Nutrition.Carbohydrate to NUTR_CONT2.toFloat2(),
+    Nutrition.Protein to NUTR_CONT3.toFloat2(),
+    Nutrition.Fat to NUTR_CONT4.toFloat2(),
+    Nutrition.Sugar to NUTR_CONT5.toFloat2(),
+    Nutrition.Salt to NUTR_CONT6.toFloat2(),
+    Nutrition.Cholesterol to NUTR_CONT7.toFloat2(),
+    Nutrition.SaturatedFat to NUTR_CONT8.toFloat2(),
+    Nutrition.TransFat to NUTR_CONT9.toFloat2(),
 )
