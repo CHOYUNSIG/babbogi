@@ -38,16 +38,9 @@ private val dayWidth = 32.dp
 fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
     var today by remember { mutableStateOf(LocalDate.now()) }
 
-    ElevatedCardWithDefault(
-        modifier = Modifier.fillMaxWidth(),
-    ) {
+    ElevatedCardWithDefault {
         var day = -(today.minusDays((today.dayOfMonth).toLong()).dayOfWeek.value % 7)
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
+        ColumnWithDefault {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
@@ -73,13 +66,8 @@ fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
                     )
                 }
             }
-            ElevatedCardWithDefault(
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.padding(16.dp)
-                ) {
+            ElevatedCardWithDefault {
+                ColumnWithDefault {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
@@ -118,7 +106,8 @@ fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
                 }
             }
             Row(
-                horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Button(onClick = { onSubmit(today) }) {
                     Text("Submit")

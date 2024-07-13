@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -127,16 +128,14 @@ fun CustomSlider(
         ) {
             repeat(sliderList.size) {
                 val color = if (pagerState.currentPage == it) Color.LightGray else Color.DarkGray
-                Box(modifier = Modifier
-                    .padding(2.dp)
-                    .clip(CircleShape)
-                    .size(dotsSize)
-                    .background(color)
-                    .clickable {
-                        scope.launch {
-                            pagerState.animateScrollToPage(it)
-                        }
-                    })
+                Box(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .clip(CircleShape)
+                        .size(dotsSize)
+                        .background(color)
+                        .clickable { scope.launch { pagerState.animateScrollToPage(it) } }
+                )
             }
         }
     }
@@ -149,13 +148,17 @@ fun GuidePage(
 ) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
     ) {
         CustomSlider(sliderList = list)
     }
     Box(
         contentAlignment = Alignment.BottomEnd,
-        modifier = Modifier.padding(50.dp).fillMaxSize()
+        modifier = Modifier
+            .padding(50.dp)
+            .fillMaxSize()
     ) {
         CustomIconButton(onClick = onComplete, icon = R.drawable.baseline_check_24)
     }
@@ -164,15 +167,19 @@ fun GuidePage(
 @Preview
 @Composable
 fun PreviewGuidePage() {
-    GuidePage(
-        list = listOf(
-            R.drawable.guide_page1,
-            R.drawable.guide_page2,
-            R.drawable.guide_page3,
-            R.drawable.guide_page4,
-            R.drawable.guide_page5,
-            R.drawable.guide_page6,
-        ),
-        onComplete = {},
-    )
+    Scaffold {
+        Box(modifier = Modifier.padding(it)) {
+            GuidePage(
+                list = listOf(
+                    R.drawable.guide_page1,
+                    R.drawable.guide_page2,
+                    R.drawable.guide_page3,
+                    R.drawable.guide_page4,
+                    R.drawable.guide_page5,
+                    R.drawable.guide_page6,
+                ),
+                onComplete = {},
+            )
+        }
+    }
 }

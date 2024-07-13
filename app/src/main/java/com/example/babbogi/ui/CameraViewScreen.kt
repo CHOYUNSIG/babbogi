@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,8 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,12 +37,15 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomAlertDialog
-import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
-import com.example.babbogi.util.Nutrition
+import com.example.babbogi.ui.view.ProductAbstraction
+import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.Product
-import com.example.babbogi.util.testProduct
+import com.example.babbogi.util.getRandomTestProduct
+import com.example.babbogi.util.testProductList
+import com.example.babbogi.util.testProductNull
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionRequired
 import com.google.accompanist.permissions.rememberPermissionState
@@ -72,12 +76,8 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
             viewModel.asyncStartCameraRoutine(cameraController, executor)
         }
 
-        // 카메라 화면
-        Box(modifier = Modifier.fillMaxSize()) {
-            AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
-        }
-
         CameraView(
+            cameraView = previewView,
             isProductFetching = viewModel.isFetchingProduct,
             isFetchingSuccess = viewModel.isFetchingSuccess,
             product = viewModel.product,
@@ -90,7 +90,6 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
                 viewModel.truncateProduct()
                 viewModel.confirmFetchingResult()
             },
-            onGotoListClicked = { navController.navigate(Screen.FoodList.name) },
         )
     }
 }
@@ -106,7 +105,7 @@ fun CameraPermissionDenied() {
             modifier = Modifier.fillMaxWidth(0.8f)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.baseline_camera_alt_24),
+                painter = painterResource(id = R.drawable.baseline_mode_24),
                 contentDescription = "camera",
                 modifier = Modifier
                     .size(50.dp)
@@ -129,48 +128,23 @@ fun NutritionPopup(
     onCancelClicked: () -> Unit
 ) {
     if (isProductFetching || isFetchingSuccess == true) Dialog(onDismissRequest = onCancelClicked) {
-        ElevatedCardWithDefault(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
+        ElevatedCardWithDefault {
+            if (isProductFetching) Row (
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if (isProductFetching) Row (
-                    horizontalArrangement = Arrangement.Center,
+                CircularProgressIndicator(modifier = Modifier
+                    .size(50.dp)
+                    .padding(16.dp))
+            }
+            else if (product != null) ColumnWithDefault {
+                ProductAbstraction(product = product, nullMessage = "서버에 영양 정보가 없습니다.")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    CircularProgressIndicator(modifier = Modifier
-                        .size(50.dp)
-                        .padding(16.dp))
-                }
-                else if (product != null) {
-                    Text(
-                        modifier = Modifier.padding(bottom = 8.dp),
-                        fontWeight = FontWeight.Bold,
-                        text = product.name
-                    )
-                    if (product.nutrition != null)
-                        Text(
-                            modifier = Modifier.padding(bottom = 8.dp),
-                            text = product.nutrition.toString(
-                                List(Nutrition.entries.size) {
-                                    stringResource(id = Nutrition.entries[it].res)
-                                }
-                            )
-                        )
-                    else
-                        Text(text = "There's no nutrition info.")
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Button(onClick = onAddClicked, modifier = Modifier.padding(start = 8.dp)) {
-                            Text(text = "Add")
-                        }
-                        Button(onClick = onCancelClicked, modifier = Modifier.padding(start = 8.dp)) {
-                            Text(text = "Cancel")
-                        }
-                    }
+                    Button(onClick = onAddClicked) { Text(text = "Add") }
+                    Button(onClick = onCancelClicked) { Text(text = "Cancel") }
                 }
             }
         }
@@ -186,13 +160,30 @@ fun NutritionPopup(
 
 @Composable
 fun CameraView(
+    cameraView: PreviewView,
     isProductFetching: Boolean,
     isFetchingSuccess: Boolean?,
     product: Product?,
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit,
-    onGotoListClicked: () -> Unit,
 ) {
+    // 카메라 화면
+    Column {
+        TitleBar("바코드 입력")
+        ColumnWithDefault(modifier = Modifier.fillMaxHeight()) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxSize().weight(1f)
+            ) {
+                AndroidView(
+                    factory = { cameraView },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+            Text("카메라로 바코드를 인식하세요.")
+        }
+    }
+
     if (isProductFetching || isFetchingSuccess != null) Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -207,30 +198,23 @@ fun CameraView(
             onCancelClicked = onCancelClicked,
         )
     }
-    Box(
-        contentAlignment = Alignment.BottomCenter,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(50.dp)
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.End,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            CustomIconButton(onGotoListClicked, R.drawable.baseline_list_24)
-        }
-    }
 }
 
 @Preview
 @Composable
 fun PreviewCameraView() {
-    CameraView(
-        isProductFetching = false,
-        isFetchingSuccess = true,
-        product = testProduct,
-        onAddClicked = {},
-        onCancelClicked = {},
-        onGotoListClicked = {},
-    )
+    Scaffold {
+        Box(modifier = Modifier.padding(it)) {
+            val context = LocalContext.current
+
+            CameraView(
+                cameraView = remember { PreviewView(context) },
+                isProductFetching = false,
+                isFetchingSuccess = true,
+                product = getRandomTestProduct(true),
+                onAddClicked = {},
+                onCancelClicked = {},
+            )
+        }
+    }
 }

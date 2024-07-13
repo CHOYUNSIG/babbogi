@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,9 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.view.ButtonContainerBar
+import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.NutritionCircularGraph
 import com.example.babbogi.ui.view.TitleBar
@@ -114,7 +114,7 @@ fun CircularGraphCard(nutrition: Nutrition, intake: IntakeState) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Text(text = "오늘은 적정량의")
+                    Text(text = "이 날은 적정량의")
                     Text(text = "$animatedValue%", fontSize = 32.sp)
                     Text(text = "를 드셨습니다.")
                 }
@@ -186,29 +186,14 @@ fun NutritionOverview(
     onModify: (nutrition: List<String>) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    Column {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            TitleBar("영양 정보")
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(16.dp)
-            ) {
-                ButtonContainerBar(
-                    text = "권장 섭취량 수정",
-                    descriptor = "권장 섭취량 수정 버튼",
-                    icon = R.drawable.baseline_mode_24,
-                    onClick = onButtonClicked
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        TitleBar("전체 영양 정보")
+        ColumnWithDefault {
+            repeat(Nutrition.entries.size) { index ->
+                CircularGraphCard(
+                    nutrition = Nutrition.entries[index],
+                    intake = nutritionState[index]
                 )
-                repeat(Nutrition.entries.size) { index ->
-                    CircularGraphCard(
-                        nutrition = Nutrition.entries[index],
-                        intake = nutritionState[index]
-                    )
-                }
             }
         }
     }
@@ -223,13 +208,17 @@ fun NutritionOverview(
 @Preview
 @Composable
 fun PreviewNutritionOverview() {
-    var showDialog by remember { mutableStateOf(false) }
+    Scaffold {
+        Box(modifier = Modifier.padding(it)) {
+            var showDialog by remember { mutableStateOf(false) }
 
-    NutritionOverview(
-        nutritionState = testNutritionState,
-        showDialog = showDialog,
-        onButtonClicked = { showDialog = true },
-        onModify = { showDialog = false },
-        onDismiss = { showDialog = false },
-    )
+            NutritionOverview(
+                nutritionState = testNutritionState,
+                showDialog = showDialog,
+                onButtonClicked = { showDialog = true },
+                onModify = { showDialog = false },
+                onDismiss = { showDialog = false },
+            )
+        }
+    }
 }

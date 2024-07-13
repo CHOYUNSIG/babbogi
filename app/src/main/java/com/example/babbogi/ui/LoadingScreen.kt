@@ -2,7 +2,9 @@ package com.example.babbogi.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -20,10 +22,9 @@ import com.example.babbogi.model.BabbogiViewModel
 
 @Composable
 fun LoadingScreen(viewModel: BabbogiViewModel, navController: NavController) {
-    if (!viewModel.isServerResponding)
-        navController.navigate(Screen.Home.name) {
-            popUpTo(navController.graph.startDestinationId) { inclusive = true }
-        }
+    if (!viewModel.isServerResponding) navController.navigate(Screen.Home.name) {
+        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+    }
     Loading()
 }
 
@@ -45,5 +46,9 @@ fun Loading() {
 @Preview
 @Composable
 fun PreviewLoading() {
-    Loading()
+    Scaffold {
+        Box(modifier = Modifier.padding(it)) {
+            Loading()
+        }
+    }
 }

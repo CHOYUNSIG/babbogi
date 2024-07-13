@@ -8,20 +8,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -57,12 +52,10 @@ import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.model.DataPreference
 import com.example.babbogi.ui.view.Calendar
-import com.example.babbogi.ui.view.ElevatedCardWithDefault
-import com.example.babbogi.ui.view.NutritionBarGraph
-import com.example.babbogi.ui.view.NutritionCircularGraph
+import com.example.babbogi.ui.view.HealthAbstraction
+import com.example.babbogi.ui.view.NutritionAbstraction
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.HealthState
-import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionState
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.testHealthState
@@ -80,6 +73,7 @@ fun HomeScreen(viewModel: BabbogiViewModel, navController: NavController) {
     var showDatePopup by remember { mutableStateOf(false) }
     LaunchedEffect(key1 = null) { viewModel.asyncGetFoodListFromServer(today) }
 
+    /*
     // 튜토리얼 페이지
     if (!DataPreference.isTutorialComplete())
         navController.navigate(Screen.Tutorial.name)
@@ -90,6 +84,7 @@ fun HomeScreen(viewModel: BabbogiViewModel, navController: NavController) {
         if (!notificationPermission.hasPermission)
             LaunchedEffect(key1 = null) { notificationPermission.launchPermissionRequest() }
     }
+    */
 
     Home(
         today = today,
@@ -123,53 +118,6 @@ fun HomeScreen(viewModel: BabbogiViewModel, navController: NavController) {
             showDatePopup = false
         }
     )
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun DateSelector(
-    today: LocalDate,
-    onDateBarClicked: () -> Unit,
-    onDateChanged: (Int) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = { onDateChanged(-1) }) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_chevron_left_24),
-                contentDescription = "이전",
-            )
-        }
-        ElevatedCardWithDefault(
-            onClick = onDateBarClicked,
-            modifier = Modifier.width(250.dp)
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-                Text(
-                    text = today.toString(),
-                    color = Color.DarkGray,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Normal,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-        IconButton(onClick = { onDateChanged(1) }) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_chevron_right_24),
-                contentDescription = "다음"
-            )
-        }
-    }
 }
 
 @Composable
@@ -240,185 +188,7 @@ fun InputUserData(onInputUserDataClicked: () -> Unit) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun NutritionAbstraction(nutritionState: NutritionState, onClick: () -> Unit) {
-    ElevatedCardWithDefault(onClick = onClick) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "오늘(${LocalDate.now()})의 영양 상태",
-                modifier = Modifier.padding(16.dp),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = stringResource(id = Nutrition.Calorie.res))
-                NutritionBarGraph(nutrition = Nutrition.Calorie, intake = nutritionState[Nutrition.Calorie])
-            }
-            Row(modifier = Modifier.padding(16.dp)) {
-                listOf(Nutrition.Carbohydrate, Nutrition.Protein, Nutrition.Fat).forEach {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = stringResource(id = it.res))
-                        NutritionCircularGraph(nutrition = it, intake = nutritionState[it])
-                    }
-                }
-            }
-        }
-    }
-}
 
-@Composable
-fun HealthAbstraction(
-    healthState: HealthState,
-    onClick: () -> Unit
-) {
-    ElevatedCardWithDefault {
-        Column {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = 16.dp)
-            ) {
-                Text(
-                    text = "사용자 건강 정보",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W600,
-                )
-                IconButton(onClick = onClick) {
-                    Icon(
-                        modifier = Modifier.size(30.dp),
-                        painter = painterResource(id = R.drawable.baseline_mode_24),
-                        contentDescription = "정보 수정하기 아이콘"
-                    )
-                }
-            }
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(16.dp)
-            ) {
-                listOf(
-                    listOf("키", healthState.height.toString(), "cm"),
-                    listOf("몸무게", healthState.weight.toString(), "kg"),
-                    listOf("나이", healthState.age.toString(), "세"),
-                    listOf("성별", healthState.gender.toString(), ""),
-                    listOf("성인병", healthState.adultDisease?.toString() ?: "없음", ""),
-                ).forEach { (attribute, value, unit) ->
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = attribute)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = value)
-                            Text(text = unit)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun MealList(
-    foodList: List<Pair<Product, Int>>?,
-    onEnrollClicked: () -> Unit
-) {
-    ElevatedCardWithDefault {
-        Column {
-            Box(
-                contentAlignment = Alignment.TopStart,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp, horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = "사용자 식사 정보",
-                        color = Color.Black.copy(alpha = 0.5f),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.W600,
-                    )
-                    IconButton(
-                        onClick = onEnrollClicked,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            tint = Color.Green,
-                            modifier = Modifier.size(160.dp),
-                            painter = painterResource(id = R.drawable.ic_add_box_24),
-                            contentDescription = "정보 추가하기 아이콘"
-                        )
-                    }
-                }
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(500.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                if (foodList == null)
-                    Row (
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        CircularProgressIndicator(modifier = Modifier
-                            .size(50.dp)
-                            .padding(16.dp))
-                    }
-                else if (foodList.isEmpty())
-                    Text("섭취한 음식이 없어요!", color = Color.Gray, modifier = Modifier.padding(16.dp))
-                else
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        foodList.forEach { (product, amount) ->
-                            ElevatedCardWithDefault {
-                                Column (
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(
-                                            text = product.name,
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.Bold,
-                                        )
-                                        Text(
-                                            text = "x$amount",
-                                            fontSize = 20.sp,
-                                        )
-                                    }
-                                    Text(
-                                        text = product.nutrition?.toString(List(Nutrition.entries.size) { stringResource(id = Nutrition.entries[it].res) }) ?: "",
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -463,7 +233,7 @@ fun Home(
                         onDateBarClicked = onDateBarClicked,
                         onDateChanged = onDateChanged,
                     )
-                    MealList(foodList, onEnrollClicked)
+                    MealList(foodList)
                 }
             }
         }

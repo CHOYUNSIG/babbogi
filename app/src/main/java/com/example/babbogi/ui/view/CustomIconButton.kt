@@ -9,7 +9,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.babbogi.R
 
 @Composable
 fun CustomIconButton(
@@ -28,4 +30,10 @@ fun CustomIconButton(
             contentDescription = "Send"
         )
     }
+}
+
+@Preview
+@Composable
+fun PreviewCustomIconButton() {
+    CustomIconButton(onClick = {}, icon = R.drawable.baseline_send_24)
 }

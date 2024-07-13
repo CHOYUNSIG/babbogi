@@ -5,7 +5,7 @@ import kotlin.random.Random
 
 // 개인 영양 정보
 data class NutritionState(
-    val map: Map<Nutrition, IntakeState> = Array(Nutrition.entries.size) {
+    val map: NutritionMap<IntakeState> = Array(Nutrition.entries.size) {
         Nutrition.entries[it] to IntakeState(Nutrition.entries[it].defaultRecommend)
     }.toMap()
 ) {
@@ -20,7 +20,7 @@ data class IntakeState(
 ) {
     fun getRatio(): Float {
         val result = ingested / recommended
-        return if (result.isNaN()) 0.0f else result
+        return if (result.isNaN()) 1.0f else result
     }
 }
 
