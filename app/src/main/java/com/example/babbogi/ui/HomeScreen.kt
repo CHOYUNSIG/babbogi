@@ -485,7 +485,7 @@ fun Home(
     }
 }
 
-@Preview
+    @Preview
 @Composable
 fun PreviewHome() {
     var today by remember { mutableStateOf(LocalDate.now()) }

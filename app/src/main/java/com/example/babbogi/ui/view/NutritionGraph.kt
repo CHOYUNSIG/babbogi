@@ -77,7 +77,7 @@ fun NutritionCircularGraph(nutrition: Nutrition, intake: IntakeState) {
                 .padding(16.dp)
         ) {
             drawArc(
-                color = Color.Gray,
+                color = Color(0x504DED5D),
                 startAngle = 0f,
                 sweepAngle = 360f,
                 useCenter = false,
@@ -122,7 +122,7 @@ fun NutritionBarGraph(nutrition: Nutrition, intake: IntakeState) {
                 .height(30.dp)
         ) {
             drawRoundRect(
-                color = Color.Gray,
+                color =  Color(0x504DED5D),
                 size = Size(size.width, 8.dp.toPx()),
                 cornerRadius = CornerRadius(100f, 100f)
             )
