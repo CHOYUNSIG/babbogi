@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -25,9 +26,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.babbogi.R
 import java.time.LocalDate
 
@@ -117,7 +121,7 @@ fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
 }
 
 @Composable
-fun CalendarDay(day: Int? = null, isSelected: Boolean = false, onClick: () -> Unit = {}) {
+private fun CalendarDay(day: Int? = null, isSelected: Boolean = false, onClick: () -> Unit = {}) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -136,6 +140,60 @@ fun CalendarDay(day: Int? = null, isSelected: Boolean = false, onClick: () -> Un
             ) {
                 Text(text = day.toString(), color = Color.Black)
             }
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun DateSelector(
+    today: LocalDate,
+    onDateChanged: (LocalDate) -> Unit
+) {
+    var showCalendar by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = { onDateChanged(today.minusDays(1)) }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_chevron_left_24),
+                contentDescription = "하루 전",
+            )
+        }
+        ElevatedCardWithDefault(
+            onClick = { showCalendar = true },
+            modifier = Modifier.weight(1f)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = today.toString(),
+                    color = Color.DarkGray,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Normal,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        IconButton(onClick = { onDateChanged(today.plusDays(1)) }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_chevron_right_24),
+                contentDescription = "하루 후"
+            )
+        }
+    }
+
+    if (showCalendar) Dialog(onDismissRequest = { showCalendar = false}) {
+        Calendar {
+            showCalendar = false
+            onDateChanged(it)
         }
     }
 }

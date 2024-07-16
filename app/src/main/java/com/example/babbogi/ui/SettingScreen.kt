@@ -5,11 +5,14 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -39,10 +42,12 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.HealthAbstraction
 import com.example.babbogi.ui.view.InputHolder
+import com.example.babbogi.ui.view.ListModificationPopup
 import com.example.babbogi.ui.view.NutritionRecommendationAbstraction
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.HealthState
@@ -56,15 +61,14 @@ import com.example.babbogi.util.toFloat2
 @Composable
 fun SettingScreen(viewModel: BabbogiViewModel, navController: NavController) {
     Setting(
-        healthState = viewModel.healthState!!,
+        healthState = viewModel.healthState,
         recommendation = viewModel.nutritionRecommendation,
-        notificationState = true,
+        notificationState = viewModel.notificationActivation,
         onNotificationStateChanged = {
             /* TODO: 뷰모델에 알림 처리 추가 */
+            viewModel.notificationActivation = it
         },
-        onHealthCardClicked = {
-            navController.navigate(Screen.HealthProfile.name)
-        },
+        onHealthCardClicked = { navController.navigate(Screen.HealthProfile.name) },
         onRecommendationChanged = {
             navController.navigate(Screen.Loading.name)
             viewModel.changeNutritionRecommendation(it) {
@@ -81,7 +85,7 @@ fun SettingScreen(viewModel: BabbogiViewModel, navController: NavController) {
 
 @Composable
 fun Setting(
-    healthState: HealthState,
+    healthState: HealthState?,
     recommendation: NutritionRecommendation,
     notificationState: Boolean,
     onNotificationStateChanged: (Boolean) -> Unit,
@@ -91,10 +95,10 @@ fun Setting(
 ) {
     var showRecommendationDialog by remember { mutableStateOf(false) }
 
-    Column {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         TitleBar(title = "설정")
         ColumnWithDefault {
-            HealthAbstraction(
+            if (healthState != null) HealthAbstraction(
                 healthState = healthState,
                 onClick = onHealthCardClicked,
             ) {
@@ -102,6 +106,21 @@ fun Setting(
                     painter = painterResource(id = R.drawable.baseline_edit_24),
                     contentDescription = "건강 정보 수정",
                 )
+            }
+            else ElevatedCardWithDefault(onClick = onHealthCardClicked) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(text = "건강 정보 입력", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_edit_24),
+                        contentDescription = "건강 정보 입력",
+                    )
+                }
             }
             NutritionRecommendationAbstraction(
                 recommendation = recommendation,
@@ -136,7 +155,7 @@ fun Setting(
                 ) {
                     Text(text = "메뉴얼 다시 보기", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_check_24),
+                        painter = painterResource(id = R.drawable.baseline_menu_book_24),
                         contentDescription = "메뉴얼 다시 보기",
                     )
                 }
@@ -157,74 +176,40 @@ private fun NutritionRecommendationPopup(
     onModifyClicked: (NutritionRecommendation) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var nutritionText by remember {
-        mutableStateOf(Nutrition.entries.map { recommendation[it]!!.toString() } )
-    }
-
-    Dialog(onDismissRequest = onDismiss) {
-        ElevatedCardWithDefault {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                repeat(Nutrition.entries.size) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        OutlinedTextField(
-                            value = nutritionText[it],
-                            onValueChange = { changedText ->
-                                nutritionText = nutritionText.mapIndexed { i, p ->
-                                    if (i == it) changedText else p
-                                }
-                            },
-                            label = { Text(stringResource(id = Nutrition.entries[it].res)) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                            modifier = Modifier.fillMaxWidth(0.7f),
-                            enabled = true,
-                        )
-                        Text(text = Nutrition.entries[it].unit, fontSize = 20.sp)
-                    }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Button(
-                        onClick = {
-                            onModifyClicked(
-                                Nutrition.entries.mapIndexed { index, nutrition ->
-                                    nutrition to nutritionText[index].toFloat2(recommendation[nutrition]!!)
-                                }.toMap()
-                            )
-                        }
-                    ) {
-                        Text(text = "Modify")
-                    }
-                }
-            }
+    ListModificationPopup(
+        defaultTexts = Nutrition.entries.map { recommendation[it]!!.toString() },
+        types = List(Nutrition.entries.size) { KeyboardType.Number },
+        labels = Nutrition.entries.map { stringResource(id = it.res) },
+        units = Nutrition.entries.map { it.unit },
+        onDismiss = onDismiss,
+        onModifyClicked = { texts ->
+            onModifyClicked(
+                texts.mapIndexed { index, text ->
+                    Nutrition.entries[index] to text.toFloat2(
+                        recommendation[Nutrition.entries[index]]!!
+                    )
+                }.toMap()
+            )
         }
-    }
+    )
 }
 
 @Preview
 @Composable
 fun PreviewSetting() {
-    Scaffold {
-        Box(modifier = Modifier.padding(it)) {
-            Setting(
-                healthState = testHealthState,
-                recommendation = testNutritionRecommendation,
-                notificationState = true,
-                onHealthCardClicked = {},
-                onRecommendationChanged = {},
-                onNotificationStateChanged = {},
-                onTutorialRestartClicked = {},
-            )
+    BabbogiTheme {
+        Scaffold {
+            Box(modifier = Modifier.padding(it)) {
+                Setting(
+                    healthState = testHealthState,
+                    recommendation = testNutritionRecommendation,
+                    notificationState = true,
+                    onHealthCardClicked = {},
+                    onRecommendationChanged = {},
+                    onNotificationStateChanged = {},
+                    onTutorialRestartClicked = {},
+                )
+            }
         }
     }
 }
