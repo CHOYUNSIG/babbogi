@@ -40,6 +40,7 @@ import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.ListModificationPopup
+import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.Nutrition
@@ -293,7 +294,7 @@ private fun FoodList(
 @Composable
 fun PreviewFoodList() {
     BabbogiTheme {
-        Scaffold {
+        Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
             Box(modifier = Modifier.padding(it)) {
                 FoodList(
                     productList = testProductList,
