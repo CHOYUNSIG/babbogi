@@ -1,14 +1,22 @@
 package com.example.babbogi.util
 
+import kotlinx.serialization.Serializable
 import kotlin.random.Random
 import kotlin.random.nextUInt
 
 
 // 상품 정보
+@Serializable
 data class Product(
     val name: String,
     val nutrition: NutritionMap<Float>?
 )
+
+fun List<Pair<Product, Int>>.toNutritionIntake(): NutritionIntake = Nutrition.entries.associateWith { nutrition ->
+    this.sumOf {
+        ((it.first.nutrition?.get(nutrition) ?: 0f) * it.second).toDouble()
+    }.toFloat()
+}
 
 
 // 테스트용 제품 데이터
