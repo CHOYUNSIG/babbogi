@@ -71,6 +71,7 @@ fun CustomSlider(
     forwardIcon: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
     dotsSize: Dp = 10.dp,
     imageCornerRadius: Dp = 16.dp,
+    onComplete: () -> Unit
 ) {
     val pagerState = rememberPagerState(pageCount = { sliderList.size })
     val scope = rememberCoroutineScope()
@@ -78,44 +79,44 @@ fun CustomSlider(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
     ) {
-        Row(
-            modifier = modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            IconButton(
-                enabled = pagerState.currentPage > 0,
-                onClick = { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) } }
-            ) {
-                Icon(imageVector = backwardIcon, contentDescription = "back")
-            }
-            HorizontalPager(
-                state = pagerState,
-                modifier = modifier.weight(1f)
-            ) { page ->
-                val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-                val scaleFactor = 0.75f + (1f - 0.75f) * (1f - pageOffset.absoluteValue)
-                Box(modifier = modifier
+        HorizontalPager(
+            state = pagerState,
+            modifier = modifier.weight(1f)
+        ) { page ->
+            val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+            val scaleFactor = 0.75f + (1f - 0.75f) * (1f - pageOffset.absoluteValue)
+            Box(
+                modifier = modifier
                     .graphicsLayer {
                         scaleX = scaleFactor
                         scaleY = scaleFactor
                     }
                     .alpha(scaleFactor.coerceIn(0f, 1f))
                     .padding(10.dp)
-                    .clip(RoundedCornerShape(imageCornerRadius))) {
-                    androidx.compose.foundation.Image(
-                        painter = painterResource(id = sliderList[page]),
-                        contentDescription = "Image",
-                        contentScale = ContentScale.Fit,
-                    )
+                    .clip(RoundedCornerShape(imageCornerRadius))
+            ) {
+                androidx.compose.foundation.Image(
+                    painter = painterResource(id = sliderList[page]),
+                    contentDescription = "Image",
+                    contentScale = ContentScale.Fit,
+                )
+                Box(
+                    contentAlignment = Alignment.TopEnd,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    IconButton(
+                        onClick = onComplete,
+                        modifier = Modifier.size(75.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_skip_24),
+                            contentDescription = "Skip",
+                            modifier = Modifier.size(75.dp)
+                        )
+                    }
                 }
-            }
-            IconButton(enabled = pagerState.currentPage < sliderList.size - 1, onClick = {
-                scope.launch {
-                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                }
-            }) {
-                Icon(imageVector = forwardIcon, contentDescription = "forward")
             }
         }
         Row(
@@ -149,15 +150,7 @@ fun GuidePage(
             .fillMaxWidth()
             .padding(top = 16.dp)
     ) {
-        CustomSlider(sliderList = list)
-    }
-    Box(
-        contentAlignment = Alignment.BottomEnd,
-        modifier = Modifier
-            .padding(50.dp)
-            .fillMaxSize()
-    ) {
-        CustomIconButton(onClick = onComplete, icon = R.drawable.baseline_check_24)
+        CustomSlider(sliderList = list, onComplete = onComplete)
     }
 }
 
