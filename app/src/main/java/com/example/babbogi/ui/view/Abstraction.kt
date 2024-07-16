@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +33,7 @@ import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.testProduct1
 import com.example.babbogi.util.testProduct2
 import com.example.babbogi.util.testProduct3
+import com.example.babbogi.ui.theme.BabbogiGreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -177,29 +179,33 @@ fun ProductAbstraction(
         } else listOf(nullMessage to Pair("", "")),
         onClick = onClick
     ) {
-        Row (
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Column {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = product.name.ifEmpty { "(이름 없음)" },
-                    color = if (product.name.isEmpty()) Color.Gray else Color.Black,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (amount != null)
-                    Text(text = "x$amount", fontSize = 16.sp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Text(
+                        text = product.name.ifEmpty { "(이름 없음)" },
+                        color = if (product.name.isEmpty()) Color.Gray else Color.Black,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (amount != null)
+                        Text(text = "x$amount", fontSize = 16.sp)
+                }
+                icon()
             }
-            icon()
+            Divider(color = BabbogiGreen, thickness = 2.dp)
         }
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
