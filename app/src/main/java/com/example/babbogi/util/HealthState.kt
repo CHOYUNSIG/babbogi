@@ -1,5 +1,7 @@
 package com.example.babbogi.util
 
+import kotlinx.serialization.Serializable
+
 
 enum class AdultDisease {
     Diabetes { override fun toString() = "당뇨" },
@@ -11,6 +13,7 @@ enum class Gender {
     Female { override fun toString() = "여자" },
 }
 
+@Serializable
 data class HealthState (
     val height: Float,
     val weight: Float,
@@ -18,6 +21,7 @@ data class HealthState (
     val gender: Gender,
     val adultDisease: AdultDisease?,
 )
+
 
 // 테스트용 건강 상태
 val testHealthState = HealthState(
