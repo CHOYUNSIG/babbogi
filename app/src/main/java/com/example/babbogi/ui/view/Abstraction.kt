@@ -3,25 +3,31 @@ package com.example.babbogi.ui.view
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.babbogi.R
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
-import com.example.babbogi.util.NutritionState
+import com.example.babbogi.util.NutritionIntake
+import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.testHealthState
-import com.example.babbogi.util.testNutritionState
+import com.example.babbogi.util.testNutritionIntake
+import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.testProduct1
 import com.example.babbogi.util.testProduct2
 import com.example.babbogi.util.testProduct3
@@ -29,7 +35,8 @@ import com.example.babbogi.util.testProduct3
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NutritionAbstraction(
-    nutritionState: NutritionState,
+    recommendation: NutritionRecommendation,
+    intake: NutritionIntake,
     onClick: () -> Unit
 ) {
     ElevatedCardWithDefault(onClick = onClick) {
@@ -38,14 +45,19 @@ fun NutritionAbstraction(
                 Text(text = stringResource(id = Nutrition.Calorie.res))
                 NutritionBarGraph(
                     nutrition = Nutrition.Calorie,
-                    intake = nutritionState[Nutrition.Calorie]
+                    recommendation = recommendation[Nutrition.Calorie]!!,
+                    intake = intake[Nutrition.Calorie]!!,
                 )
             }
             Row {
                 listOf(Nutrition.Carbohydrate, Nutrition.Protein, Nutrition.Fat).forEach {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = stringResource(id = it.res))
-                        NutritionCircularGraph(nutrition = it, intake = nutritionState[it])
+                        NutritionCircularGraph(
+                            nutrition = it,
+                            recommendation = recommendation[it]!!,
+                            intake = intake[it]!!,
+                        )
                     }
                 }
             }
@@ -61,12 +73,7 @@ fun Abstraction(
 ) {
     ElevatedCardWithDefault(onClick = onClick) {
         ColumnWithDefault {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                title()
-            }
+            Box(modifier = Modifier.fillMaxWidth()) { title() }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 data.forEach { row ->
                     val (key, pair) = row
@@ -94,7 +101,8 @@ fun Abstraction(
 @Composable
 fun HealthAbstraction(
     healthState: HealthState,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    icon: @Composable () -> Unit = {},
 ) {
     Abstraction(
         data = listOf(
@@ -106,33 +114,48 @@ fun HealthAbstraction(
         ),
         onClick = onClick,
     ) {
-        Text(
-            text = "사용자 건강 정보",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.W600,
-        )
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "사용자 건강 정보",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.W600,
+            )
+            icon()
+        }
     }
 }
 
 @Composable
 fun NutritionRecommendationAbstraction(
-    nutritionState: NutritionState,
-    onClick: () -> Unit = {}
+    recommendation: NutritionRecommendation,
+    onClick: () -> Unit = {},
+    icon: @Composable () -> Unit = {},
 ) {
     Abstraction(
         data = Nutrition.entries.map { nutrition ->
             stringResource(id = nutrition.res) to Pair(
-                nutritionState[nutrition].recommended.toString(),
+                recommendation[nutrition]!!.toString(),
                 nutrition.unit
             )
         },
         onClick = onClick
     ) {
-        Text(
-            text = "권장 섭취량",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.W600,
-        )
+        Row (
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "권장 섭취량",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.W600,
+            )
+            icon()
+        }
     }
 }
 
@@ -141,7 +164,8 @@ fun ProductAbstraction(
     product: Product,
     amount: Int? = null,
     nullMessage: String = "",
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    icon: @Composable () -> Unit = {},
 ) {
     Abstraction(
         data = if (product.nutrition != null) Nutrition.entries.map { nutrition ->
@@ -152,14 +176,26 @@ fun ProductAbstraction(
         } else listOf(nullMessage to Pair("", "")),
         onClick = onClick
     ) {
-        Text(
-            text = product.name,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            overflow = TextOverflow.Ellipsis,
-        )
-        if (amount != null)
-            Text(text = "x$amount", fontSize = 16.sp)
+        Row (
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    text = product.name,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (amount != null)
+                    Text(text = "x$amount", fontSize = 16.sp)
+            }
+            icon()
+        }
     }
 }
 
@@ -167,19 +203,26 @@ fun ProductAbstraction(
 @Preview
 @Composable
 fun PreviewNutritionAbstraction() {
-    NutritionAbstraction(testNutritionState) {}
+    NutritionAbstraction(
+        recommendation = testNutritionRecommendation,
+        intake = testNutritionIntake,
+    ) {}
 }
 
 @Preview
 @Composable
 fun PreviewHealthAbstraction() {
-    HealthAbstraction(testHealthState) {}
+    HealthAbstraction(testHealthState) {
+        Icon(painter = painterResource(id = R.drawable.baseline_edit_24), contentDescription = "")
+    }
 }
 
 @Preview
 @Composable
 fun PreviewNutritionRecommendationAbstraction() {
-    NutritionRecommendationAbstraction(testNutritionState)
+    NutritionRecommendationAbstraction(testNutritionRecommendation) {
+        Icon(painter = painterResource(id = R.drawable.baseline_edit_24), contentDescription = "")
+    }
 }
 
 @Preview
@@ -187,6 +230,8 @@ fun PreviewNutritionRecommendationAbstraction() {
 fun PreviewProductAbstraction() {
     ProductAbstraction(
         product = listOf(testProduct1, testProduct2, testProduct3).random(),
-        amount = listOf(null, 1, 2, 3).random(),
-    )
+        amount = listOf(1, 2, 3).random()
+    ) {
+        Icon(painter = painterResource(id = R.drawable.baseline_edit_24), contentDescription = "")
+    }
 }

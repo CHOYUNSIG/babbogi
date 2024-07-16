@@ -10,14 +10,11 @@ import com.example.babbogi.network.response.ServerUserStateFormat
 import com.example.babbogi.network.response.toHealthState
 import com.example.babbogi.network.response.toMap
 import com.example.babbogi.network.response.toProduct
-import com.example.babbogi.network.response.toRemainingMap
 import com.example.babbogi.network.response.toServerNutritionFormat
 import com.example.babbogi.network.response.toServerUserStateFormat
 import com.example.babbogi.util.HealthState
-import com.example.babbogi.util.IntakeState
-import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionMap
-import com.example.babbogi.util.NutritionState
+import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit
@@ -48,14 +45,9 @@ interface ServerApiService {
     ): List<ServerUserStateFormat>
 
     @GET("UserNutrition")
-    suspend fun getNutritionRecommend(
+    suspend fun getNutritionRecommendation(
         @Query(value = "id") id: Long
     ): ServerNutritionFormat
-
-    @GET("send-notification")
-    suspend fun getNotification(
-        @Query(value = "token") token: String
-    ): String
 
     @POST("consumptions")
     suspend fun postProductList(
@@ -70,7 +62,7 @@ interface ServerApiService {
     ): String
 
     @PUT("User")
-    suspend fun putNutritionRecommend(
+    suspend fun putNutritionRecommendation(
         @Query(value = "id") id: Long,
         @Body nutrition: ServerNutritionFormat
     ): ServerNutritionFormat
@@ -85,35 +77,24 @@ object ServerApi {
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getProductList(id: Long, date: LocalDate): List<Pair<Product, Int>> {
         Log.d("ServerApi", "getProductList($id, $date)")
-        val response = retrofitService.getConsumeList(id, date.toString()).drop(1)
-        return response.filter{ it.foodName != null }.map { it.toProduct() to it.foodCount }
+        return retrofitService.getConsumeList(id, date.toString())
+            .filter{ it.foodName != null }
+            .map { it.toProduct() to it.foodCount }
     }
 
     suspend fun getHealthState(id: Long): HealthState {
         Log.d("ServerApi", "getHealthState($id)")
-        val response = retrofitService.getUserData(id).last()
-        return response.toHealthState()
+        return retrofitService.getUserData(id).last().toHealthState()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getNutritionState(id: Long): NutritionState {
-        Log.d("ServerApi", "getNutritionState($id)")
-        val recommend = retrofitService.getNutritionRecommend(id).toMap()
-        val response = retrofitService.getConsumeList(id, LocalDate.now().toString()).drop(1)
-        if (response.isEmpty()) return NutritionState(
-            Nutrition.entries.associateWith { IntakeState(recommend[it]!!) }
-        )
-        val remain = response.maxBy { it.id }.toRemainingMap()
-        return NutritionState(
-            Nutrition.entries.associateWith { IntakeState(recommend[it]!!, recommend[it]!! - remain[it]!!) }
-        )
+    suspend fun getNutritionRecommendation(id: Long): NutritionRecommendation {
+        Log.d("ServerApi", "getNutritionRecommendation($id)")
+        return retrofitService.getNutritionRecommendation(id).toMap()
     }
 
     suspend fun postProductList(id: Long, productList: List<Pair<Product, Int>>) {
         Log.d("ServerApi", "postProductList($id, $productList)")
-        retrofitService.postProductList(id, productList.map { (product, amount) ->
-            product.toServerNutritionFormat(amount)
-        })
+        retrofitService.postProductList(id, productList.map { (product, amount) -> product.toServerNutritionFormat(amount) })
     }
 
     suspend fun postHealthState(id: Long?, token: String, healthState: HealthState): Long {
@@ -122,9 +103,9 @@ object ServerApi {
         return response.toLong()
     }
 
-    suspend fun putNutritionRecommend(id: Long, nutrition: NutritionMap<Float>) {
+    suspend fun putNutritionRecommendation(id: Long, nutrition: NutritionMap<Float>) {
         Log.d("ServerApi", "putNutritionRecommend($id, $nutrition)")
-        retrofitService.putNutritionRecommend(id, nutrition.toServerNutritionFormat(id))
+        retrofitService.putNutritionRecommendation(id, nutrition.toServerNutritionFormat(id))
     }
 }
 

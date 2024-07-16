@@ -18,10 +18,11 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun DropDown(
     options: List<String>,
+    nullOption: String,
     index: Int?,
     onChange: (index: Int?) -> Unit
 ) {
-    val realOptions = listOf("해당 없음") + options
+    val realOptions = listOf(nullOption) + options
     var selectedText: String? by remember { mutableStateOf(if (index != null) options[index] else null) }
     var isExpended by remember { mutableStateOf(false) }
 
@@ -63,6 +64,7 @@ fun DropDown(
 fun PreviewDropDown() {
     DropDown(
         options = listOf("항목 1", "항목 2", "항목 3"),
+        nullOption = "해당 없음",
         index = 1,
         onChange = {}
     )

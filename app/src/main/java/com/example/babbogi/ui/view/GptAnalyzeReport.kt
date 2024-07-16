@@ -1,19 +1,21 @@
 package com.example.babbogi.ui.view
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -24,7 +26,13 @@ import androidx.compose.ui.unit.sp
 import com.example.babbogi.R
 
 @Composable
-fun GptAnalyzeReport(title: String, report: String?) {
+fun GptAnalyzeReport(
+    title: String,
+    report: String?,
+    onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
+) {
+    var isLoading by remember { mutableStateOf(false) }
+
     ElevatedCardWithDefault {
         ColumnWithDefault {
             Row(
@@ -53,12 +61,18 @@ fun GptAnalyzeReport(title: String, report: String?) {
                         .heightIn(max = 300.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    if (report != null) Box(modifier = Modifier.fillMaxWidth()) {
-                        Text(text = report)
-                    }
-                    else Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                        Button(onClick = { /*TODO*/ }) {
-                            Text(text = "레포트 생성하려면 클릭하세요")
+                    Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                        if (isLoading)
+                            CircularProgressIndicator(modifier = Modifier.size(50.dp))
+                        else if (report != null)
+                            Text(text = report)
+                        else Button(
+                            onClick = {
+                                isLoading = true
+                                onNewReportRequested { isLoading = false }
+                            }
+                        ) {
+                            Text(text = "레포트를 생성하려면 클릭하세요")
                         }
                     }
                 }
@@ -75,5 +89,6 @@ fun PreviewGptAnalyzeReport() {
     GptAnalyzeReport(
         title = "레포트 제목",
         report = report,
+        onNewReportRequested = {},
     )
 }

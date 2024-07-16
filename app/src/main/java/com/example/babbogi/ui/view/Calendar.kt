@@ -55,8 +55,7 @@ fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
                     )
                 }
                 Text(
-                    text = today.year.toString() + " " + today.month.toString().lowercase()
-                        .replaceFirstChar { it.uppercase() },
+                    text = today.year.toString() + "년 " + today.month.value.toString() + "월",
                     fontSize = 24.sp,
                 )
                 IconButton(onClick = { today = today.plusMonths(1) }) {

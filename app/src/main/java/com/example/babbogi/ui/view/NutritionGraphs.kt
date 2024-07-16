@@ -1,6 +1,7 @@
 package com.example.babbogi.ui.view
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -14,7 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -26,7 +30,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.babbogi.util.IntakeState
 import com.example.babbogi.util.Nutrition
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottomAxis
@@ -48,6 +51,7 @@ import com.patrykandpatrick.vico.core.common.shape.Shape
 import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.math.log
 import kotlin.math.min
 
 private fun getColorListByRatio(ratio: Float): List<Color> {
@@ -60,13 +64,13 @@ private fun getColorListByRatio(ratio: Float): List<Color> {
 }
 
 @Composable
-fun NutritionCircularGraph(nutrition: Nutrition, intake: IntakeState) {
+fun NutritionCircularGraph(nutrition: Nutrition, recommendation: Float, intake: Float) {
     val animatedValue = remember { Animatable(0f) }
 
-    LaunchedEffect(intake.getRatio()) {
+    LaunchedEffect(true) {
         animatedValue.animateTo(
-            targetValue = intake.getRatio() * 360,
-            animationSpec = tween(durationMillis = 2000, easing = LinearEasing)
+            targetValue = intake / recommendation * 360,
+            animationSpec = tween(durationMillis = 500, easing = LinearEasing)
         )
     }
 
@@ -86,7 +90,7 @@ fun NutritionCircularGraph(nutrition: Nutrition, intake: IntakeState) {
             )
             drawArc(
                 brush = Brush.linearGradient(
-                    colors = getColorListByRatio(intake.getRatio()),
+                    colors = getColorListByRatio(intake / recommendation),
                     start = Offset.Zero,
                     end = Offset.Infinite,
                 ),
@@ -97,17 +101,17 @@ fun NutritionCircularGraph(nutrition: Nutrition, intake: IntakeState) {
                 style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
             )
         }
-        Text(text = "${"%.1f".format(intake.ingested)}${nutrition.unit}")
+        Text(text = "${"%.1f".format(intake)}${nutrition.unit}")
     }
 }
 
 @Composable
-fun NutritionBarGraph(nutrition: Nutrition, intake: IntakeState) {
+fun NutritionBarGraph(nutrition: Nutrition, recommendation: Float, intake: Float) {
     val animatedValue = remember { Animatable(0f) }
 
-    LaunchedEffect(intake.getRatio()) {
+    LaunchedEffect(true) {
         animatedValue.animateTo(
-            targetValue = intake.getRatio(),
+            targetValue = intake / recommendation,
             animationSpec = tween(durationMillis = 2000, easing = LinearEasing)
         )
     }
@@ -128,7 +132,7 @@ fun NutritionBarGraph(nutrition: Nutrition, intake: IntakeState) {
             )
             drawRoundRect(
                 brush = Brush.linearGradient(
-                    colors = getColorListByRatio(intake.getRatio()),
+                    colors = getColorListByRatio(intake / recommendation),
                     start = Offset.Zero,
                     end = Offset.Infinite,
                 ),
@@ -136,7 +140,7 @@ fun NutritionBarGraph(nutrition: Nutrition, intake: IntakeState) {
                 cornerRadius = CornerRadius(100f, 100f)
             )
         }
-        Text(text = "${"%.1f".format(intake.ingested)}${nutrition.unit}")
+        Text(text = "${"%.1f".format(intake)}${nutrition.unit}")
     }
 }
 
@@ -145,14 +149,15 @@ fun NutritionBarGraph(nutrition: Nutrition, intake: IntakeState) {
 fun NutritionPeriodBarGraph(
     nutrition: Nutrition,
     recommend: Float,
-    data: Map<LocalDate, Float>,
+    intakes: Map<LocalDate, Float>,
 ) {
     val producer = remember { CartesianChartModelProducer.build() }
-    val xToDateMapKey = ExtraStore.Key<Map<Float, LocalDate>>()
-    val xToDates = data.keys.associateBy { it.toEpochDay().toFloat() }
-    LaunchedEffect(data) {
+    val xToDateMapKey by remember { mutableStateOf(ExtraStore.Key<Map<Long, LocalDate>>()) }
+
+    LaunchedEffect(intakes) {
         producer.tryRunTransaction {
-            columnSeries { series(x = xToDates.keys, y = data.values) }
+            val xToDates = intakes.keys.associateBy { it.toEpochDay() }
+            columnSeries { series(x = xToDates.keys, y = intakes.values) }
             updateExtras { it[xToDateMapKey] = xToDates }
         }
     }
@@ -166,7 +171,7 @@ fun NutritionPeriodBarGraph(
                         shape = Shape.Pill,
                         dynamicShader = DynamicShader.verticalGradient(
                             getColorListByRatio(
-                                (data.values.average() / recommend).toFloat()
+                                (intakes.values.average() / recommend).toFloat()
                             ).toTypedArray()
                         ),
                     ))
@@ -181,7 +186,7 @@ fun NutritionPeriodBarGraph(
             bottomAxis = rememberBottomAxis(
                 guideline = null,
                 valueFormatter = { x, chartValues, _ ->
-                    (chartValues.model.extraStore[xToDateMapKey][x] ?: LocalDate.ofEpochDay(x.toLong()))
+                    (chartValues.model.extraStore[xToDateMapKey][x.toLong()] ?: LocalDate.ofEpochDay(x.toLong()))
                         .format(DateTimeFormatter.ofPattern("M/d"))
                 }
             ),
@@ -209,13 +214,21 @@ fun NutritionPeriodBarGraph(
 @Preview
 @Composable
 fun PreviewNutritionCircularGraph() {
-    NutritionCircularGraph(Nutrition.Calorie, IntakeState(2200f, 1900f))
+    NutritionCircularGraph(
+        nutrition = Nutrition.Calorie,
+        recommendation = 2200f,
+        intake = 2000f,
+    )
 }
 
 @Preview
 @Composable
 fun PreviewNutritionBarGraph() {
-    NutritionBarGraph(Nutrition.Calorie, IntakeState(2200f, 1900f))
+    NutritionBarGraph(
+        nutrition = Nutrition.Calorie,
+        recommendation = 2200f,
+        intake = 2000f,
+    )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -234,6 +247,6 @@ fun PreviewPeriodBarGraph() {
     NutritionPeriodBarGraph(
         nutrition = Nutrition.Calorie,
         recommend = Nutrition.Calorie.defaultRecommend,
-        data = data,
+        intakes = data,
     )
 }
