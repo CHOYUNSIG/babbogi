@@ -92,7 +92,7 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
                 },
                 onProductFetched = {
                     isFetching = false
-                    if (it != null) product = it
+                    product = it
                 }
             )
         }
@@ -104,6 +104,7 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
             product = product,
             onAddClicked = {
                 product?.let { viewModel.addProduct(it) }
+                product = null
                 showDialog = false
                 recognizedCount++
             },

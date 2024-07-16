@@ -92,23 +92,21 @@ class BabbogiViewModel: ViewModel() {
                 imageProxy.close()
                 return@analyzing
             }
+            isFetching = true
             barcodeRecognizer.process(
                 InputImage.fromMediaImage(image, imageProxy.imageInfo.rotationDegrees)
             ).addOnCompleteListener { task ->
                 viewModelScope.launch {
-                    isFetching = true
                     var success: Boolean? = null
                     var product: Product? = null
                     try {
-                        val barcode = task.result.firstOrNull { raw ->
-                            raw.rawValue != null && raw.rawValue!!.isNotEmpty()
-                        }?.rawValue ?: return@launch
+                        val barcode = task.result.firstOrNull { raw -> raw.rawValue?.isNotEmpty() ?: false }?.rawValue ?: return@launch
                         onBarcodeRecognized(barcode)
                         success = false
-                        val prodName = BarcodeApi.getProducts(barcode).firstOrNull()?.name ?: return@launch
+                        val productName = BarcodeApi.getProducts(barcode).firstOrNull()?.name ?: return@launch
                         product = Product(
-                            prodName,
-                            NutritionApi.getNutrition(prodName).firstOrNull(),
+                            productName,
+                            NutritionApi.getNutrition(productName).firstOrNull(),
                         )
                         success = true
                     }
@@ -117,8 +115,10 @@ class BabbogiViewModel: ViewModel() {
                         Log.d("ViewModel", "Cannot get product info")
                     }
                     finally {
-                        if (success != null) onProductFetched(product)
-                        if (success == true) cameraController.clearImageAnalysisAnalyzer()
+                        if (success != null) {
+                            onProductFetched(product)
+                            cameraController.clearImageAnalysisAnalyzer()
+                        }
                         isFetching = false
                         imageProxy.close()
                     }
