@@ -18,6 +18,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTheme
 
 @Composable
 fun LoadingScreen(viewModel: BabbogiViewModel, navController: NavController) {
@@ -43,9 +44,11 @@ fun Loading() {
 @Preview
 @Composable
 fun PreviewLoading() {
-    Scaffold {
-        Box(modifier = Modifier.padding(it)) {
-            Loading()
+    BabbogiTheme {
+        Scaffold {
+            Box(modifier = Modifier.padding(it)) {
+                Loading()
+            }
         }
     }
 }

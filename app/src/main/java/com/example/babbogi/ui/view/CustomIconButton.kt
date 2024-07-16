@@ -8,10 +8,12 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.babbogi.R
+import com.example.babbogi.ui.theme.BabbogiGreen
 
 @Composable
 fun CustomIconButton(
@@ -22,7 +24,9 @@ fun CustomIconButton(
         onClick = onClick,
         shape = CircleShape,
         modifier = Modifier.size(80.dp),
-        elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
+        containerColor = BabbogiGreen,
+        contentColor = Color.White,
+        elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 5.dp)
     ) {
         Icon(
             painter = painterResource(icon),

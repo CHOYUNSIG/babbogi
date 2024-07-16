@@ -1,17 +1,23 @@
 package com.example.babbogi.ui.view
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,18 +34,23 @@ fun DropDown(
 
     ExposedDropdownMenuBox(
         expanded = isExpended,
-        onExpandedChange = { isExpended = !isExpended },
+        onExpandedChange = { isExpended = it },
     ) {
         TextField(
-            modifier = Modifier.menuAnchor(),
+            modifier = Modifier.menuAnchor().fillMaxWidth(),
             value = selectedText?: realOptions.first(),
             onValueChange = {},
             readOnly = true,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpended) }
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpended) },
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = Color.Gray.copy(alpha = 0.2f),
+                focusedContainerColor = Color.Gray.copy(alpha = 0.1f),
+            )
         )
         ExposedDropdownMenu(
             expanded = isExpended,
             onDismissRequest = {isExpended = false},
+            modifier = Modifier.background(color = Color.White)
         ) {
             realOptions.forEachIndexed { index, text ->
                 DropdownMenuItem(
@@ -52,7 +63,10 @@ fun DropDown(
                         else
                             onChange(null)
                     },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    colors = MenuDefaults.itemColors(
+                        textColor = Color.Black
+                    )
                 )
             }
         }

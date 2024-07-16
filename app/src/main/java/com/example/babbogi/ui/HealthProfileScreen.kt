@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +36,7 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.DropDown
@@ -54,7 +57,7 @@ fun HealthProfileScreen(viewModel: BabbogiViewModel, navController: NavControlle
             navController.navigate(Screen.Loading.name)
             viewModel.changeHealthState(it) { success ->
                 if (success) navController.navigate(Screen.NutritionDailyAnalyze.name) {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    popUpTo(navController.graph.startDestinationId) { inclusive = false }
                 }
                 else navController.popBackStack()
             }
@@ -113,7 +116,7 @@ fun HealthProfile(
     var gender by remember { mutableStateOf(healthState?.gender) }
     var adultDisease by remember { mutableStateOf(healthState?.adultDisease) }
 
-    Column {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         TitleBar("건강 정보")
         ColumnWithDefault {
             TextInputHolder(
@@ -184,12 +187,14 @@ fun HealthProfile(
 @Preview
 @Composable
 fun PreviewHealthProfile() {
-    Scaffold {
-        Box(modifier = Modifier.padding(it)) {
-            HealthProfile(
-                healthState = testHealthState,
-                onModifyClicked = {},
-            )
+    BabbogiTheme {
+        Scaffold {
+            Box(modifier = Modifier.padding(it)) {
+                HealthProfile(
+                    healthState = testHealthState,
+                    onModifyClicked = {},
+                )
+            }
         }
     }
 }

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.CustomIconButton
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -163,19 +164,21 @@ fun GuidePage(
 @Preview
 @Composable
 fun PreviewGuidePage() {
-    Scaffold {
-        Box(modifier = Modifier.padding(it)) {
-            GuidePage(
-                list = listOf(
-                    R.drawable.guide_page1,
-                    R.drawable.guide_page2,
-                    R.drawable.guide_page3,
-                    R.drawable.guide_page4,
-                    R.drawable.guide_page5,
-                    R.drawable.guide_page6,
-                ),
-                onComplete = {},
-            )
+    BabbogiTheme {
+        Scaffold {
+            Box(modifier = Modifier.padding(it)) {
+                GuidePage(
+                    list = listOf(
+                        R.drawable.guide_page1,
+                        R.drawable.guide_page2,
+                        R.drawable.guide_page3,
+                        R.drawable.guide_page4,
+                        R.drawable.guide_page5,
+                        R.drawable.guide_page6,
+                    ),
+                    onComplete = {},
+                )
+            }
         }
     }
 }

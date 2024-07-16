@@ -39,6 +39,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.ProductAbstraction
@@ -67,6 +68,7 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
         var product by remember { mutableStateOf<Product?>(null) }
         var showDialog by remember { mutableStateOf(false) }
         var isFetching by remember { mutableStateOf(false) }
+        var recognizedCount by remember { mutableStateOf(0) }
 
         // 카메라 사용 설정
         val previewView = remember { PreviewView(context) }
@@ -77,6 +79,9 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
             cameraController.bindToLifecycle(lifecycleOwner)
             cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
             previewView.controller = cameraController
+        }
+
+        LaunchedEffect(recognizedCount) {
             viewModel.startCameraRoutine(
                 cameraController = cameraController,
                 executor = executor,
@@ -96,8 +101,16 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
             showDialog = showDialog,
             isFetching = isFetching,
             product = product,
-            onAddClicked = { product?.let { viewModel.addProduct(it) } },
-            onCancelClicked = { product = null; showDialog = false },
+            onAddClicked = {
+                product?.let { viewModel.addProduct(it) }
+                showDialog = false
+                recognizedCount++
+            },
+            onCancelClicked = {
+                product = null
+                showDialog = false
+                recognizedCount++
+            },
         )
     }
 }
@@ -140,7 +153,9 @@ private fun ProductPopup(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                CircularProgressIndicator(modifier = Modifier.size(50.dp).padding(16.dp))
+                CircularProgressIndicator(modifier = Modifier
+                    .size(50.dp)
+                    .padding(16.dp))
             }
             else if (product != null) ColumnWithDefault {
                 ProductAbstraction(product = product, nullMessage = "서버에 영양 정보가 없습니다.")
@@ -189,7 +204,9 @@ private fun CameraView(
         ColumnWithDefault(modifier = Modifier.fillMaxHeight()) {
             Card(
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxSize().weight(1f)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
             ) {
                 AndroidView(
                     factory = { cameraView },
@@ -218,18 +235,20 @@ private fun CameraView(
 @Preview
 @Composable
 fun PreviewCameraView() {
-    Scaffold {
-        Box(modifier = Modifier.padding(it)) {
-            val context = LocalContext.current
+    BabbogiTheme {
+        Scaffold {
+            Box(modifier = Modifier.padding(it)) {
+                val context = LocalContext.current
 
-            CameraView(
-                cameraView = remember { PreviewView(context) },
-                showDialog = true,
-                isFetching = false,
-                product = getRandomTestProduct(true),
-                onAddClicked = {},
-                onCancelClicked = {},
-            )
+                CameraView(
+                    cameraView = remember { PreviewView(context) },
+                    showDialog = true,
+                    isFetching = false,
+                    product = getRandomTestProduct(true),
+                    onAddClicked = {},
+                    onCancelClicked = {},
+                )
+            }
         }
     }
 }

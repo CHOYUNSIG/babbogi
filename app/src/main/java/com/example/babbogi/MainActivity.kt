@@ -74,24 +74,26 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainApp(viewModel: BabbogiViewModel) {
     val navController = rememberNavController()
-    val navScreens by remember {
-        mutableStateOf(
-            listOf(
-                Screen.NutritionDailyAnalyze,
-                Screen.FoodList,
-                Screen.NutritionPeriodAnalyze
-            )
-        )
-    }
 
     Scaffold(
         bottomBar = {
-            Log.d("MainApp", "Current route: ${navController.currentDestination?.route}")
             CustomNavigationBar(
                 navController = navController,
-                screens = navScreens,
-                labels = listOf("일일 분석", "추가", "기간 분석"),
-                icons = listOf(R.drawable.baseline_list_24, R.drawable.ic_add_box_24, R.drawable.baseline_list_24)
+                screens = listOf(
+                    Screen.NutritionDailyAnalyze,
+                    Screen.FoodList,
+                    Screen.NutritionPeriodAnalyze,
+                ),
+                labels = listOf(
+                    "일일 분석",
+                    "음식 추가",
+                    "기간 분석"
+                ),
+                icons = listOf(
+                    R.drawable.baseline_today_24,
+                    R.drawable.baseline_add_box_24,
+                    R.drawable.baseline_bar_chart_24,
+                )
             )
         },
     ) { innerPadding ->

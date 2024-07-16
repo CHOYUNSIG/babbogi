@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.NutritionCircularGraph
@@ -141,12 +142,14 @@ fun NutritionOverview(
 @Preview
 @Composable
 fun PreviewNutritionOverview() {
-    Scaffold {
-        Box(modifier = Modifier.padding(it)) {
-            NutritionOverview(
-                recommendation = testNutritionRecommendation,
-                intake = testNutritionIntake,
-            )
+    BabbogiTheme {
+        Scaffold {
+            Box(modifier = Modifier.padding(it)) {
+                NutritionOverview(
+                    recommendation = testNutritionRecommendation,
+                    intake = testNutritionIntake,
+                )
+            }
         }
     }
 }

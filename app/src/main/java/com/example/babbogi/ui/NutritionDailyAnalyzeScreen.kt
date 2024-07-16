@@ -14,6 +14,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
@@ -28,14 +30,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.Calendar
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.DateSelector
@@ -82,6 +87,7 @@ fun NutritionDailyAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavC
         onNewReportRequested = {
             /* TODO: 뷰모델에 보고서 요청 코드 작성 */
         },
+        onSettingClicked = { navController.navigate(Screen.Setting.name) },
         onRefresh = { endRefresh ->
             viewModel.getFoodList(viewModel.today) { endRefresh() }
         }
@@ -100,9 +106,9 @@ fun NutritionDailyAnalyze(
     onNutritionCardClicked: () -> Unit,
     onDateChanged: (LocalDate) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
+    onSettingClicked: () -> Unit,
     onRefresh: (endRefresh: () -> Unit) -> Unit,
 ) {
-    var showCalendar by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
 
     if (refreshState.isRefreshing) {
@@ -111,13 +117,19 @@ fun NutritionDailyAnalyze(
 
     Box(modifier = Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            TitleBar(title = "일일 분석")
+            TitleBar(title = "일일 분석") {
+                IconButton(onClick = onSettingClicked) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_settings_24),
+                        contentDescription = "설정",
+                    )
+                }
+            }
             ColumnWithDefault {
                 ElevatedCardWithDefault {
                     ColumnWithDefault {
                         DateSelector(
                             today = today,
-                            onDateBarClicked = { showCalendar = true },
                             onDateChanged = onDateChanged,
                         )
                     }
@@ -140,13 +152,6 @@ fun NutritionDailyAnalyze(
             state = refreshState,
             modifier = Modifier.align(Alignment.TopCenter)
         )
-    }
-
-    if (showCalendar) Dialog(onDismissRequest = { showCalendar = false }) {
-        Calendar {
-            onDateChanged(it)
-            showCalendar = false
-        }
     }
 }
 
@@ -192,19 +197,22 @@ fun MealList(foodList: List<Pair<Product, Int>>?, ) {
 @Preview
 @Composable
 fun PreviewNutritionDailyAnalyze() {
-    Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
-        Box(modifier = Modifier.padding(it)) {
-            NutritionDailyAnalyze(
-                today = LocalDate.now(),
-                recommendation = testNutritionRecommendation,
-                intake = testNutritionIntake,
-                foodList = testProductList,
-                report = "이것은 챗지피티가 생성한 일일 레포트입니다.".repeat(100),
-                onDateChanged = {},
-                onNutritionCardClicked = {},
-                onNewReportRequested = {},
-                onRefresh = {},
-            )
+    BabbogiTheme {
+        Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
+            Box(modifier = Modifier.padding(it)) {
+                NutritionDailyAnalyze(
+                    today = LocalDate.now(),
+                    recommendation = testNutritionRecommendation,
+                    intake = testNutritionIntake,
+                    foodList = testProductList,
+                    report = "이것은 챗지피티가 생성한 일일 레포트입니다.".repeat(100),
+                    onDateChanged = {},
+                    onNutritionCardClicked = {},
+                    onNewReportRequested = {},
+                    onSettingClicked = {},
+                    onRefresh = {},
+                )
+            }
         }
     }
 }

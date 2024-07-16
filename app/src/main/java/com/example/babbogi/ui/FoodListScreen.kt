@@ -5,10 +5,13 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -38,15 +41,18 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
+import com.example.babbogi.ui.view.ListModificationPopup
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.testProductList
 import com.example.babbogi.util.toFloat2
+import org.intellij.lang.annotations.JdkConstants.VerticalScrollBarPolicy
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -56,10 +62,11 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
     FoodList(
         productList = viewModel.productList,
         index = selectedIndex,
-        onAmountChanged = { index, amount ->
-            viewModel.modifyProduct(
+        onAmountChanged = { index, change ->
+            val newAmount = viewModel.productList[index].second + change
+            if (newAmount > 0) viewModel.modifyProduct(
                 index = index,
-                amount = viewModel.productList[index].second + amount
+                amount = newAmount
             )
         },
         onAddByHandClicked = {
@@ -76,7 +83,7 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
             navController.navigate(Screen.Loading.name)
             viewModel.sendList {
                 navController.navigate(Screen.NutritionDailyAnalyze.name) {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    popUpTo(navController.graph.startDestinationId) { inclusive = false }
                 }
             }
         },
@@ -89,21 +96,21 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
 private fun FoodModificationCard(
     product: Product,
     amount: Int,
-    onClick: () -> Unit,
+    onModify: () -> Unit,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
     onDelete: () -> Unit
 ) {
-    ElevatedCardWithDefault(onClick = onClick) {
+    ElevatedCardWithDefault {
         ColumnWithDefault {
             ProductAbstraction(product = product)
             Row (
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                IconButton(onClick = onClick) {
+                IconButton(onClick = onModify, modifier = Modifier.weight(1f)) {
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_mode_24),
+                        painter = painterResource(id = R.drawable.baseline_edit_24),
                         contentDescription = "수정",
                     )
                 }
@@ -115,7 +122,7 @@ private fun FoodModificationCard(
                     Text(text = amount.toString(), fontSize = 16.sp)
                     Button(onClick = onIncrease) { Text(text = "+") }
                 }
-                IconButton(onClick = onDelete) {
+                IconButton(onClick = onDelete, modifier = Modifier.weight(1f)) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_delete_24),
                         contentDescription = "삭제",
@@ -132,71 +139,29 @@ private fun FoodPopup(
     onModifyClicked: (Product) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var prodNameText by remember { mutableStateOf(product.name) }
-    var nutritionText by remember {
-        mutableStateOf(Nutrition.entries.map { product.nutrition?.get(it)?.toString()?: "" } )
-    }
-
-    Dialog(onDismissRequest = onDismiss) {
-        ElevatedCardWithDefault {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                OutlinedTextField(
-                    value = prodNameText,
-                    onValueChange = { prodNameText = it },
-                    label = { Text("상품명") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = true,
+    ListModificationPopup(
+        defaultTexts = listOf(product.name) + Nutrition.entries.map {
+            product.nutrition?.get(it)?.toString()?.let { if (it == "0.0") null else it } ?: ""
+        },
+        types = listOf(KeyboardType.Text) + List(Nutrition.entries.size) { KeyboardType.Number },
+        labels = listOf("상품명") + Nutrition.entries.map { stringResource(id = it.res) },
+        units = listOf(null) + Nutrition.entries.map { it.unit },
+        onDismiss = onDismiss,
+        onModifyClicked = { texts ->
+            val productName = texts.first()
+            val nutrition = texts.drop(1).mapIndexed { index, text ->
+                Nutrition.entries[index] to text.toFloat2(
+                    product.nutrition?.get(Nutrition.entries[index]) ?: 0f
                 )
-                repeat(Nutrition.entries.size) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        OutlinedTextField(
-                            value = nutritionText[it],
-                            onValueChange = { changedText ->
-                                nutritionText = nutritionText.mapIndexed { i, p ->
-                                    if (i == it) changedText else p
-                                }
-                            },
-                            label = { Text(stringResource(id = Nutrition.entries[it].res)) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                            modifier = Modifier.fillMaxWidth(0.7f),
-                            enabled = true,
-                        )
-                        Text(text = Nutrition.entries[it].unit, fontSize = 20.sp)
-                    }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Button(
-                        onClick = {
-                            val newProduct = Product(
-                                prodNameText,
-                                nutritionText.mapIndexed { index, string ->
-                                    Nutrition.entries[index] to string.toFloat2(
-                                        product.nutrition?.get(Nutrition.entries[index]) ?: 0f
-                                    )
-                                }.toMap()
-                            )
-                            onModifyClicked(newProduct)
-                        }
-                    ) {
-                        Text(text = "Modify")
-                    }
-                }
-            }
+            }.toMap()
+            onModifyClicked(
+                Product(
+                    name = productName,
+                    nutrition = nutrition,
+                )
+            )
         }
-    }
+    )
 }
 
 @Composable
@@ -209,16 +174,18 @@ private fun OptionDialog(
     val callbacks = listOf(onAddByHandClicked, onSearchClicked, onCameraClicked, onDismissRequest)
     val texts = listOf("수동 입력", "음식 검색", "바코드 스캔", "취소")
     val icons = listOf(
-        R.drawable.ic_add_box_24,
-        R.drawable.baseline_not_find_30,
-        R.drawable.ic_add_box_24,
-        R.drawable.baseline_list_24,
+        R.drawable.baseline_edit_24,
+        R.drawable.baseline_search_24,
+        R.drawable.baseline_photo_camera_24,
+        R.drawable.baseline_arrow_back_24,
     )
 
     Dialog(onDismissRequest = onDismissRequest) {
         Box(
             contentAlignment = Alignment.BottomStart,
-            modifier = Modifier.fillMaxSize().padding(bottom = 50.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 50.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
 
@@ -246,7 +213,7 @@ private fun OptionDialog(
 private fun FoodList(
     productList: List<Pair<Product, Int>>,
     index: Int?,
-    onAmountChanged: (index: Int, Int) -> Unit,
+    onAmountChanged: (index: Int, change: Int) -> Unit,
     onModifyClicked: (index: Int, Product) -> Unit,
     onDeleteClicked: (index: Int) -> Unit,
     onAddByHandClicked: () -> Unit,
@@ -274,7 +241,7 @@ private fun FoodList(
                     amount = amount,
                     onIncrease = { onAmountChanged(index, 1) },
                     onDecrease = { onAmountChanged(index, -1) },
-                    onClick = { selectedIndex = index },
+                    onModify = { selectedIndex = index },
                     onDelete = { onDeleteClicked(index) }
                 )
             }
@@ -291,7 +258,7 @@ private fun FoodList(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            CustomIconButton(onClick = { showAddOption = true }, R.drawable.ic_add_box_24)
+            CustomIconButton(onClick = { showAddOption = true }, R.drawable.baseline_add_24)
             CustomIconButton(onSubmitClicked, R.drawable.baseline_send_24)
         }
     }
@@ -320,19 +287,21 @@ private fun FoodList(
 @Preview
 @Composable
 fun PreviewFoodList() {
-    Scaffold {
-        Box(modifier = Modifier.padding(it)) {
-            FoodList(
-                productList = testProductList,
-                index = null,
-                onAmountChanged = { _, _ -> },
-                onAddByHandClicked = {},
-                onCameraClicked = {},
-                onSearchClicked = {},
-                onModifyClicked = { _, _ -> },
-                onDeleteClicked = {},
-                onSubmitClicked = {},
-            )
+    BabbogiTheme {
+        Scaffold {
+            Box(modifier = Modifier.padding(it)) {
+                FoodList(
+                    productList = testProductList,
+                    index = null,
+                    onAmountChanged = { _, _ -> },
+                    onAddByHandClicked = {},
+                    onCameraClicked = {},
+                    onSearchClicked = {},
+                    onModifyClicked = { _, _ -> },
+                    onDeleteClicked = {},
+                    onSubmitClicked = {},
+                )
+            }
         }
     }
 }

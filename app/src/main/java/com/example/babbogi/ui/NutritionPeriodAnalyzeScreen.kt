@@ -9,14 +9,18 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
@@ -31,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,7 +43,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.babbogi.R
+import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.Calendar
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomAlertDialog
@@ -84,6 +91,7 @@ fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: Nav
         report = report,
         onPeriodChanged = { period = it },
         onNewReportRequested = { /*TODO*/ },
+        onSettingClicked = { navController.navigate(Screen.Setting.name) },
         onRefresh = { endRefresh ->
             /*TODO*/
             endRefresh()
@@ -99,11 +107,11 @@ fun NutritionCheckBox(onSelected: (Nutrition) -> Unit) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Nutrition.entries.forEach { nutrition ->
-            ElevatedButton(
+            Button(
                 onClick = { onSelected(nutrition) },
                 contentPadding = PaddingValues(5.dp)
             ) {
-                Text(stringResource(id = nutrition.res), color = Color.Black)
+                Text(stringResource(id = nutrition.res), color = Color.White)
             }
         }
     }
@@ -119,9 +127,9 @@ fun NutritionPeriodAnalyze(
     report: String?,
     onPeriodChanged: (List<LocalDate>) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
+    onSettingClicked: () -> Unit,
     onRefresh: (endRefresh: () -> Unit) -> Unit
 ) {
-    var clicked by remember { mutableStateOf<Int?>(null) }
     var selectedNutrition by remember { mutableStateOf<Nutrition?>(null) }
     var selectedPeriod by remember { mutableStateOf(period) }
     var showLongPeriodAlert by remember { mutableStateOf(false) }
@@ -134,20 +142,34 @@ fun NutritionPeriodAnalyze(
 
     Box(modifier = Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            TitleBar(title = "기간 분석")
+            TitleBar(title = "기간 분석") {
+                IconButton(onClick = onSettingClicked) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_settings_24),
+                        contentDescription = "설정",
+                    )
+                }
+            }
             ColumnWithDefault {
                 ElevatedCardWithDefault {
                     ColumnWithDefault {
                         Column {
                             repeat(2) { index ->
-                                DateSelector(
-                                    today = selectedPeriod[index],
-                                    onDateBarClicked = { clicked = index },
-                                    onDateChanged = {
-                                        selectedPeriod =
-                                            selectedPeriod.mapIndexed { i, date -> if (i == index) it else date }
-                                    },
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(text = listOf("시작일", "종료일")[index])
+                                    DateSelector(
+                                        today = selectedPeriod[index],
+                                        onDateChanged = {
+                                            selectedPeriod = selectedPeriod.mapIndexed { i, date ->
+                                                if (i == index) it else date
+                                            }
+                                        },
+                                    )
+                                }
                             }
                         }
                         Row(
@@ -204,15 +226,6 @@ fun NutritionPeriodAnalyze(
         )
     }
 
-    clicked?.let { index ->
-        Dialog(onDismissRequest = { clicked = null }) {
-            Calendar {
-                selectedPeriod = selectedPeriod.mapIndexed { i, date -> if (i == index) it else date }
-                clicked = null
-            }
-        }
-    }
-
     if (showLongPeriodAlert) CustomAlertDialog(
         onDismissRequest = { showLongPeriodAlert = false },
         onConfirmation = { showLongPeriodAlert = false },
@@ -234,33 +247,34 @@ fun NutritionPeriodAnalyze(
 @Preview
 @Composable
 fun PreviewNutritionPeriodAnalyze() {
-    Scaffold(
-        bottomBar = { PreviewCustomNavigationBar() }
-    ) {
-        val data by remember {
-            mutableStateOf(
-                mapOf(
-                    LocalDate.parse("2024-01-01") to getRandomNutritionIntake(),
-                    LocalDate.parse("2024-01-02") to getRandomNutritionIntake(),
-                    LocalDate.parse("2024-01-03") to getRandomNutritionIntake(),
-                    LocalDate.parse("2024-01-04") to getRandomNutritionIntake(),
-                    LocalDate.parse("2024-01-05") to getRandomNutritionIntake(),
-                    LocalDate.parse("2024-01-06") to getRandomNutritionIntake(),
-                    LocalDate.parse("2024-01-07") to getRandomNutritionIntake(),
+    BabbogiTheme {
+        Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
+            val data by remember {
+                mutableStateOf(
+                    mapOf(
+                        LocalDate.parse("2024-01-01") to getRandomNutritionIntake(),
+                        LocalDate.parse("2024-01-02") to getRandomNutritionIntake(),
+                        LocalDate.parse("2024-01-03") to getRandomNutritionIntake(),
+                        LocalDate.parse("2024-01-04") to getRandomNutritionIntake(),
+                        LocalDate.parse("2024-01-05") to getRandomNutritionIntake(),
+                        LocalDate.parse("2024-01-06") to getRandomNutritionIntake(),
+                        LocalDate.parse("2024-01-07") to getRandomNutritionIntake(),
+                    )
                 )
-            )
-        }
-        
-        Box(modifier = Modifier.padding(it)) {
-            NutritionPeriodAnalyze(
-                period = listOf(data.keys.min(), data.keys.max()),
-                recommendation = testNutritionRecommendation,
-                intakes = data,
-                report = "이것은 챗지피티가 제작한 일일 영양소 레포트입니다. ".repeat(100),
-                onPeriodChanged = {},
-                onNewReportRequested = {},
-                onRefresh = {}
-            )
+            }
+
+            Box(modifier = Modifier.padding(it)) {
+                NutritionPeriodAnalyze(
+                    period = listOf(data.keys.min(), data.keys.max()),
+                    recommendation = testNutritionRecommendation,
+                    intakes = data,
+                    report = "이것은 챗지피티가 제작한 일일 영양소 레포트입니다. ".repeat(100),
+                    onPeriodChanged = {},
+                    onNewReportRequested = {},
+                    onSettingClicked = {},
+                    onRefresh = {}
+                )
+            }
         }
     }
 }
