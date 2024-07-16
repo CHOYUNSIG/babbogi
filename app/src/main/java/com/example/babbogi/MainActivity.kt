@@ -2,7 +2,6 @@ package com.example.babbogi
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -84,7 +83,12 @@ fun MainApp(viewModel: BabbogiViewModel) {
 
     Scaffold(
         bottomBar = {
-            if (currentScreen != Screen.Tutorial.name) CustomNavigationBar(
+            if (
+                !listOf(
+                    Screen.Tutorial,
+                    Screen.Loading,
+                ).map { it.name }.contains(currentScreen)
+            ) CustomNavigationBar(
                 navController = navController,
                 screens = listOf(
                     Screen.NutritionDailyAnalyze,
