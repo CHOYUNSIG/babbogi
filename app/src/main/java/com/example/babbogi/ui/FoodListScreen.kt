@@ -96,7 +96,10 @@ private fun FoodModificationCard(
 ) {
     ElevatedCardWithDefault {
         ColumnWithDefault {
-            ProductAbstraction(product = product)
+            ProductAbstraction(
+                product = product,
+                onClick = onModify,
+            )
             Row (
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier.fillMaxWidth()

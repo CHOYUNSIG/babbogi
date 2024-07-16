@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -186,7 +187,8 @@ fun ProductAbstraction(
                 verticalAlignment = Alignment.Bottom,
             ) {
                 Text(
-                    text = product.name,
+                    text = product.name.ifEmpty { "(이름 없음)" },
+                    color = if (product.name.isEmpty()) Color.Gray else Color.Black,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     overflow = TextOverflow.Ellipsis,
