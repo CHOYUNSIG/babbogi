@@ -2,6 +2,7 @@ package com.example.babbogi.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,6 +26,7 @@ import androidx.navigation.NavController
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.SearchBar
 import com.example.babbogi.ui.view.TitleBar
 
@@ -59,7 +61,7 @@ fun FoodSearch(
 
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         TitleBar(title = "음식 검색")
-        ColumnWithDefault {
+        ColumnWithDefault(modifier = Modifier.fillMaxHeight()) {
             SearchBar(
                 value = word,
                 onSubmit = {
@@ -68,24 +70,25 @@ fun FoodSearch(
                 },
                 onValueChange = { word = it }
             )
-            Column {
-                searchResult.forEach {
-                    ClickableText(
-                        text = AnnotatedString(it),
-                        onClick = { _ -> onWordSelected(it) },
-                        modifier = Modifier.padding(16.dp)
-                    )
-                    HorizontalDivider()
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column {
+                    searchResult.forEach {
+                        ClickableText(
+                            text = AnnotatedString(it),
+                            onClick = { _ -> onWordSelected(it) },
+                            modifier = Modifier.padding(16.dp)
+                        )
+                        HorizontalDivider()
+                    }
+                }
+                if (isLoading) Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(50.dp))
                 }
             }
         }
-    }
-
-    if (isLoading) Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        CircularProgressIndicator(modifier = Modifier.size(50.dp))
     }
 }
 
@@ -93,7 +96,7 @@ fun FoodSearch(
 @Composable
 fun PreviewFoodSearch() {
     BabbogiTheme {
-        Scaffold {
+        Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
             Box(modifier = Modifier.padding(it)) {
                 FoodSearch(
                     searchResult = listOf(

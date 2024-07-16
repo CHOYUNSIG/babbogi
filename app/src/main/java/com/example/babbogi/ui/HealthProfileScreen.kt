@@ -41,6 +41,7 @@ import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.DropDown
 import com.example.babbogi.ui.view.InputHolder
+import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.TextInputHolder
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.AdultDisease
@@ -188,7 +189,7 @@ fun HealthProfile(
 @Composable
 fun PreviewHealthProfile() {
     BabbogiTheme {
-        Scaffold {
+        Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
             Box(modifier = Modifier.padding(it)) {
                 HealthProfile(
                     healthState = testHealthState,

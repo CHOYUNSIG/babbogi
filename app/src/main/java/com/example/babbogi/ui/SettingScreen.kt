@@ -41,6 +41,7 @@ import com.example.babbogi.ui.view.HealthAbstraction
 import com.example.babbogi.ui.view.InputHolder
 import com.example.babbogi.ui.view.ListModificationPopup
 import com.example.babbogi.ui.view.NutritionRecommendationAbstraction
+import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
@@ -190,7 +191,7 @@ private fun NutritionRecommendationPopup(
 @Composable
 fun PreviewSetting() {
     BabbogiTheme {
-        Scaffold {
+        Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
             Box(modifier = Modifier.padding(it)) {
                 Setting(
                     healthState = testHealthState,
