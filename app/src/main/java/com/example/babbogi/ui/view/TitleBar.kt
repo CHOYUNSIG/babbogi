@@ -1,6 +1,7 @@
 package com.example.babbogi.ui.view
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,16 +25,13 @@ import com.example.babbogi.ui.theme.BabbogiGreen
 //맨 위 앱 이름
 @Composable
 fun TitleBar(title: String, buttonBar: @Composable () -> Unit = {}) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
+    Box {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(16.dp)
                 .height(50.dp)
         ) {
             Text(
@@ -43,11 +41,13 @@ fun TitleBar(title: String, buttonBar: @Composable () -> Unit = {}) {
             )
             buttonBar()
         }
-        HorizontalDivider(
-            modifier = Modifier.padding(top = 4.dp),
-            thickness = 2.dp,
-            color = BabbogiGreen
-        )
+        Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.matchParentSize()) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                thickness = 2.dp,
+                color = BabbogiGreen
+            )
+        }
     }
 }
 

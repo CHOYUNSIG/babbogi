@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
+import com.example.babbogi.ui.theme.BabbogiGreen
 
 @Composable
 fun CustomNavigationBar(
@@ -30,23 +32,30 @@ fun CustomNavigationBar(
     labels: List<String>,
     icons: List<Int>,
 ) {
-    ElevatedCardWithDefault {
-        Row(
-            horizontalArrangement = Arrangement.SpaceAround,
-        ) {
-           screens.forEachIndexed { index, screen ->
-               Box(modifier = Modifier.weight(1f)) {
-                   CustomNavigationBarItem(
-                       icon = icons[index],
-                       description = labels[index],
-                       onClick = {
-                           navController.navigate(screen.name) {
-                               popUpTo(navController.graph.startDestinationId) { inclusive = false }
-                           }
-                       },
-                   )
-               }
-           }
+    Box {
+        Box(contentAlignment = Alignment.TopCenter) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                thickness = 2.dp,
+                color = Color.Black.copy(alpha = 0.1f)
+            )
+        }
+        Row(horizontalArrangement = Arrangement.SpaceAround) {
+            screens.forEachIndexed { index, screen ->
+                Box(modifier = Modifier.weight(1f)) {
+                    CustomNavigationBarItem(
+                        icon = icons[index],
+                        description = labels[index],
+                        onClick = {
+                            navController.navigate(screen.name) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    inclusive = false
+                                }
+                            }
+                        },
+                    )
+                }
+            }
         }
     }
 }

@@ -26,9 +26,8 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = Color.White,
     secondary = Color.Black,
     onSecondary = Color.White,
-    tertiary = BabbogiGreen,
-    onTertiary = Color.White,
-
+    tertiary = Color.Black,
+    onTertiary = Color.Black,
     background = Color.White,
     surface = BabbogiGreen,
 )
