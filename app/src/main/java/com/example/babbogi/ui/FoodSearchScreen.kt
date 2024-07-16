@@ -59,19 +59,19 @@ fun FoodSearch(
     var word by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.fillMaxHeight()) {
         TitleBar(title = "음식 검색")
-        ColumnWithDefault(modifier = Modifier.fillMaxHeight()) {
-            SearchBar(
-                value = word,
-                onSubmit = {
-                    isLoading = true
-                    onSearchWordSubmitted(word) { isLoading = false }
-                },
-                onValueChange = { word = it }
-            )
-            Box(modifier = Modifier.fillMaxSize()) {
-                Column {
+        Box {
+            ColumnWithDefault {
+                SearchBar(
+                    value = word,
+                    onSubmit = {
+                        isLoading = true
+                        onSearchWordSubmitted(word) { isLoading = false }
+                    },
+                    onValueChange = { word = it }
+                )
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                     searchResult.forEach {
                         ClickableText(
                             text = AnnotatedString(it),
@@ -81,12 +81,13 @@ fun FoodSearch(
                         HorizontalDivider()
                     }
                 }
-                if (isLoading) Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.size(50.dp))
-                }
+            }
+
+            if (isLoading) Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(50.dp))
             }
         }
     }
