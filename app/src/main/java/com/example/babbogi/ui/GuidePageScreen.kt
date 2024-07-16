@@ -1,6 +1,7 @@
 package com.example.babbogi.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -40,7 +42,7 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
-import com.example.babbogi.ui.view.CustomIconButton
+import com.example.babbogi.ui.view.ColumnWithDefault
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
@@ -76,10 +78,9 @@ fun CustomSlider(
     val pagerState = rememberPagerState(pageCount = { sliderList.size })
     val scope = rememberCoroutineScope()
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
-    ) {
+    ColumnWithDefault {
         HorizontalPager(
+            verticalAlignment = Alignment.Top,
             state = pagerState,
             modifier = modifier.weight(1f)
         ) { page ->
@@ -92,49 +93,48 @@ fun CustomSlider(
                         scaleY = scaleFactor
                     }
                     .alpha(scaleFactor.coerceIn(0f, 1f))
-                    .padding(10.dp)
+                    .wrapContentHeight()
                     .clip(RoundedCornerShape(imageCornerRadius))
             ) {
-                androidx.compose.foundation.Image(
+                Image(
                     painter = painterResource(id = sliderList[page]),
                     contentDescription = "Image",
                     contentScale = ContentScale.Fit,
                 )
-                Box(
-                    contentAlignment = Alignment.TopEnd,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                ) {
-                    IconButton(
-                        onClick = onComplete,
-                        modifier = Modifier.size(75.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_skip_24),
-                            contentDescription = "Skip",
-                            modifier = Modifier.size(75.dp)
-                        )
-                    }
-                }
             }
         }
         Row(
-            modifier
-                .height(50.dp)
-                .fillMaxWidth(), horizontalArrangement = Arrangement.Center
+            modifier = modifier.height(50.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
         ) {
             repeat(sliderList.size) {
-                val color = if (pagerState.currentPage == it) Color.LightGray else Color.DarkGray
                 Box(
                     modifier = Modifier
                         .padding(2.dp)
                         .clip(CircleShape)
                         .size(dotsSize)
-                        .background(color)
+                        .background(if (pagerState.currentPage == it) Color.LightGray else Color.DarkGray)
                         .clickable { scope.launch { pagerState.animateScrollToPage(it) } }
                 )
             }
+        }
+    }
+
+    Box(
+        contentAlignment = Alignment.TopEnd,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp)
+    ) {
+        IconButton(
+            onClick = onComplete,
+            modifier = Modifier.size(75.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_skip_24),
+                contentDescription = "Skip",
+                modifier = Modifier.size(75.dp)
+            )
         }
     }
 }
@@ -144,14 +144,7 @@ fun GuidePage(
     list: List<Int>,
     onComplete: () -> Unit,
 ) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp)
-    ) {
-        CustomSlider(sliderList = list, onComplete = onComplete)
-    }
+    CustomSlider(sliderList = list, onComplete = onComplete)
 }
 
 @Preview
