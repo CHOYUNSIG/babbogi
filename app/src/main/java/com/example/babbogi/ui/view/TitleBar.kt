@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.babbogi.R
 import com.example.babbogi.ui.theme.BabbogiGreen
-import com.example.babbogi.ui.theme.BabbogiTheme
 
 //맨 위 앱 이름
 @Composable
