@@ -11,7 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.babbogi.MainActivity
 import com.example.babbogi.R
-import com.example.babbogi.model.DataPreference
+import com.example.babbogi.model.BabbogiModel
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import java.util.concurrent.atomic.AtomicInteger
@@ -26,7 +26,7 @@ class BabbogiFirebaseMessagingService: FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         Log.d("onNewToken", "Refreshed token: $token")
-        DataPreference.saveToken(token)
+        BabbogiModel.token = token
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
