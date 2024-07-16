@@ -35,6 +35,8 @@ private val barcodeRecognizer = BarcodeScanning.getClient(
 class BabbogiViewModel: ViewModel() {
     private val _nutritionRecommendation = mutableStateOf(BabbogiModel.nutritionRecommendation ?: Nutrition.entries.associateWith { it.defaultRecommend })
     private val _healthState = mutableStateOf(BabbogiModel.healthState)
+    private val _isTutorialDone = mutableStateOf(BabbogiModel.isTutorialDone)
+    private val _notificationActivation = mutableStateOf(BabbogiModel.notificationActivation)
     private val _productList = mutableStateOf<List<Pair<Product, Int>>>(emptyList())
     private val _today = mutableStateOf(LocalDate.now())
     private val _periodReport = mutableStateOf<String?>(null)
@@ -58,8 +60,18 @@ class BabbogiViewModel: ViewModel() {
         set(today) { _today.value = today }
 
     var isTutorialDone: Boolean
-        get() = BabbogiModel.isTutorialDone
-        set(isTutorialDone) { BabbogiModel.isTutorialDone = isTutorialDone }
+        get() = _isTutorialDone.value
+        set(isTutorialDone) {
+            _isTutorialDone.value = isTutorialDone
+            BabbogiModel.isTutorialDone = isTutorialDone
+        }
+
+    var notificationActivation: Boolean
+        get() = _notificationActivation.value
+        set(notificationActivation) {
+            _notificationActivation.value = notificationActivation
+            BabbogiModel.notificationActivation = notificationActivation
+        }
 
     var periodReport: String?
         get() = _periodReport.value
@@ -106,6 +118,7 @@ class BabbogiViewModel: ViewModel() {
                     }
                     finally {
                         if (success != null) onProductFetched(product)
+                        if (success == true) cameraController.clearImageAnalysisAnalyzer()
                         isFetching = false
                         imageProxy.close()
                     }
@@ -115,7 +128,7 @@ class BabbogiViewModel: ViewModel() {
     }
 
     // 제품을 리스트에 추가
-    fun addProduct(product: Product = Product("", null)) {
+    fun addProduct(product: Product = Product(name = "", Nutrition.entries.associateWith { 0f })) {
         productList = productList.plus(product to 1)
     }
 
