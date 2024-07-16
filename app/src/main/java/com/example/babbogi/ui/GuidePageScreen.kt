@@ -38,9 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.babbogi.R
-import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.model.DataPreference
 import com.example.babbogi.ui.view.CustomIconButton
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -57,10 +55,8 @@ fun GuidePageScreen(viewModel: BabbogiViewModel, navController: NavController) {
             R.drawable.guide_page6,
         ),
         onComplete = {
-            DataPreference.completeTutorial()
-            navController.navigate(Screen.Home.name) {
-                popUpTo(navController.graph.startDestinationId) { inclusive = true }
-            }
+            viewModel.isTutorialDone = true
+            navController.popBackStack()
         }
     )
 }

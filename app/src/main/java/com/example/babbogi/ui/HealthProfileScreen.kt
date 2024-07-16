@@ -44,7 +44,6 @@ import com.example.babbogi.util.AdultDisease
 import com.example.babbogi.util.Gender
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.testHealthState
-import com.example.babbogi.util.toFloat2
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -52,8 +51,13 @@ fun HealthProfileScreen(viewModel: BabbogiViewModel, navController: NavControlle
     HealthProfile(
         healthState = viewModel.healthState,
         onModifyClicked = {
-            viewModel.asyncChangeHealthStateWithServer(it)
             navController.navigate(Screen.Loading.name)
+            viewModel.changeHealthState(it) { success ->
+                if (success) navController.navigate(Screen.NutritionDailyAnalyze.name) {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                }
+                else navController.popBackStack()
+            }
         },
     )
 }
@@ -143,12 +147,14 @@ fun HealthProfile(
             InputHolder("성인병") {
                 DropDown(
                     options = AdultDisease.entries.map { it.toString() }.toList(),
+                    nullOption = "없음",
                     index = adultDisease?.ordinal,
                     onChange = { adultDisease = if (it == null) null else AdultDisease.entries[it] }
                 )
             }
         }
     }
+
     Box(
         contentAlignment = Alignment.BottomEnd,
         modifier = Modifier
@@ -157,20 +163,18 @@ fun HealthProfile(
     ) {
         CustomIconButton(
             onClick = lambda@ {
-                val h = heightText.toFloat2(healthState?.height ?: 0f)
-                val w = weightText.toFloat2(healthState?.weight ?: 0f)
-                val a = try { ageText.toInt() } catch (e: NumberFormatException) {0}
-                val g = gender
-                if (g == null || h < 10f || w < 10f || a <= 0) return@lambda
-                onModifyClicked(
-                    HealthState(
-                        height = h,
-                        weight = w,
-                        gender = g,
-                        age = a,
-                        adultDisease = adultDisease
+                try {
+                    onModifyClicked(
+                        HealthState(
+                            height = heightText.toFloat(),
+                            weight = weightText.toFloat(),
+                            gender = gender!!,
+                            age = ageText.toInt(),
+                            adultDisease = adultDisease
+                        )
                     )
-                )
+                }
+                catch (_: Exception) {}
             },
             icon = R.drawable.baseline_send_24
         )

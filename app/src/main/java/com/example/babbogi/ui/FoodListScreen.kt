@@ -45,54 +45,48 @@ import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
-import com.example.babbogi.util.testProduct1
 import com.example.babbogi.util.testProductList
 import com.example.babbogi.util.toFloat2
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
-    var index: Int? by remember { mutableStateOf(null) }
+    var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
     FoodList(
         productList = viewModel.productList,
-        index = index,
-        onAmountChanged = { i, amount ->
-            viewModel.modifyProduct(index = i, amount = viewModel.productList[i].second + amount)
-        },
-        onAddFoodClicked = {
-            viewModel.addProduct()
-            index = viewModel.productList.lastIndex
-        },
-        onModifyClicked = lambda@ { name, nutrition ->
-            val i = index ?: return@lambda
-            val productInfo = viewModel.productList[i].first
+        index = selectedIndex,
+        onAmountChanged = { index, amount ->
             viewModel.modifyProduct(
-                index = i,
-                product = Product(
-                    name,
-                    nutrition.mapIndexed { index, string ->
-                        Nutrition.entries[index] to string.toFloat2(
-                            productInfo.nutrition?.get(Nutrition.entries[index])?: 0f
-                        )
-                    }.toMap()
-                )
+                index = index,
+                amount = viewModel.productList[index].second + amount
             )
-            index = null
         },
-        onDismiss = { index = null },
+        onAddByHandClicked = {
+            viewModel.addProduct()
+            selectedIndex = viewModel.productList.lastIndex
+        },
+        onSearchClicked = { navController.navigate(Screen.FoodSearch.name) },
+        onCameraClicked = { navController.navigate(Screen.Camera.name) },
+        onModifyClicked = { index, product ->
+            viewModel.modifyProduct(index = index, product = product)
+        },
         onDeleteClicked = { viewModel.deleteProduct(it) },
         onSubmitClicked = {
-            viewModel.asyncSendListToServer()
             navController.navigate(Screen.Loading.name)
+            viewModel.sendList {
+                navController.navigate(Screen.NutritionDailyAnalyze.name) {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                }
+            }
         },
-        onSearchClicked = {},
-        onFoodCardClicked = { index = it }
     )
+
+    if (selectedIndex != null) selectedIndex = null
 }
 
 @Composable
-fun FoodModificationCard(
+private fun FoodModificationCard(
     product: Product,
     amount: Int,
     onClick: () -> Unit,
@@ -107,7 +101,7 @@ fun FoodModificationCard(
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                IconButton(onClick = onDelete) {
+                IconButton(onClick = onClick) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_mode_24),
                         contentDescription = "수정",
@@ -133,10 +127,10 @@ fun FoodModificationCard(
 }
 
 @Composable
-fun FoodPopup(
-    product: Product = testProduct1,
-    onModifyClicked: (name: String, nutrition: List<String>) -> Unit = { _, _ -> },
-    onDismiss: () -> Unit = {},
+private fun FoodPopup(
+    product: Product,
+    onModifyClicked: (Product) -> Unit,
+    onDismiss: () -> Unit,
 ) {
     var prodNameText by remember { mutableStateOf(product.name) }
     var nutritionText by remember {
@@ -144,47 +138,60 @@ fun FoodPopup(
     }
 
     Dialog(onDismissRequest = onDismiss) {
-        ElevatedCardWithDefault(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            Box(modifier = Modifier.padding(16.dp)) {
-                Column {
-                    OutlinedTextField(
-                        value = prodNameText,
-                        onValueChange = { prodNameText = it },
-                        label = { Text("상품명") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = true,
-                    )
-                    repeat(Nutrition.entries.size) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            OutlinedTextField(
-                                value = nutritionText[it],
-                                onValueChange = { changedText ->
-                                    nutritionText = nutritionText.mapIndexed { i, p ->
-                                        if (i == it) changedText else p
-                                    }
-                                },
-                                label = { Text(stringResource(id = Nutrition.entries[it].res)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                                modifier = Modifier.fillMaxWidth(0.7f),
-                                enabled = true,
-                            )
-                            Text(text = Nutrition.entries[it].unit, fontSize = 20.sp)
-                        }
-                    }
+        ElevatedCardWithDefault {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                OutlinedTextField(
+                    value = prodNameText,
+                    onValueChange = { prodNameText = it },
+                    label = { Text("상품명") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = true,
+                )
+                repeat(Nutrition.entries.size) {
                     Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp)
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Button(onClick = { onModifyClicked(prodNameText, nutritionText) }, modifier = Modifier.padding(start = 8.dp)) {
-                            Text(text = "Modify")
+                        OutlinedTextField(
+                            value = nutritionText[it],
+                            onValueChange = { changedText ->
+                                nutritionText = nutritionText.mapIndexed { i, p ->
+                                    if (i == it) changedText else p
+                                }
+                            },
+                            label = { Text(stringResource(id = Nutrition.entries[it].res)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                            modifier = Modifier.fillMaxWidth(0.7f),
+                            enabled = true,
+                        )
+                        Text(text = Nutrition.entries[it].unit, fontSize = 20.sp)
+                    }
+                }
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = {
+                            val newProduct = Product(
+                                prodNameText,
+                                nutritionText.mapIndexed { index, string ->
+                                    Nutrition.entries[index] to string.toFloat2(
+                                        product.nutrition?.get(Nutrition.entries[index]) ?: 0f
+                                    )
+                                }.toMap()
+                            )
+                            onModifyClicked(newProduct)
                         }
+                    ) {
+                        Text(text = "Modify")
                     }
                 }
             }
@@ -193,18 +200,65 @@ fun FoodPopup(
 }
 
 @Composable
-fun FoodList(
+private fun OptionDialog(
+    onDismissRequest: () -> Unit,
+    onAddByHandClicked: () -> Unit,
+    onSearchClicked: () -> Unit,
+    onCameraClicked: () -> Unit,
+) {
+    val callbacks = listOf(onAddByHandClicked, onSearchClicked, onCameraClicked, onDismissRequest)
+    val texts = listOf("수동 입력", "음식 검색", "바코드 스캔", "취소")
+    val icons = listOf(
+        R.drawable.ic_add_box_24,
+        R.drawable.baseline_not_find_30,
+        R.drawable.ic_add_box_24,
+        R.drawable.baseline_list_24,
+    )
+
+    Dialog(onDismissRequest = onDismissRequest) {
+        Box(
+            contentAlignment = Alignment.BottomStart,
+            modifier = Modifier.fillMaxSize().padding(bottom = 50.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+
+                repeat(4) { index ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        CustomIconButton(
+                            onClick = {
+                                callbacks[index]()
+                                onDismissRequest()
+                            },
+                            icon = icons[index]
+                        )
+                        Text(text = texts[index], color = Color.White)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FoodList(
     productList: List<Pair<Product, Int>>,
     index: Int?,
-    onAmountChanged: (index: Int, amount: Int) -> Unit,
-    onSearchClicked: () -> Unit,
-    onAddFoodClicked: () -> Unit,
-    onModifyClicked: (name: String, nutrition: List<String>) -> Unit,
-    onDismiss: () -> Unit,
+    onAmountChanged: (index: Int, Int) -> Unit,
+    onModifyClicked: (index: Int, Product) -> Unit,
     onDeleteClicked: (index: Int) -> Unit,
+    onAddByHandClicked: () -> Unit,
+    onSearchClicked: () -> Unit,
+    onCameraClicked: () -> Unit,
     onSubmitClicked: () -> Unit,
-    onFoodCardClicked: (index: Int) -> Unit,
 ) {
+    var selectedIndex by remember { mutableStateOf<Int?>(null) }
+    var showAddOption by remember { mutableStateOf(false) }
+
+    if (index != null) selectedIndex = index
+
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         TitleBar("섭취 리스트")
         ColumnWithDefault {
@@ -220,7 +274,7 @@ fun FoodList(
                     amount = amount,
                     onIncrease = { onAmountChanged(index, 1) },
                     onDecrease = { onAmountChanged(index, -1) },
-                    onClick = { onFoodCardClicked(index) },
+                    onClick = { selectedIndex = index },
                     onDelete = { onDeleteClicked(index) }
                 )
             }
@@ -237,19 +291,29 @@ fun FoodList(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            CustomIconButton(onSearchClicked, R.drawable.ic_add_box_24)
+            CustomIconButton(onClick = { showAddOption = true }, R.drawable.ic_add_box_24)
             CustomIconButton(onSubmitClicked, R.drawable.baseline_send_24)
         }
     }
 
-    if (index != null) {
-        Box(modifier = Modifier.padding(50.dp)) {
-            FoodPopup(
-                product = productList[index].first,
-                onModifyClicked = onModifyClicked,
-                onDismiss = onDismiss
-            )
-        }
+    selectedIndex?.let {
+        FoodPopup(
+            product = productList[it].first,
+            onModifyClicked = { product ->
+                onModifyClicked(it, product)
+                selectedIndex = null
+            },
+            onDismiss = { selectedIndex = null },
+        )
+    }
+
+    if (showAddOption) {
+        OptionDialog(
+            onDismissRequest = { showAddOption = false },
+            onAddByHandClicked = onAddByHandClicked,
+            onSearchClicked = onSearchClicked,
+            onCameraClicked = onCameraClicked,
+        )
     }
 }
 
@@ -258,19 +322,16 @@ fun FoodList(
 fun PreviewFoodList() {
     Scaffold {
         Box(modifier = Modifier.padding(it)) {
-            var index by remember { mutableStateOf<Int?>(null) }
-
             FoodList(
                 productList = testProductList,
-                index = index,
+                index = null,
                 onAmountChanged = { _, _ -> },
-                onAddFoodClicked = {},
+                onAddByHandClicked = {},
+                onCameraClicked = {},
                 onSearchClicked = {},
-                onModifyClicked = { _, _ -> index = null },
-                onDismiss = { index = null },
+                onModifyClicked = { _, _ -> },
                 onDeleteClicked = {},
                 onSubmitClicked = {},
-                onFoodCardClicked = { index = it },
             )
         }
     }

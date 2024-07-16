@@ -17,28 +17,25 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.babbogi.R
-import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 
 @Composable
 fun LoadingScreen(viewModel: BabbogiViewModel, navController: NavController) {
-    if (!viewModel.isServerResponding) navController.navigate(Screen.Home.name) {
-        popUpTo(navController.graph.startDestinationId) { inclusive = true }
-    }
     Loading()
 }
 
 @Composable
 fun Loading() {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId = R.raw.loading))
+
     Box(
-        modifier = Modifier.fillMaxSize(), // 화면 크기만큼 채우기
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         LottieAnimation(
             composition = composition,
             iterations = LottieConstants.IterateForever,
-            modifier = Modifier.size(150.dp) // 크기를 150x150 dp로 설정
+            modifier = Modifier.size(150.dp)
         )
     }
 }

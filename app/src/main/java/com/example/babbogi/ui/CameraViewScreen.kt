@@ -22,7 +22,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,17 +38,13 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.babbogi.R
-import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.view.ColumnWithDefault
-import com.example.babbogi.ui.view.CustomAlertDialog
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.getRandomTestProduct
-import com.example.babbogi.util.testProductList
-import com.example.babbogi.util.testProductNull
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionRequired
 import com.google.accompanist.permissions.rememberPermissionState
@@ -65,37 +64,46 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
         permissionNotGrantedContent = { LaunchedEffect(key1 = null) { cameraPermission.launchPermissionRequest() } },
         permissionNotAvailableContent = { CameraPermissionDenied() }
     ) {
+        var product by remember { mutableStateOf<Product?>(null) }
+        var showDialog by remember { mutableStateOf(false) }
+        var isFetching by remember { mutableStateOf(false) }
+
         // 카메라 사용 설정
         val previewView = remember { PreviewView(context) }
         val cameraController = remember { LifecycleCameraController(context) }
         val executor = remember { Executors.newSingleThreadExecutor() }
-        LaunchedEffect(key1 = true) {
+
+        LaunchedEffect(true) {
             cameraController.bindToLifecycle(lifecycleOwner)
             cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
             previewView.controller = cameraController
-            viewModel.asyncStartCameraRoutine(cameraController, executor)
+            viewModel.startCameraRoutine(
+                cameraController = cameraController,
+                executor = executor,
+                onBarcodeRecognized = {
+                    showDialog = true
+                    isFetching = true
+                },
+                onProductFetched = {
+                    isFetching = false
+                    if (it != null) product = it
+                }
+            )
         }
 
         CameraView(
             cameraView = previewView,
-            isProductFetching = viewModel.isFetchingProduct,
-            isFetchingSuccess = viewModel.isFetchingSuccess,
-            product = viewModel.product,
-            onAddClicked = {
-                viewModel.enrollProduct()
-                viewModel.truncateProduct()
-                viewModel.confirmFetchingResult()
-            },
-            onCancelClicked = {
-                viewModel.truncateProduct()
-                viewModel.confirmFetchingResult()
-            },
+            showDialog = showDialog,
+            isFetching = isFetching,
+            product = product,
+            onAddClicked = { product?.let { viewModel.addProduct(it) } },
+            onCancelClicked = { product = null; showDialog = false },
         )
     }
 }
 
 @Composable
-fun CameraPermissionDenied() {
+private fun CameraPermissionDenied() {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxSize()
@@ -106,7 +114,7 @@ fun CameraPermissionDenied() {
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.baseline_mode_24),
-                contentDescription = "camera",
+                contentDescription = null,
                 modifier = Modifier
                     .size(50.dp)
                     .padding(end = 8.dp)
@@ -120,22 +128,19 @@ fun CameraPermissionDenied() {
 }
 
 @Composable
-fun NutritionPopup(
-    isProductFetching: Boolean,
-    isFetchingSuccess: Boolean?,
+private fun ProductPopup(
+    isFetching: Boolean,
     product: Product?,
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit
 ) {
-    if (isProductFetching || isFetchingSuccess == true) Dialog(onDismissRequest = onCancelClicked) {
+    Dialog(onDismissRequest = onCancelClicked) {
         ElevatedCardWithDefault {
-            if (isProductFetching) Row (
+            if (isFetching) Row (
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                CircularProgressIndicator(modifier = Modifier
-                    .size(50.dp)
-                    .padding(16.dp))
+                CircularProgressIndicator(modifier = Modifier.size(50.dp).padding(16.dp))
             }
             else if (product != null) ColumnWithDefault {
                 ProductAbstraction(product = product, nullMessage = "서버에 영양 정보가 없습니다.")
@@ -147,22 +152,33 @@ fun NutritionPopup(
                     Button(onClick = onCancelClicked) { Text(text = "Cancel") }
                 }
             }
+            else {
+                Row (
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_not_find_30),
+                        contentDescription = null,
+                    )
+                    Text("바코드에 해당되는 제품 정보가 없습니다.")
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(onClick = onCancelClicked) { Text(text = "Cancel") }
+                    }
+                }
+            }
         }
     }
-    else CustomAlertDialog(
-        onDismissRequest = onCancelClicked,
-        onConfirmation = onCancelClicked,
-        dialogTitle = "찾을 수 없음",
-        dialogText = "해당 상품은 찾을 수 없는 상품입니다.",
-        iconResId = R.drawable.baseline_not_find_30
-    )
 }
 
 @Composable
-fun CameraView(
+private fun CameraView(
     cameraView: PreviewView,
-    isProductFetching: Boolean,
-    isFetchingSuccess: Boolean?,
+    showDialog: Boolean,
+    isFetching: Boolean,
     product: Product?,
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit,
@@ -184,15 +200,14 @@ fun CameraView(
         }
     }
 
-    if (isProductFetching || isFetchingSuccess != null) Box(
+    if (showDialog) Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxHeight()
             .padding(horizontal = 30.dp)
     ) {
-        NutritionPopup(
-            isProductFetching = isProductFetching,
-            isFetchingSuccess = isFetchingSuccess,
+        ProductPopup(
+            isFetching = isFetching,
             product = product,
             onAddClicked = onAddClicked,
             onCancelClicked = onCancelClicked,
@@ -209,8 +224,8 @@ fun PreviewCameraView() {
 
             CameraView(
                 cameraView = remember { PreviewView(context) },
-                isProductFetching = false,
-                isFetchingSuccess = true,
+                showDialog = true,
+                isFetching = false,
                 product = getRandomTestProduct(true),
                 onAddClicked = {},
                 onCancelClicked = {},

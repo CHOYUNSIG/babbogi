@@ -23,13 +23,20 @@ import com.example.babbogi.ui.view.TitleBar
 
 @Composable
 fun FoodSearchScreen(viewModel: BabbogiViewModel, navController: NavController) {
+    var searchResult by remember { mutableStateOf<List<String>>(emptyList()) }
 
+    FoodSearch(
+        searchResult = searchResult,
+        onSearchWordSubmitted = { /* TODO */ },
+        onWordSelected = { /* TODO */ },
+    )
 }
 
 @Composable
 fun FoodSearch(
     searchResult: List<String>,
     onSearchWordSubmitted: (String) -> Unit,
+    onWordSelected: (String) -> Unit,
 ) {
     var word by remember { mutableStateOf("") }
 
@@ -42,10 +49,10 @@ fun FoodSearch(
                 onValueChange = { word = it }
             )
             Column {
-                searchResult.forEachIndexed { index, s ->
+                searchResult.forEach {
                     ClickableText(
-                        text = AnnotatedString(s),
-                        onClick = {},
+                        text = AnnotatedString(it),
+                        onClick = { _ -> onWordSelected(it) },
                         modifier = Modifier.padding(16.dp)
                     )
                     HorizontalDivider()
@@ -70,6 +77,7 @@ fun PreviewFoodSearch() {
                     "열무김치",
                 ),
                 onSearchWordSubmitted = {},
+                onWordSelected = {},
             )
         }
     }

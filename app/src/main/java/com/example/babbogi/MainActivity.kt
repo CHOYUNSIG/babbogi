@@ -2,6 +2,7 @@ package com.example.babbogi
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -10,37 +11,40 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.model.DataPreference
+import com.example.babbogi.model.BabbogiModel
 import com.example.babbogi.ui.CameraViewScreen
 import com.example.babbogi.ui.FoodListScreen
+import com.example.babbogi.ui.FoodSearchScreen
 import com.example.babbogi.ui.GuidePageScreen
 import com.example.babbogi.ui.HealthProfileScreen
-import com.example.babbogi.ui.HomeScreen
 import com.example.babbogi.ui.LoadingScreen
 import com.example.babbogi.ui.NutritionDailyAnalyzeScreen
 import com.example.babbogi.ui.NutritionOverviewScreen
-import com.example.babbogi.ui.NutritionPeriodAnalyze
 import com.example.babbogi.ui.NutritionPeriodAnalyzeScreen
+import com.example.babbogi.ui.SettingScreen
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.CustomNavigationBar
 
 enum class Screen {
     Tutorial,
     Loading,
-    Home,
     NutritionDailyAnalyze,
     NutritionPeriodAnalyze,
     NutritionOverview,
-    Camera,
     FoodList,
-    HealthProfile,
+    Camera,
+    FoodSearch,
     Setting,
+    HealthProfile,
 }
 
 class MainActivity : ComponentActivity() {
@@ -50,7 +54,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        DataPreference.init(this)
+        BabbogiModel.init(this)
         viewModel = BabbogiViewModel()
 
         setContent {
@@ -69,17 +73,20 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainApp(viewModel: BabbogiViewModel) {
-    // 전역 내비게이션 컨트롤러
     val navController = rememberNavController()
-    val navScreens = listOf(
-        Screen.NutritionDailyAnalyze,
-        Screen.FoodList,
-        Screen.NutritionPeriodAnalyze
-    )
+    val navScreens by remember {
+        mutableStateOf(
+            listOf(
+                Screen.NutritionDailyAnalyze,
+                Screen.FoodList,
+                Screen.NutritionPeriodAnalyze
+            )
+        )
+    }
 
     Scaffold(
         bottomBar = {
-            if (navScreens.map { it.name }.contains(navController.currentDestination?.route))
+            Log.d("MainApp", "Current route: ${navController.currentDestination?.route}")
             CustomNavigationBar(
                 navController = navController,
                 screens = navScreens,
@@ -95,13 +102,14 @@ fun MainApp(viewModel: BabbogiViewModel) {
         ) {
             composable(route = Screen.Tutorial.name) { GuidePageScreen(viewModel, navController) }
             composable(route = Screen.Loading.name) { LoadingScreen(viewModel, navController) }
-            composable(route = Screen.Home.name) { HomeScreen(viewModel, navController) }
             composable(route = Screen.NutritionDailyAnalyze.name) { NutritionDailyAnalyzeScreen(viewModel, navController) }
             composable(route = Screen.NutritionPeriodAnalyze.name) { NutritionPeriodAnalyzeScreen(viewModel, navController) }
             composable(route = Screen.NutritionOverview.name) { NutritionOverviewScreen(viewModel, navController) }
-            composable(route = Screen.Camera.name) { CameraViewScreen(viewModel, navController) }
             composable(route = Screen.FoodList.name) { FoodListScreen(viewModel, navController) }
+            composable(route = Screen.FoodSearch.name) { FoodSearchScreen(viewModel, navController) }
+            composable(route = Screen.Camera.name) { CameraViewScreen(viewModel, navController) }
             composable(route = Screen.HealthProfile.name) { HealthProfileScreen(viewModel, navController) }
+            composable(route = Screen.Setting.name) { SettingScreen(viewModel, navController) }
         }
     }
 }
