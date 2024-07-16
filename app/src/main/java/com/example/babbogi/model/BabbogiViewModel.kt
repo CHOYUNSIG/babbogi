@@ -6,6 +6,7 @@ import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.view.LifecycleCameraController
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,9 +14,8 @@ import com.example.babbogi.network.BarcodeApi
 import com.example.babbogi.network.NutritionApi
 import com.example.babbogi.network.ServerApi
 import com.example.babbogi.util.HealthState
-import com.example.babbogi.util.IntakeState
 import com.example.babbogi.util.Nutrition
-import com.example.babbogi.util.NutritionState
+import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -25,60 +25,58 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.util.concurrent.ExecutorService
 
+private val barcodeRecognizer = BarcodeScanning.getClient(
+    BarcodeScannerOptions.Builder()
+        .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+        .enableAllPotentialBarcodes()
+        .build()
+)
 
 class BabbogiViewModel: ViewModel() {
-    // ML Kit 바코드 인식기
-    private val barcodeRecognizer = BarcodeScanning.getClient(
-        BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
-            .enableAllPotentialBarcodes()
-            .build()
-    )
-
-    // 상태 선언
+    private val _nutritionRecommendation = mutableStateOf(BabbogiModel.nutritionRecommendation ?: Nutrition.entries.associateWith { it.defaultRecommend })
+    private val _healthState = mutableStateOf(BabbogiModel.healthState)
     private val _productList = mutableStateOf<List<Pair<Product, Int>>>(emptyList())
-    private val _product = mutableStateOf<Product?>(null)
-    private val _dailyFoodList = mutableStateOf<Map<LocalDate, List<Pair<Product, Int>>>>(emptyMap())
-    private val _nutritionState = mutableStateOf(DataPreference.getNutritionState() ?: NutritionState())
-    private val _healthState = mutableStateOf(DataPreference.getHealthState())
-    private val _isFetchingProduct = mutableStateOf(false)
-    private val _isFetchingSuccess = mutableStateOf<Boolean?>(null)
-    private val _isServerResponding = mutableStateOf(false)
-    private val _isDailyFoodLoading = mutableStateOf(false)
-    private val _isNutritionStateLoading = mutableStateOf(false)
-    private val _isHealthStateLoading = mutableStateOf(false)
-    private val _isNutritionRecommendationChanging = mutableStateOf(false)
+    private val _today = mutableStateOf(LocalDate.now())
+    private val _periodReport = mutableStateOf<String?>(null)
+    private val foodLists = mutableStateMapOf<LocalDate, List<Pair<Product, Int>>>()
+    private val dailyReport = mutableStateMapOf<LocalDate, String>()
 
-    val product: Product? get() = _product.value // 현재 인식된 제품
-    val productList: List<Pair<Product, Int>> get() = _productList.value // 인식된 제품 리스트
-    val dailyFoodList: Map<LocalDate, List<Pair<Product, Int>>> get() = _dailyFoodList.value // 하루에 섭취한 음식 리스트
-    val nutritionState: NutritionState get() = _nutritionState.value // 하루의 영양 상태
-    val healthState: HealthState? get() = _healthState.value  // 사용자 건강 상태
-    val isFetchingProduct: Boolean get() = _isFetchingProduct.value
-    val isFetchingSuccess: Boolean? get() = _isFetchingSuccess.value
-    val isServerResponding: Boolean get() = _isServerResponding.value
-    val isDailyFoodLoading: Boolean get() = _isDailyFoodLoading.value
-    val isNutritionStateLoading: Boolean get() = _isNutritionStateLoading.value
-    val isHealthStateLoading: Boolean get() = _isHealthStateLoading.value
+    var productList: List<Pair<Product, Int>>
+        get() = _productList.value
+        private set(productList) { _productList.value = productList }
 
-    fun truncateIntake() {
-        val nutrition = _nutritionState.value
-        val newNutrition = NutritionState(
-            Nutrition.entries.associateWith { IntakeState(nutrition[it].recommended) }
-        )
-        _nutritionState.value = newNutrition
-        DataPreference.saveNutritionState(newNutrition)
-    }
+    var nutritionRecommendation: NutritionRecommendation
+        get() = _nutritionRecommendation.value
+        private set(nutritionRecommendation) { _nutritionRecommendation.value = nutritionRecommendation }
 
-    // 카메라를 이용해 상품 정보를 가져오기 시작함 (비동기)
+    var healthState: HealthState?
+        get() = _healthState.value
+        private set(healthState) { _healthState.value = healthState }
+
+    var today: LocalDate
+        get() = _today.value
+        set(today) { _today.value = today }
+
+    var isTutorialDone: Boolean
+        get() = BabbogiModel.isTutorialDone
+        set(isTutorialDone) { BabbogiModel.isTutorialDone = isTutorialDone }
+
+    var periodReport: String?
+        get() = _periodReport.value
+        private set(periodReport) { _periodReport.value = periodReport }
+
+    // 카메라를 이용해 상품 정보를 가져오기 시작함
     @OptIn(ExperimentalGetImage::class)
-    fun asyncStartCameraRoutine(
+    fun startCameraRoutine(
         cameraController: LifecycleCameraController,
-        executor: ExecutorService
+        executor: ExecutorService,
+        onBarcodeRecognized: (barcode: String) -> Unit,
+        onProductFetched: (product: Product?) -> Unit,
     ) {
+        var isFetching = false
         cameraController.setImageAnalysisAnalyzer(executor) analyzing@ { imageProxy ->
             val image = imageProxy.image
-            if (_isFetchingSuccess.value != null || _isFetchingProduct.value || image == null) {
+            if (isFetching || image == null) {
                 imageProxy.close()
                 return@analyzing
             }
@@ -86,16 +84,17 @@ class BabbogiViewModel: ViewModel() {
                 InputImage.fromMediaImage(image, imageProxy.imageInfo.rotationDegrees)
             ).addOnCompleteListener { task ->
                 viewModelScope.launch {
-                    _isFetchingProduct.value = true
+                    isFetching = true
                     var success: Boolean? = null
+                    var product: Product? = null
                     try {
                         val barcode = task.result.firstOrNull { raw ->
                             raw.rawValue != null && raw.rawValue!!.isNotEmpty()
                         }?.rawValue ?: return@launch
-                        Log.d("ViewModel", "Barcode: $barcode")
+                        onBarcodeRecognized(barcode)
                         success = false
                         val prodName = BarcodeApi.getProducts(barcode).firstOrNull()?.name ?: return@launch
-                        _product.value = Product(
+                        product = Product(
                             prodName,
                             NutritionApi.getNutrition(prodName).firstOrNull(),
                         )
@@ -106,8 +105,8 @@ class BabbogiViewModel: ViewModel() {
                         Log.d("ViewModel", "Cannot get product info")
                     }
                     finally {
-                        _isFetchingProduct.value = false
-                        _isFetchingSuccess.value = success
+                        if (success != null) onProductFetched(product)
+                        isFetching = false
                         imageProxy.close()
                     }
                 }
@@ -115,179 +114,133 @@ class BabbogiViewModel: ViewModel() {
         }
     }
 
-    // 사용자가 바코드 인식 결과를 인지함
-    fun confirmFetchingResult() {
-        _isFetchingSuccess.value = null
-    }
-
-    // 현재 인식된 제품 버리기
-    fun truncateProduct() {
-        _product.value = null
-    }
-
-    // 리스트에 빈 음식 추가
-    fun addProduct() {
-        _productList.value = _productList.value.plus(
-            Product("", null) to 1
-        )
-    }
-
-    // 현재 인식된 제품 리스트에 추가
-    fun enrollProduct() {
-        val product = _product.value
-        if (product != null)
-            _productList.value = _productList.value.plus(product to 1)
+    // 제품을 리스트에 추가
+    fun addProduct(product: Product = Product("", null)) {
+        productList = productList.plus(product to 1)
     }
 
     // 리스트에서 제품 정보 변경
     fun modifyProduct(
         index: Int,
         product: Product = _productList.value[index].first,
-        amount: Int = _productList.value[index].second
+        amount: Int = _productList.value[index].second,
     ) {
-        val productList = _productList.value
-        val newProductList = productList.mapIndexed { i, p ->
-            if (i == index) product to amount else p
-        }
-        _productList.value = newProductList
+        productList = productList.mapIndexed { i, p -> if (i == index) product to amount else p }
     }
 
     // 리스트에서 제품 삭제
     fun deleteProduct(index: Int) {
-        _productList.value = _productList.value.filterIndexed { i, _ -> i != index }
+        productList = productList.filterIndexed { i, _ -> i != index }
     }
 
-    // 섭취 리스트 서버 전송 (비동기)
+    // 섭취 리스트 서버 전송
     @RequiresApi(Build.VERSION_CODES.O)
-    fun asyncSendListToServer() {
-        _isServerResponding.value = true
+    fun sendList(onEnded: (success: Boolean) -> Unit) {
         viewModelScope.launch {
-            val productList = _productList.value
+            var success = false
             try {
-                val id = DataPreference.getID()!!
+                val today = LocalDate.now()
+                val id = BabbogiModel.id!!
                 ServerApi.postProductList(id, productList)
-                val nutritionState = ServerApi.getNutritionState(id)
-                DataPreference.saveNutritionState(nutritionState)
-                _productList.value = emptyList()
-                _nutritionState.value = nutritionState
+                val products = ServerApi.getProductList(id, today)
+                foodLists[today] = products
+                productList = emptyList()
+                success = true
             }
             catch (e: Exception) {
                 e.printStackTrace()
                 Log.d("ViewModel", "Cannot send list to server.")
             }
             finally {
-                _isServerResponding.value = false
+                onEnded(success)
             }
         }
     }
 
-    // 서버에서 해당 날짜의 섭취한 음식 정보 받아오기 (비동기)
+    // 해당 날짜의 섭취한 음식 리스트 받아오기
     @RequiresApi(Build.VERSION_CODES.O)
-    fun asyncGetFoodListFromServer(date: LocalDate) {
-        if (_isDailyFoodLoading.value) return
-        _isDailyFoodLoading.value = true
+    fun getFoodList(
+        date: LocalDate,
+        refresh: Boolean = false,
+        onFetchingEnded: (foodList: List<Pair<Product, Int>>?) -> Unit
+    ) {
         viewModelScope.launch {
             try {
-                val id = DataPreference.getID()!!
-                val foodList = ServerApi.getProductList(id, date)
-                val dailyFoodList = _dailyFoodList.value
-                _dailyFoodList.value = dailyFoodList.plus(date to foodList)
+                if (!foodLists.containsKey(date) || refresh)
+                    foodLists[date] = ServerApi.getProductList(BabbogiModel.id!!, date)
             }
             catch (e: Exception) {
                 e.printStackTrace()
                 Log.d("ViewModel", "Cannot get list from server.")
             }
             finally {
-                _isDailyFoodLoading.value = false
+                onFetchingEnded(foodLists[date])
             }
         }
     }
 
-    // 건강 정보를 변경하고 서버로 건강 정보를 전송한 뒤 조절된 권장량을 로드한다. (비동기)
+    // 건강 정보를 변경하고 서버로 건강 정보를 전송한 뒤 조절된 권장량 로드
     @RequiresApi(Build.VERSION_CODES.O)
-    fun asyncChangeHealthStateWithServer(healthState: HealthState) {
-        _isServerResponding.value = true
+    fun changeHealthState(healthState: HealthState, onEnded: (success: Boolean) -> Unit) {
         viewModelScope.launch {
+            var success = false
             try {
-                val id = DataPreference.getID()
-                val token = DataPreference.getToken()!!
-                val newId = ServerApi.postHealthState(id, token, healthState)
-                val nutritionState = ServerApi.getNutritionState(newId)
-                DataPreference.saveID(newId)
-                DataPreference.saveHealthState(healthState)
-                DataPreference.saveNutritionState(nutritionState)
-                _healthState.value = healthState
-                _nutritionState.value = nutritionState
+                val newId = ServerApi.postHealthState(BabbogiModel.id, BabbogiModel.token!!, healthState)
+                val recommendation = ServerApi.getNutritionRecommendation(newId)
+                BabbogiModel.id = newId
+                BabbogiModel.healthState = healthState
+                BabbogiModel.nutritionRecommendation = recommendation
+                nutritionRecommendation = recommendation
+                success = true
             }
             catch (e: Exception) {
                 e.printStackTrace()
                 Log.d("ViewModel", "Cannot send state to server.")
             }
             finally {
-                _isServerResponding.value = false
+                onEnded(success)
             }
         }
     }
 
-    // 서버에서 현재 건강 상태를 얻어온다. (비동기)
-    fun asyncGetHealthStateFromServer() {
-        _isHealthStateLoading.value = true
+    // 서버에서 현재 건강 상태 얻어오기
+    fun getHealthStateFromServer(onEnded: (Boolean) -> Unit) {
         viewModelScope.launch {
+            var success = false
             try {
-                val id = DataPreference.getID()!!
-                val healthState = ServerApi.getHealthState(id)
-                _healthState.value = healthState
-                DataPreference.saveHealthState(healthState)
+                healthState = ServerApi.getHealthState(BabbogiModel.id!!)
+                BabbogiModel.healthState = healthState
+                success = true
             }
             catch (e: Exception) {
                 e.printStackTrace()
                 Log.d("ViewModel", "Cannot get user state from server")
             }
             finally {
-                _isHealthStateLoading.value = false
+                onEnded(success)
             }
         }
     }
 
-    // 서버에서 현재 영양 상태를 얻어온다. (비동기)
+    // 권장 섭취량을 수정하고 서버에 수정한 권장 섭취량을 전송
     @RequiresApi(Build.VERSION_CODES.O)
-    fun asyncGetNutritionStateFromServer() {
-        _isNutritionStateLoading.value = true
+    fun changeNutritionRecommendation(
+        recommendation: NutritionRecommendation,
+        onEnded: (success: Boolean) -> Unit
+    ) {
         viewModelScope.launch {
+            val success = false
             try {
-                val id = DataPreference.getID()!!
-                val nutritionState = ServerApi.getNutritionState(id)
-                DataPreference.saveNutritionState(nutritionState)
-                _nutritionState.value = nutritionState
-            }
-            catch (e: Exception) {
-                e.printStackTrace()
-                Log.d("ViewModel", "Cannot load nutrition state.")
-            }
-            finally {
-                _isNutritionStateLoading.value = false
-            }
-        }
-    }
-
-    // 권장 섭취량을 수정하고 서버에 수정한 권장 섭취량을 전송한다.
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun asyncChangeNutritionRecommendation(recommend: Map<Nutrition, Float>) {
-        _isNutritionRecommendationChanging.value = true
-        viewModelScope.launch {
-            try {
-                val id = DataPreference.getID()!!
-                ServerApi.putNutritionRecommend(id, recommend)
-                val nutritionState = ServerApi.getNutritionState(id)
-                DataPreference.saveNutritionState(nutritionState)
-                _nutritionState.value = nutritionState
+                ServerApi.putNutritionRecommendation(BabbogiModel.id!!, recommendation)
+                BabbogiModel.nutritionRecommendation = recommendation
+                nutritionRecommendation = recommendation
             }
             catch (e: Exception) {
                 e.printStackTrace()
                 Log.d("ViewModel", "Cannot put nutrition recommend.")
             }
             finally {
-                _isNutritionRecommendationChanging.value = false
+                onEnded(success)
             }
         }
     }
