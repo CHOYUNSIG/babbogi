@@ -2,6 +2,7 @@ package com.example.babbogi
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -10,8 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -30,28 +36,28 @@ import com.example.babbogi.ui.SettingScreen
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.CustomNavigationBar
 
-enum class Screen {
-    Tutorial,
-    Loading,
-    NutritionDailyAnalyze,
-    NutritionPeriodAnalyze,
-    NutritionOverview,
-    FoodList,
-    Camera,
-    FoodSearch,
-    Setting,
-    HealthProfile,
+enum class Screen(
+    val screenComposable: @Composable (BabbogiViewModel, NavHostController) -> Unit
+) {
+    Tutorial(screenComposable = { v, n -> GuidePageScreen(v, n) }),
+    Loading(screenComposable = { v, n -> LoadingScreen(v, n) }),
+    NutritionDailyAnalyze(screenComposable = { v, n -> NutritionDailyAnalyzeScreen(v, n) }),
+    NutritionPeriodAnalyze(screenComposable = { v, n -> NutritionPeriodAnalyzeScreen(v, n) }),
+    NutritionOverview(screenComposable = { v, n -> NutritionOverviewScreen(v, n) }),
+    FoodList(screenComposable = { v, n -> FoodListScreen(v, n) }),
+    Camera(screenComposable = { v, n -> CameraViewScreen(v, n) }),
+    FoodSearch(screenComposable = { v, n -> FoodSearchScreen(v, n) }),
+    Setting(screenComposable = { v, n -> SettingScreen(v, n) }),
+    HealthProfile(screenComposable = { v, n -> HealthProfileScreen(v, n) }),
 }
 
 class MainActivity : ComponentActivity() {
-    private lateinit var viewModel: BabbogiViewModel
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         BabbogiModel.init(this)
-        viewModel = BabbogiViewModel()
+        val viewModel = BabbogiViewModel()
 
         setContent {
             BabbogiTheme {
@@ -70,10 +76,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainApp(viewModel: BabbogiViewModel) {
     val navController = rememberNavController()
+    var currentScreen by remember { mutableStateOf<String?>(null) }
+
+    navController.addOnDestinationChangedListener { _, destination, _ ->
+        currentScreen = destination.route
+    }
 
     Scaffold(
         bottomBar = {
-            CustomNavigationBar(
+            if (currentScreen != Screen.Tutorial.name) CustomNavigationBar(
                 navController = navController,
                 screens = listOf(
                     Screen.NutritionDailyAnalyze,
@@ -98,16 +109,11 @@ fun MainApp(viewModel: BabbogiViewModel) {
             startDestination = Screen.NutritionDailyAnalyze.name,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(route = Screen.Tutorial.name) { GuidePageScreen(viewModel, navController) }
-            composable(route = Screen.Loading.name) { LoadingScreen(viewModel, navController) }
-            composable(route = Screen.NutritionDailyAnalyze.name) { NutritionDailyAnalyzeScreen(viewModel, navController) }
-            composable(route = Screen.NutritionPeriodAnalyze.name) { NutritionPeriodAnalyzeScreen(viewModel, navController) }
-            composable(route = Screen.NutritionOverview.name) { NutritionOverviewScreen(viewModel, navController) }
-            composable(route = Screen.FoodList.name) { FoodListScreen(viewModel, navController) }
-            composable(route = Screen.FoodSearch.name) { FoodSearchScreen(viewModel, navController) }
-            composable(route = Screen.Camera.name) { CameraViewScreen(viewModel, navController) }
-            composable(route = Screen.HealthProfile.name) { HealthProfileScreen(viewModel, navController) }
-            composable(route = Screen.Setting.name) { SettingScreen(viewModel, navController) }
+            Screen.entries.forEach { screen ->
+                composable(screen.name) {
+                    screen.screenComposable(viewModel, navController)
+                }
+            }
         }
     }
 }

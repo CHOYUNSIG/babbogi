@@ -23,7 +23,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
-import com.example.babbogi.ui.theme.BabbogiGreen
 
 @Composable
 fun CustomNavigationBar(
