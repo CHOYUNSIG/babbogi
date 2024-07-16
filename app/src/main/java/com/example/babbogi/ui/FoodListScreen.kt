@@ -80,6 +80,7 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
                 }
             }
         },
+        onSettingClicked = { navController.navigate(Screen.Setting.name) }
     )
 
     if (selectedIndex != null) selectedIndex = null
@@ -216,6 +217,7 @@ private fun FoodList(
     onSearchClicked: () -> Unit,
     onCameraClicked: () -> Unit,
     onSubmitClicked: () -> Unit,
+    onSettingClicked: () -> Unit,
 ) {
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
     var showAddOption by remember { mutableStateOf(false) }
@@ -223,7 +225,14 @@ private fun FoodList(
     if (index != null) selectedIndex = index
 
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        TitleBar("섭취 리스트")
+        TitleBar("섭취 리스트") {
+            IconButton(onClick = onSettingClicked) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_settings_24),
+                    contentDescription = "설정",
+                )
+            }
+        }
         ColumnWithDefault {
             if (productList.isEmpty())
                 Text(
@@ -296,6 +305,7 @@ fun PreviewFoodList() {
                     onModifyClicked = { _, _ -> },
                     onDeleteClicked = {},
                     onSubmitClicked = {},
+                    onSettingClicked = {},
                 )
             }
         }
