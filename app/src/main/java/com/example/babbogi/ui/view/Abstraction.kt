@@ -123,7 +123,7 @@ fun HealthAbstraction(
             Text(
                 text = "사용자 건강 정보",
                 fontSize = 20.sp,
-                fontWeight = FontWeight.W600,
+                fontWeight = FontWeight.Bold,
             )
             icon()
         }
@@ -153,7 +153,7 @@ fun NutritionRecommendationAbstraction(
             Text(
                 text = "권장 섭취량",
                 fontSize = 20.sp,
-                fontWeight = FontWeight.W600,
+                fontWeight = FontWeight.Bold,
             )
             icon()
         }

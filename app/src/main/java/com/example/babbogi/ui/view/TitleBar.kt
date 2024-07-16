@@ -38,9 +38,8 @@ fun TitleBar(title: String, buttonBar: @Composable () -> Unit = {}) {
         ) {
             Text(
                 text = title,
-                color = Color.Black,
                 fontSize = 26.sp,
-                fontWeight = FontWeight.Black,
+                fontWeight = FontWeight.Bold,
             )
             buttonBar()
         }
