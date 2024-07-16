@@ -37,7 +37,7 @@ class BabbogiViewModel: ViewModel() {
     private val _healthState = mutableStateOf(BabbogiModel.healthState)
     private val _isTutorialDone = mutableStateOf(BabbogiModel.isTutorialDone)
     private val _notificationActivation = mutableStateOf(BabbogiModel.notificationActivation)
-    private val _productList = mutableStateOf<List<Pair<Product, Int>>>(emptyList())
+    private val _productList = mutableStateOf(BabbogiModel.productList)
     private val _today = mutableStateOf(LocalDate.now())
     private val _periodReport = mutableStateOf<String?>(null)
     private val foodLists = mutableStateMapOf<LocalDate, List<Pair<Product, Int>>>()
@@ -45,7 +45,10 @@ class BabbogiViewModel: ViewModel() {
 
     var productList: List<Pair<Product, Int>>
         get() = _productList.value
-        private set(productList) { _productList.value = productList }
+        private set(productList) {
+            _productList.value = productList
+            BabbogiModel.productList = productList
+        }
 
     var nutritionRecommendation: NutritionRecommendation
         get() = _nutritionRecommendation.value

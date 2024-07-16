@@ -225,7 +225,7 @@ private fun FoodList(
     if (index != null) selectedIndex = index
 
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        TitleBar("섭취 리스트") {
+        TitleBar("음식 추가") {
             IconButton(onClick = onSettingClicked) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_settings_24),
@@ -236,7 +236,7 @@ private fun FoodList(
         ColumnWithDefault {
             if (productList.isEmpty())
                 Text(
-                    text = "카메라로 식품의 바코드를 찍으세요!\n이곳에 표시됩니다.",
+                    text = "음식을 검색하거나,\n카메라로 바코드를 찍으세요!\n이곳에 표시됩니다.",
                     modifier = Modifier.padding(16.dp),
                     color = Color.Gray
                 )

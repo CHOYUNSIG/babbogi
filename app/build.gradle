@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'org.jetbrains.kotlin.plugin.serialization' version "1.8.10"
+    id 'org.jetbrains.kotlin.plugin.serialization' version "2.0.0"
     id 'com.google.gms.google-services'
 }
 
@@ -108,7 +108,9 @@ dependencies {
     // Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.6.4'
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
+
+    // Kotlinx
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
 
     // Firebase
     implementation platform('com.google.firebase:firebase-bom:33.1.1')
