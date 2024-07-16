@@ -260,4 +260,67 @@ class BabbogiViewModel: ViewModel() {
             }
         }
     }
+
+    // 서버에 음식 이름 검색
+    fun searchWord(
+        word: String,
+        onSearchDone: (List<String>?) -> Unit
+    ) {
+        viewModelScope.launch {
+            var result: List<String>? = null
+            try {
+                result = ServerApi.getSearchResult(word)
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot search food.")
+            }
+            finally {
+                onSearchDone(result)
+            }
+        }
+    }
+    
+    // 서버에서 이름에 해당하는 음식 정보 얻어오기
+    fun getProductByNameSearch(
+        name: String,
+        onSearchDone: (Product?) -> Unit
+    ) {
+        viewModelScope.launch {
+            var result: Product? = null
+            try {
+                result = ServerApi.getMatchedProduct(name)
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot get food by searching.")
+            }
+            finally {
+                onSearchDone(result)
+            }
+        }
+    }
+    
+    // 서버에서 일일 레포트 받아오기
+    fun getDailyReport(
+        date: LocalDate,
+        refresh: Boolean = false,
+        onFetchingEnded: (report: String?) -> Unit,
+    ) {
+        viewModelScope.launch {
+            var report: String? = null
+            try {
+                if (!dailyReport.containsKey(date) || refresh)
+                    dailyReport[date] = ServerApi.getDailyReport(BabbogiModel.id!!, date)
+                report = dailyReport[date]
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot get daily report.")
+            }
+            finally {
+                onFetchingEnded(report)
+            }
+        }
+    }
 }

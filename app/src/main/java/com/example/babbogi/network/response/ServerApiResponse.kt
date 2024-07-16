@@ -19,53 +19,8 @@ data class ServerUserStateFormat (
     val gender: String,
     val disease: String,
     val date: String? = null,
-)
-
-@Serializable
-data class ServerNutritionFormat(
-    val id: Long? = null,
-    val foodName: String? = null,
-    val foodCount: Int? = null,
-    val kcal: Double,
-    val carbohydrate: Double,
-    val sugar: Double,
-    val protein: Double,
-    val fat: Double,
-    val saturatedfat: Double,
-    val transfat: Double,
-    val natrium: Double,
-    val cholesterol: Double,
-)
-
-@Serializable
-data class ServerConsumeFormat(
-    val id: Long,  // 필요 없음
-    val userId: Long,  // 필요 없음
-    val foodName: String?,
-    val foodCount: Int,
-    val kcal: Double?,
-    val carbohydrate: Double?,
-    val sugar: Double?,
-    val protein: Double?,
-    val fat: Double?,
-    val transfat: Double?,
-    val saturatedfat: Double?,
-    val cholesterol: Double?,
-    val natrium: Double?,
-    val remainingkcal: Double,  // 각 시점마다 계산된 수치
-    val remainingCarbohydrate: Double,  // 각 시점마다 계산된 수치
-    val remainingSugar: Double,  // 각 시점마다 계산된 수치
-    val remainingProtein: Double,  // 각 시점마다 계산된 수치
-    val remainingFat: Double,  // 각 시점마다 계산된 수치
-    val remainingTransfat: Double,  // 각 시점마다 계산된 수치
-    val remainingSaturatedfat: Double,  // 각 시점마다 계산된 수치
-    val remainingCholesterol: Double,  // 각 시점마다 계산된 수치
-    val remainingNatrium: Double,  // 각 시점마다 계산된 수치
-    val date: String,
-)
-
-fun ServerUserStateFormat.toHealthState(): HealthState {
-    return HealthState(
+) {
+    fun toHealthState(): HealthState = HealthState(
         height = this.height.toFloat(),
         weight = this.weight.toFloat(),
         gender = when (this.gender) {
@@ -82,23 +37,22 @@ fun ServerUserStateFormat.toHealthState(): HealthState {
     )
 }
 
-fun HealthState.toServerUserStateFormat(id: Long?): ServerUserStateFormat {
-    return ServerUserStateFormat(
-        id = id,
-        name = "babbogi_app",
-        height = this.height.toDouble(),
-        weight = this.weight.toDouble(),
-        age = this.age,
-        gender = when (this.gender) {
-            Gender.Male -> "M"
-            Gender.Female -> "F"
-        },
-        disease = this.adultDisease?.name?.lowercase() ?: "null"
-    )
-}
-
-fun ServerNutritionFormat.toMap(): NutritionMap<Float> {
-    return mapOf(
+@Serializable
+data class ServerNutritionFormat(
+    val id: Long? = null,
+    val foodName: String? = null,
+    val foodCount: Int? = null,
+    val kcal: Double,
+    val carbohydrate: Double,
+    val sugar: Double,
+    val protein: Double,
+    val fat: Double,
+    val saturatedfat: Double,
+    val transfat: Double,
+    val natrium: Double,
+    val cholesterol: Double,
+) {
+    fun toMap(): NutritionMap<Float> = mapOf(
         Nutrition.Fat to this.fat.toFloat(),
         Nutrition.Salt to this.natrium.toFloat(),
         Nutrition.Sugar to this.sugar.toFloat(),
@@ -111,8 +65,33 @@ fun ServerNutritionFormat.toMap(): NutritionMap<Float> {
     )
 }
 
-fun ServerConsumeFormat.toMap(): NutritionMap<Float> {
-    return mapOf(
+@Serializable
+data class ServerConsumeFormat(
+    val id: Long,  // 필요 없음
+    val userId: Long,  // 필요 없음
+    val foodName: String?,
+    val foodCount: Int,
+    val kcal: Double?,
+    val carbohydrate: Double?,
+    val sugar: Double?,
+    val protein: Double?,
+    val fat: Double?,
+    val transfat: Double?,
+    val saturatedfat: Double?,
+    val cholesterol: Double?,
+    val natrium: Double?,
+    val remainingkcal: Double,
+    val remainingCarbohydrate: Double,
+    val remainingSugar: Double,
+    val remainingProtein: Double,
+    val remainingFat: Double,
+    val remainingTransfat: Double,
+    val remainingSaturatedfat: Double,
+    val remainingCholesterol: Double,
+    val remainingNatrium: Double,
+    val date: String,
+) {
+    fun toMap(): NutritionMap<Float> = mapOf(
         Nutrition.Fat to this.fat!!.toFloat(),
         Nutrition.Salt to this.natrium!!.toFloat(),
         Nutrition.Sugar to this.sugar!!.toFloat(),
@@ -123,26 +102,61 @@ fun ServerConsumeFormat.toMap(): NutritionMap<Float> {
         Nutrition.Carbohydrate to this.carbohydrate!!.toFloat(),
         Nutrition.SaturatedFat to this.saturatedfat!!.toFloat(),
     )
-}
 
-fun ServerConsumeFormat.toRemainingMap(): NutritionMap<Float> {
-    return mapOf(
-        Nutrition.Fat to this.remainingFat.toFloat(),
-        Nutrition.Salt to this.remainingNatrium.toFloat(),
-        Nutrition.Sugar to this.remainingSugar.toFloat(),
-        Nutrition.Calorie to this.remainingkcal.toFloat(),
-        Nutrition.Protein to this.remainingProtein.toFloat(),
-        Nutrition.TransFat to this.remainingTransfat.toFloat(),
-        Nutrition.Cholesterol to this.remainingCholesterol.toFloat(),
-        Nutrition.Carbohydrate to this.remainingCarbohydrate.toFloat(),
-        Nutrition.SaturatedFat to this.remainingSaturatedfat.toFloat(),
+    fun toProduct(): Product = Product(
+        name = this.foodName!!,
+        this.toMap()
     )
 }
 
-fun ServerConsumeFormat.toProduct(): Product {
-    return Product(
-        name = this.foodName!!,
-        this.toMap()
+@Serializable
+data class ServerFoodFormat(
+    val foodnum: Int,
+    val foodcode: String,
+    val foodname: String,
+    val foodgroup: String,
+    val food: String,
+    val nutrientcontentper100: String,
+    val kcal: Double,
+    val protein: Double,
+    val fat: Double,
+    val carbohydrate: Double,
+    val sugar: Double,
+    val natrium: Double,
+    val cholesterol: Double,
+    val saturatedfat: Double,
+    val transfat: Double,
+) {
+    fun toMap(): NutritionMap<Float> = mapOf(
+        Nutrition.Fat to this.fat.toFloat(),
+        Nutrition.Salt to this.natrium.toFloat(),
+        Nutrition.Sugar to this.sugar.toFloat(),
+        Nutrition.Calorie to this.kcal.toFloat(),
+        Nutrition.Protein to this.protein.toFloat(),
+        Nutrition.TransFat to this.transfat.toFloat(),
+        Nutrition.Cholesterol to this.cholesterol.toFloat(),
+        Nutrition.Carbohydrate to this.carbohydrate.toFloat(),
+        Nutrition.SaturatedFat to this.saturatedfat.toFloat(),
+    )
+
+    fun toProduct(): Product = Product(
+        name = this.foodname,
+        nutrition = this.toMap()
+    )
+}
+
+fun HealthState.toServerUserStateFormat(id: Long?): ServerUserStateFormat {
+    return ServerUserStateFormat(
+        id = id,
+        name = "babbogi_app",
+        height = this.height.toDouble(),
+        weight = this.weight.toDouble(),
+        age = this.age,
+        gender = when (this.gender) {
+            Gender.Male -> "M"
+            Gender.Female -> "F"
+        },
+        disease = this.adultDisease?.name?.lowercase() ?: "null"
     )
 }
 

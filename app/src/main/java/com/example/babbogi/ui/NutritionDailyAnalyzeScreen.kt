@@ -65,6 +65,8 @@ fun NutritionDailyAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavC
     var intake by remember { mutableStateOf<NutritionIntake?>(null) }
     var report by remember { mutableStateOf<String?>(null) }
 
+    if (!viewModel.isTutorialDone) navController.navigate(Screen.Tutorial.name)
+
     LaunchedEffect(viewModel.today) {
         viewModel.getFoodList(viewModel.today) {
             if (it != null) {
@@ -82,8 +84,11 @@ fun NutritionDailyAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavC
         report = report,
         onNutritionCardClicked = { navController.navigate(Screen.NutritionOverview.name) },
         onDateChanged = { viewModel.today = it },
-        onNewReportRequested = {
-            /* TODO: 뷰모델에 보고서 요청 코드 작성 */
+        onNewReportRequested = { onLoadingEnded ->
+            viewModel.getDailyReport(viewModel.today) {
+                report = it
+                onLoadingEnded()
+            }
         },
         onSettingClicked = { navController.navigate(Screen.Setting.name) },
         onRefresh = { endRefresh ->

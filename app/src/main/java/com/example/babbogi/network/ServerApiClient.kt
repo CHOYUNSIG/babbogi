@@ -5,11 +5,9 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.babbogi.BuildConfig
 import com.example.babbogi.network.response.ServerConsumeFormat
+import com.example.babbogi.network.response.ServerFoodFormat
 import com.example.babbogi.network.response.ServerNutritionFormat
 import com.example.babbogi.network.response.ServerUserStateFormat
-import com.example.babbogi.network.response.toHealthState
-import com.example.babbogi.network.response.toMap
-import com.example.babbogi.network.response.toProduct
 import com.example.babbogi.network.response.toServerNutritionFormat
 import com.example.babbogi.network.response.toServerUserStateFormat
 import com.example.babbogi.util.HealthState
@@ -48,6 +46,22 @@ interface ServerApiService {
     suspend fun getNutritionRecommendation(
         @Query(value = "id") id: Long
     ): ServerNutritionFormat
+
+    @GET("search")
+    suspend fun getSearchResult(
+        @Query(value = "name") word: String
+    ): List<String>
+
+    @GET("food")
+    suspend fun getFoodNutrition(
+        @Query(value = "name") name: String
+    ): ServerFoodFormat
+
+    @GET("dailyreport")
+    suspend fun getDailyReport(
+        @Query(value = "id") id: Long,
+        @Query(value = "date") date: String,
+    ): String
 
     @POST("consumptions")
     suspend fun postProductList(
@@ -90,6 +104,21 @@ object ServerApi {
     suspend fun getNutritionRecommendation(id: Long): NutritionRecommendation {
         Log.d("ServerApi", "getNutritionRecommendation($id)")
         return retrofitService.getNutritionRecommendation(id).toMap()
+    }
+
+    suspend fun getSearchResult(word: String): List<String> {
+        Log.d("ServerApi", "getSearchResult($word)")
+        return retrofitService.getSearchResult(word)
+    }
+
+    suspend fun getMatchedProduct(name: String): Product {
+        Log.d("ServerApi", "getMatchedProduct($name)")
+        return retrofitService.getFoodNutrition(name).toProduct()
+    }
+
+    suspend fun getDailyReport(id: Long, date: LocalDate): String {
+        Log.d("ServerApi", "getDailyReport($id, $date)")
+        return retrofitService.getDailyReport(id, date.toString())
     }
 
     suspend fun postProductList(id: Long, productList: List<Pair<Product, Int>>) {
