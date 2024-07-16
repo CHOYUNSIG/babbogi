@@ -238,7 +238,7 @@ fun PreviewCameraView() {
                 val context = LocalContext.current
 
                 CameraView(
-                    cameraView = remember { PreviewView(context) },
+                    cameraView = remember {  PreviewView(context) },
                     showDialog = true,
                     isFetching = false,
                     product = getRandomTestProduct(true),

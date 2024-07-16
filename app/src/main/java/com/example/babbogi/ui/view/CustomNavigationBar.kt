@@ -12,6 +12,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,9 +21,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
+import com.example.babbogi.ui.theme.BabbogiGreen
 
 @Composable
 fun CustomNavigationBar(
@@ -31,25 +34,23 @@ fun CustomNavigationBar(
     labels: List<String>,
     icons: List<Int>,
 ) {
-    Box {
-        Box(contentAlignment = Alignment.TopCenter) {
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                thickness = 2.dp,
-                color = Color.Black.copy(alpha = 0.1f)
-            )
-        }
-        Row(horizontalArrangement = Arrangement.SpaceAround) {
+    val currentDestination by navController.currentBackStackEntryAsState()
+    val currentScreen = screens.find { it.name == currentDestination?.destination?.route }
+
+    ElevatedCardWithDefault {
+        Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+        ) {
             screens.forEachIndexed { index, screen ->
+                val isSelected = currentScreen == screen
                 Box(modifier = Modifier.weight(1f)) {
                     CustomNavigationBarItem(
                         icon = icons[index],
                         description = labels[index],
+                        isSelected = isSelected,
                         onClick = {
                             navController.navigate(screen.name) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    inclusive = false
-                                }
+                                popUpTo(navController.graph.startDestinationId) { inclusive = false }
                             }
                         },
                     )
@@ -63,13 +64,14 @@ fun CustomNavigationBar(
 fun CustomNavigationBarItem(
     icon: Int,
     description: String,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) {
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
-            contentColor = Color.Black,
+            contentColor = if (isSelected) BabbogiGreen else Color.Black,
         ),
         shape = RectangleShape,
         modifier = Modifier.fillMaxWidth()
