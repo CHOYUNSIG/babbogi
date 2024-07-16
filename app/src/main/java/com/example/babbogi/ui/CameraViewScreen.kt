@@ -41,6 +41,7 @@ import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.CustomAlertDialog
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
@@ -147,17 +148,23 @@ private fun ProductPopup(
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit
 ) {
-    Dialog(onDismissRequest = onCancelClicked) {
+    if (isFetching) Dialog(onDismissRequest = onCancelClicked) {
         ElevatedCardWithDefault {
-            if (isFetching) Row (
+            Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                CircularProgressIndicator(modifier = Modifier
-                    .size(50.dp)
-                    .padding(16.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .padding(16.dp)
+                )
             }
-            else if (product != null) ColumnWithDefault {
+        }
+    }
+    else if (product != null) Dialog(onDismissRequest = onCancelClicked) {
+        ElevatedCardWithDefault {
+            ColumnWithDefault {
                 ProductAbstraction(product = product, nullMessage = "서버에 영양 정보가 없습니다.")
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
@@ -167,26 +174,15 @@ private fun ProductPopup(
                     Button(onClick = onCancelClicked) { Text(text = "Cancel") }
                 }
             }
-            else {
-                Row (
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_not_find_30),
-                        contentDescription = null,
-                    )
-                    Text("바코드에 해당되는 제품 정보가 없습니다.")
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Button(onClick = onCancelClicked) { Text(text = "Cancel") }
-                    }
-                }
-            }
         }
     }
+    else CustomAlertDialog(
+        onDismissRequest = onCancelClicked,
+        onConfirmation = onCancelClicked,
+        dialogTitle = "제품 정보 없음",
+        dialogText = "바코드에 해당되는 제품 정보가 없습니다.",
+        iconResId = R.drawable.baseline_not_find_30
+    )
 }
 
 @Composable
@@ -213,7 +209,7 @@ private fun CameraView(
                     modifier = Modifier.fillMaxSize(),
                 )
             }
-            Text("카메라로 바코드를 인식하세요.")
+            Text("카메라로 바코드를 인식하세요")
         }
     }
 
