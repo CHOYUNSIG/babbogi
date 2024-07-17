@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.babbogi.R
+import com.example.babbogi.ui.theme.BabbogiGreen
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionIntake
@@ -35,7 +34,6 @@ import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.testProduct1
 import com.example.babbogi.util.testProduct2
 import com.example.babbogi.util.testProduct3
-import com.example.babbogi.ui.theme.BabbogiGreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
