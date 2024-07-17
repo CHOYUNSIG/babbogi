@@ -32,6 +32,8 @@ class BabbogiFirebaseMessagingService: FirebaseMessagingService() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onMessageReceived(message: RemoteMessage) {
         Log.d("onMessageReceived", "Received message")
+        if (!BabbogiModel.notificationActivation) return
+
         val notification = message.notification ?: return
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
