@@ -38,6 +38,7 @@ class BabbogiViewModel: ViewModel() {
     private val _isTutorialDone = mutableStateOf(BabbogiModel.isTutorialDone)
     private val _notificationActivation = mutableStateOf(BabbogiModel.notificationActivation)
     private val _productList = mutableStateOf(BabbogiModel.productList)
+    @RequiresApi(Build.VERSION_CODES.O)
     private val _today = mutableStateOf(LocalDate.now())
     private val _periodReport = mutableStateOf<String?>(null)
     private val foodLists = mutableStateMapOf<LocalDate, List<Pair<Product, Int>>>()
@@ -59,7 +60,9 @@ class BabbogiViewModel: ViewModel() {
         private set(healthState) { _healthState.value = healthState }
 
     var today: LocalDate
+        @RequiresApi(Build.VERSION_CODES.O)
         get() = _today.value
+        @RequiresApi(Build.VERSION_CODES.O)
         set(today) { _today.value = today }
 
     var isTutorialDone: Boolean
@@ -175,22 +178,30 @@ class BabbogiViewModel: ViewModel() {
 
     // 해당 날짜의 섭취한 음식 리스트 받아오기
     @RequiresApi(Build.VERSION_CODES.O)
-    fun getFoodList(
-        date: LocalDate,
+    fun getFoodLists(
+        startDate: LocalDate,
+        endDate: LocalDate = startDate,
         refresh: Boolean = false,
-        onFetchingEnded: (foodList: List<Pair<Product, Int>>?) -> Unit
+        onFetchingEnded: (foodLists: Map<LocalDate, List<Pair<Product, Int>>>?) -> Unit
     ) {
         viewModelScope.launch {
+            var result: MutableMap<LocalDate, List<Pair<Product, Int>>>? = mutableMapOf()
             try {
-                if (!foodLists.containsKey(date) || refresh)
-                    foodLists[date] = ServerApi.getProductList(BabbogiModel.id!!, date)
+                var date = startDate
+                while (date <= endDate) {
+                    if (!foodLists.containsKey(date) || refresh)
+                        foodLists[date] = ServerApi.getProductList(BabbogiModel.id!!, date)
+                    result!![date] = foodLists[date]!!
+                    date = date.plusDays(1)
+                }
             }
             catch (e: Exception) {
+                result = null
                 e.printStackTrace()
                 Log.d("ViewModel", "Cannot get list from server.")
             }
             finally {
-                onFetchingEnded(foodLists[date])
+                onFetchingEnded(result?.toMap())
             }
         }
     }
@@ -302,6 +313,7 @@ class BabbogiViewModel: ViewModel() {
     }
     
     // 서버에서 일일 레포트 받아오기
+    @RequiresApi(Build.VERSION_CODES.O)
     fun getDailyReport(
         date: LocalDate,
         refresh: Boolean = false,
