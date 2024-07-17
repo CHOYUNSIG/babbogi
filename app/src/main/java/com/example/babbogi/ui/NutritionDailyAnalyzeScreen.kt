@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -61,17 +63,17 @@ import java.time.LocalDate
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NutritionDailyAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavController) {
-    var foodList by remember { mutableStateOf<List<Pair<Product, Int>>>(emptyList()) }
+    var foodList by remember { mutableStateOf<List<Pair<Product, Int>>?>(null) }
     var intake by remember { mutableStateOf<NutritionIntake?>(null) }
     var report by remember { mutableStateOf<String?>(null) }
 
     if (!viewModel.isTutorialDone) navController.navigate(Screen.Tutorial.name)
 
     LaunchedEffect(viewModel.today) {
-        viewModel.getFoodList(viewModel.today) {
+        viewModel.getFoodLists(viewModel.today) {
             if (it != null) {
-                foodList = it
-                intake = foodList.toNutritionIntake()
+                foodList = it[viewModel.today]
+                intake = foodList?.toNutritionIntake()
             }
         }
     }
@@ -92,7 +94,11 @@ fun NutritionDailyAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavC
         },
         onSettingClicked = { navController.navigate(Screen.Setting.name) },
         onRefresh = { endRefresh ->
-            viewModel.getFoodList(viewModel.today) { endRefresh() }
+            viewModel.getFoodLists(viewModel.today, refresh = true) {
+                if (it != null) foodList = it[viewModel.today]
+                intake = foodList?.toNutritionIntake()
+                endRefresh()
+            }
         }
     )
 }
@@ -159,7 +165,7 @@ fun NutritionDailyAnalyze(
 }
 
 @Composable
-fun MealList(foodList: List<Pair<Product, Int>>?, ) {
+fun MealList(foodList: List<Pair<Product, Int>>?) {
     ElevatedCardWithDefault {
         ColumnWithDefault {
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -170,7 +176,7 @@ fun MealList(foodList: List<Pair<Product, Int>>?, ) {
                 )
             }
         }
-        if (foodList == null) Row (
+        if (foodList == null)  Row (
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -197,7 +203,8 @@ fun MealList(foodList: List<Pair<Product, Int>>?, ) {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@Preview
+@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewNutritionDailyAnalyze() {
     BabbogiTheme {

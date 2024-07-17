@@ -1,6 +1,8 @@
 package com.example.babbogi.ui
 
 import android.Manifest
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.camera.core.CameraSelector
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
@@ -43,6 +45,7 @@ import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomAlertDialog
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
+import com.example.babbogi.ui.view.FixedColorButton
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
@@ -172,8 +175,8 @@ private fun ProductPopup(
                     horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Button(onClick = onAddClicked) { Text(text = "Add") }
-                    Button(onClick = onCancelClicked) { Text(text = "Cancel") }
+                    FixedColorButton(onClick = onAddClicked, text = "추가")
+                    FixedColorButton(onClick = onCancelClicked, text = "취소")
                 }
             }
         }
@@ -230,7 +233,8 @@ private fun CameraView(
     }
 }
 
-@Preview
+@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewCameraView() {
     BabbogiTheme {

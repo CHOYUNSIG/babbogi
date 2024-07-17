@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -187,7 +189,8 @@ private fun NutritionRecommendationPopup(
     )
 }
 
-@Preview
+@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewSetting() {
     BabbogiTheme {

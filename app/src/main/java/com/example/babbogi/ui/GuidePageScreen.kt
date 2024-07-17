@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -147,7 +149,8 @@ fun GuidePage(
     CustomSlider(sliderList = list, onComplete = onComplete)
 }
 
-@Preview
+@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewGuidePage() {
     BabbogiTheme {

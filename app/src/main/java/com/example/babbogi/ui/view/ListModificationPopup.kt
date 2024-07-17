@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,12 +68,11 @@ fun ListModificationPopup(
                     }
                 }
                 Row(
-                    horizontalArrangement = Arrangement.End,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Button(onClick = { onModifyClicked(texts) }) {
-                        Text(text = "Modify")
-                    }
+                    FixedColorButton(onClick = { onModifyClicked(texts) }, text = "확인")
+                    FixedColorButton(onClick = onDismiss, text = "취소")
                 }
             }
         }

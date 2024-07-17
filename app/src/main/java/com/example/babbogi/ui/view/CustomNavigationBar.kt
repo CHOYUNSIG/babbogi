@@ -10,6 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -71,7 +72,7 @@ fun CustomNavigationBarItem(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
-            contentColor = if (isSelected) BabbogiGreen else Color.Black,
+            contentColor = if (isSelected) BabbogiGreen else MaterialTheme.colorScheme.onPrimaryContainer,
         ),
         shape = RectangleShape,
         modifier = Modifier.fillMaxWidth()

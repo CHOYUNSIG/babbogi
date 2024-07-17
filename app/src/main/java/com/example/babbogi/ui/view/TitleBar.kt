@@ -1,5 +1,7 @@
 package com.example.babbogi.ui.view
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,7 +52,6 @@ fun TitleBar(title: String, buttonBar: @Composable () -> Unit = {}) {
         }
     }
 }
-
 
 @Preview
 @Composable

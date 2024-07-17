@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -66,14 +65,13 @@ fun GptAnalyzeReport(
                             CircularProgressIndicator(modifier = Modifier.size(50.dp))
                         else if (report != null)
                             Text(text = report)
-                        else Button(
+                        else FixedColorButton(
                             onClick = {
                                 isLoading = true
                                 onNewReportRequested { isLoading = false }
-                            }
-                        ) {
-                            Text(text = "레포트를 생성하려면 클릭하세요")
-                        }
+                            },
+                            text = "레포트를 생성하려면 클릭하세요"
+                        )
                     }
                 }
             }

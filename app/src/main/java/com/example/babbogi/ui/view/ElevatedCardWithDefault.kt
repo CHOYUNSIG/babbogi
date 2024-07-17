@@ -4,10 +4,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /*
@@ -28,7 +28,7 @@ fun ElevatedCardWithDefault(
         modifier = modifier,
         enabled = enabled,
         shape = CardDefaults.elevatedShape,
-        colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp),
         interactionSource = interactionSource,
         content = content,

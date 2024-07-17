@@ -37,11 +37,7 @@ fun CustomAlertDialog(
             ) { Text(text = dialogText) }
         },
         onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(onClick = onConfirmation) {
-                Text("확인", color = Color.Black)
-            }
-        },
+        confirmButton = { FixedColorButton(onClick = onConfirmation, text = "확인") },
         containerColor = Color.White
     )
 }

@@ -38,7 +38,6 @@ fun InputHolder(
                 Text(
                     text = content,
                     fontSize = 20.sp,
-                    color = Color.Black,
                     fontWeight = FontWeight.Bold,
                 )
             }
@@ -66,7 +65,7 @@ fun TextInputHolder(
             ),
             modifier = Modifier.fillMaxWidth(),
             enabled = true,
-            textStyle = TextStyle(fontSize = 20.sp, color = Color.Black)
+            textStyle = TextStyle(fontSize = 20.sp)
         )
     }
 }

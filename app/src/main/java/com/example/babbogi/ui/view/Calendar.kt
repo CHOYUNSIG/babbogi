@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -138,7 +139,7 @@ private fun CalendarDay(day: Int? = null, isSelected: Boolean = false, onClick: 
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(all = 0.dp)
             ) {
-                Text(text = day.toString(), color = Color.Black)
+                Text(text = day.toString(), color = Color.Unspecified)
             }
         }
     }
@@ -175,7 +176,6 @@ fun DateSelector(
             ) {
                 Text(
                     text = today.toString(),
-                    color = Color.DarkGray,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Center

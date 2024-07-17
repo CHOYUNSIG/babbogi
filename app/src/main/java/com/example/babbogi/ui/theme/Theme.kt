@@ -2,6 +2,7 @@ package com.example.babbogi.ui.theme
 
 import android.app.Activity
 import android.os.Build
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -16,25 +17,28 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Color.LightGray,
+    onPrimary = Color.LightGray,
+    primaryContainer = Color(0xFF222222),
+    onPrimaryContainer = Color.LightGray,
+
+    background = Color(0xFF111111),
+    surface = BabbogiGreen,
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = Color.Black,
-    onPrimary = Color.White,
-    secondary = Color.Black,
-    onSecondary = Color.White,
-    tertiary = Color.Black,
-    onTertiary = Color.Black,
+    onPrimary = Color.Black,
+    primaryContainer = Color.White,
+    onPrimaryContainer = Color.Black,
+
     background = Color.White,
     surface = BabbogiGreen,
 )
 
 @Composable
 fun BabbogiTheme(
-    darkTheme: Boolean = false,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit

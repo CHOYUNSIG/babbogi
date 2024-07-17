@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -191,7 +193,7 @@ fun ProductAbstraction(
                 ) {
                     Text(
                         text = product.name.ifEmpty { "(이름 없음)" },
-                        color = if (product.name.isEmpty()) Color.Gray else Color.Black,
+                        color = if (product.name.isEmpty()) Color.Gray else Color.Unspecified,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         overflow = TextOverflow.Ellipsis,
@@ -201,7 +203,7 @@ fun ProductAbstraction(
                 }
                 icon()
             }
-            Divider(color = BabbogiGreen, thickness = 2.dp)
+            HorizontalDivider(thickness = 2.dp, color = BabbogiGreen)
         }
     }
 }

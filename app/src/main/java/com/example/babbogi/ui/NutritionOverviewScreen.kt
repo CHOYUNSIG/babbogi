@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animate
@@ -52,8 +54,8 @@ fun NutritionOverviewScreen(viewModel: BabbogiViewModel, navController: NavContr
     var intake by remember { mutableStateOf<NutritionIntake?>(null) }
 
     LaunchedEffect(true) {
-        viewModel.getFoodList(viewModel.today) { foodList ->
-            if (foodList != null) intake = foodList.toNutritionIntake()
+        viewModel.getFoodLists(viewModel.today) { foodList ->
+            if (foodList != null) intake = foodList[viewModel.today]!!.toNutritionIntake()
         }
     }
 
@@ -140,7 +142,8 @@ fun NutritionOverview(
     }
 }
 
-@Preview
+@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewNutritionOverview() {
     BabbogiTheme {

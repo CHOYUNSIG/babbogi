@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +39,7 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiGreen
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomIconButton
@@ -86,9 +90,10 @@ fun Selector(
                     .height(45.dp)
                     .weight(1f)
             ) {
+                val color = MaterialTheme.colorScheme.onPrimary
                 Canvas(modifier = Modifier.matchParentSize()) {
                     drawRoundRect(
-                        color = if (selected == gender) Color(0xFF21A642) else Color(0x20000000),
+                        color = if (selected == gender) BabbogiGreen else color,
                         topLeft = Offset.Zero,
                         size = Size(size.width, size.height),
                         cornerRadius = CornerRadius(0f, 0f),
@@ -98,7 +103,7 @@ fun Selector(
                 Text(
                     text = gender,
                     fontSize = 20.sp,
-                    color = if (selected == gender) Color(0xFF21A642) else Color(0x20000000),
+                    color = if (selected == gender) BabbogiGreen else color,
                     fontWeight = FontWeight.Normal
                 )
             }
@@ -185,7 +190,8 @@ fun HealthProfile(
     }
 }
 
-@Preview
+@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewHealthProfile() {
     BabbogiTheme {

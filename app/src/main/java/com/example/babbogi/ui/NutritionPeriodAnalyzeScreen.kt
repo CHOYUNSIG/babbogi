@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
@@ -48,6 +51,7 @@ import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomAlertDialog
 import com.example.babbogi.ui.view.DateSelector
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
+import com.example.babbogi.ui.view.FixedColorButton
 import com.example.babbogi.ui.view.GptAnalyzeReport
 import com.example.babbogi.ui.view.NutritionPeriodBarGraph
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
@@ -69,15 +73,8 @@ fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: Nav
 
     LaunchedEffect(period) {
         val length = period.last().toEpochDay() - period.first().toEpochDay() + 1
-        if (length > 7) return@LaunchedEffect
-        val newIntakes = emptyMap<LocalDate, NutritionIntake>().toMutableMap()
-        var date = period.first()
-        while (date <= period.last()) {
-            viewModel.getFoodList(date) { foodList ->
-                newIntakes[date] = foodList?.toNutritionIntake() ?: Nutrition.entries.associateWith { 0f }
-                if (newIntakes.size.toLong() == length) intakes = newIntakes
-            }
-            date = date.plusDays(1)
+        if (length <= 7) viewModel.getFoodLists(period.first(), period.last()) {
+            if (it != null) intakes = it.mapValues { (_, foodList) -> foodList.toNutritionIntake() }
         }
     }
 
@@ -87,11 +84,17 @@ fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: Nav
         intakes = intakes,
         report = report,
         onPeriodChanged = { period = it },
-        onNewReportRequested = { /*TODO*/ },
+        onNewReportRequested = { onLoadingEnded ->
+            /* TODO */
+            onLoadingEnded()
+        },
         onSettingClicked = { navController.navigate(Screen.Setting.name) },
         onRefresh = { endRefresh ->
-            /*TODO*/
-            endRefresh()
+            val length = period.last().toEpochDay() - period.first().toEpochDay() + 1
+            if (length <= 7) viewModel.getFoodLists(period.first(), period.last()) {
+                if (it != null) intakes = it.mapValues { (_, foodList) -> foodList.toNutritionIntake() }
+                endRefresh()
+            }
         },
     )
 }
@@ -104,12 +107,10 @@ fun NutritionCheckBox(onSelected: (Nutrition) -> Unit) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Nutrition.entries.forEach { nutrition ->
-            Button(
+            FixedColorButton(
                 onClick = { onSelected(nutrition) },
-                contentPadding = PaddingValues(5.dp)
-            ) {
-                Text(stringResource(id = nutrition.res), color = Color.White)
-            }
+                text = stringResource(id = nutrition.res)
+            )
         }
     }
 }
@@ -173,19 +174,20 @@ fun NutritionPeriodAnalyze(
                             horizontalArrangement = Arrangement.End,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Button(onClick = {
-                                val length =
-                                    selectedPeriod.last().toEpochDay() - selectedPeriod.first()
-                                        .toEpochDay() + 1
-                                if (length > 7)
-                                    showLongPeriodAlert = true
-                                else if (length < 1)
-                                    showInvalidPeriodAlert = true
-                                else
-                                    onPeriodChanged(selectedPeriod)
-                            }) {
-                                Text(text = "적용")
-                            }
+                            FixedColorButton(
+                                onClick = {
+                                    val length =
+                                        selectedPeriod.last().toEpochDay() - selectedPeriod.first()
+                                            .toEpochDay() + 1
+                                    if (length > 7)
+                                        showLongPeriodAlert = true
+                                    else if (length < 1)
+                                        showInvalidPeriodAlert = true
+                                    else
+                                        onPeriodChanged(selectedPeriod)
+                                },
+                                text = "적용"
+                            )
                         }
                     }
                 }
@@ -241,7 +243,8 @@ fun NutritionPeriodAnalyze(
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@Preview
+@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewNutritionPeriodAnalyze() {
     BabbogiTheme {

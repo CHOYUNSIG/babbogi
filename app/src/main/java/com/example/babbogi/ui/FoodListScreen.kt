@@ -1,5 +1,7 @@
 package com.example.babbogi.ui
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +41,7 @@ import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomIconButton
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
+import com.example.babbogi.ui.view.FixedColorButton
 import com.example.babbogi.ui.view.ListModificationPopup
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
@@ -116,9 +119,9 @@ private fun FoodModificationCard(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Button(onClick = onDecrease) { Text(text = "-") }
+                    FixedColorButton(onClick = onDecrease, text = "-")
                     Text(text = amount.toString(), fontSize = 16.sp)
-                    Button(onClick = onIncrease) { Text(text = "+") }
+                    FixedColorButton(onClick = onIncrease, text = "+")
                 }
                 IconButton(onClick = onDelete, modifier = Modifier.weight(1f)) {
                     Icon(
@@ -290,7 +293,8 @@ private fun FoodList(
     }
 }
 
-@Preview
+@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewFoodList() {
     BabbogiTheme {
