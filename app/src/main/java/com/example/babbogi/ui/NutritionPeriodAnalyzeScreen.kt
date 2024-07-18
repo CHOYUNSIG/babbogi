@@ -82,8 +82,10 @@ fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: Nav
         report = report,
         onPeriodChanged = { period = it },
         onNewReportRequested = { onLoadingEnded ->
-            /* TODO */
-            onLoadingEnded()
+            viewModel.getPeriodReport(period.first(), period.last()) {
+                report = it
+                onLoadingEnded()
+            }
         },
         onSettingClicked = { navController.navigate(Screen.Setting.name) },
         onRefresh = { endRefresh ->
