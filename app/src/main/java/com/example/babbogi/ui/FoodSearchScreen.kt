@@ -2,11 +2,13 @@ package com.example.babbogi.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.animation.core.animateDecay
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -16,7 +18,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,9 +30,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.Popup
+import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.SearchBar
 import com.example.babbogi.ui.view.TitleBar
@@ -48,9 +52,10 @@ fun FoodSearchScreen(viewModel: BabbogiViewModel, navController: NavController) 
                 onEnded()
             }
         },
-        onWordSelected = { word ->
+        onWordSelected = { word, onEnded ->
             viewModel.getProductByNameSearch(word) {
                 if (it != null) viewModel.addProduct(it)
+                onEnded(it != null)
             }
         },
     )
@@ -60,10 +65,13 @@ fun FoodSearchScreen(viewModel: BabbogiViewModel, navController: NavController) 
 fun FoodSearch(
     searchResult: List<String>,
     onSearchWordSubmitted: (String, onEnded: () -> Unit) -> Unit,
-    onWordSelected: (String) -> Unit,
+    onWordSelected: (String, onEnded: (success: Boolean) -> Unit) -> Unit,
 ) {
     var word by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
+    var selectedWord by remember { mutableStateOf("") }
+    var showConfirmingPopup by remember { mutableStateOf(false) }
+    var addedSuccessfully by remember { mutableStateOf<Boolean?>(null) }
 
     Column(modifier = Modifier.fillMaxHeight()) {
         TitleBar(title = "음식 검색")
@@ -81,23 +89,26 @@ fun FoodSearch(
                     searchResult.forEach {
                         ClickableText(
                             text = AnnotatedString(it),
-                            onClick = { _ -> onWordSelected(it) },
+                            onClick = { _ -> selectedWord = it; showConfirmingPopup = true },
                             modifier = Modifier.padding(16.dp),
                             style = TextStyle(color = MaterialTheme.colorScheme.onPrimary)
                         )
                         HorizontalDivider()
                     }
                 }
-                //serch Tip 코드
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .height(100.dp),
                     contentAlignment = Alignment.BottomCenter
                 ) {
-                    SearchTip()
+                    DescriptionText(
+                        text = "Tip!\n" +
+                                "두 글자 이상 검색하세요.\n" +
+                                "음식 이름을 입력하여 검색해보세요.\n" +
+                                "예) '김치', '된장찌개'",
+                    )
                 }
-
             }
 
             if (isLoading) Box(
@@ -108,20 +119,24 @@ fun FoodSearch(
             }
         }
     }
-}
+    
+    if (showConfirmingPopup) Popup(
+        onConfirm = {
+            onWordSelected(selectedWord) { addedSuccessfully = it }
+            showConfirmingPopup = false
+        },
+        onCancel = { showConfirmingPopup = false },
+        onDismiss = { showConfirmingPopup = false },
+        mainText = "다음 상품을 추가하시겠습니까?",
+        subText = selectedWord,
+    )
 
-@Composable
-fun SearchTip() {
-    Box(modifier = Modifier
-        .padding(16.dp)
-        .fillMaxWidth()
-    ) {
-        Text(
-            text = "Tip  " +
-                    "\n 두 글자 이상 검색하시오." +
-                    "\n (예시)음식 이름을 입력하여 검색해보세요." +
-                    "\n예: '김치', '된장찌개'",
-            style = TextStyle(color = MaterialTheme.colorScheme.primary)
+    addedSuccessfully?.let { success ->
+        Popup(
+            onConfirm = { addedSuccessfully = null },
+            onDismiss = { addedSuccessfully = null },
+            mainText = if (success) "음식이 추가되었습니다." else "음식이 추가되지 못했습니다.",
+            icon = if (success) R.drawable.baseline_check_24 else R.drawable.baseline_not_find_30
         )
     }
 }
@@ -143,7 +158,7 @@ fun PreviewFoodSearch() {
                         "열무김치",
                     ),
                     onSearchWordSubmitted = { _, _ -> },
-                    onWordSelected = {},
+                    onWordSelected = { _, _ -> },
                 )
             }
         }

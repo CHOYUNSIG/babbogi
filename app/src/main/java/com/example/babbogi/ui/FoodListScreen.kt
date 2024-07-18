@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,6 +41,7 @@ import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomIconButton
+import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.FixedColorButton
 import com.example.babbogi.ui.view.ListModificationPopup
@@ -141,7 +144,7 @@ private fun FoodPopup(
             product.nutrition?.get(nutrition)?.toString()?.let { if (it == "0.0") null else it } ?: ""
         },
         types = listOf(KeyboardType.Text) + List(Nutrition.entries.size) { KeyboardType.Number },
-        labels = listOf("상품명") + Nutrition.entries.map { stringResource(id = it.res) },
+        labels = listOf("식품명") + Nutrition.entries.map { stringResource(id = it.res) },
         units = listOf(null) + Nutrition.entries.map { it.unit },
         onDismiss = onDismiss,
         onModifyClicked = { texts ->
@@ -235,12 +238,16 @@ private fun FoodList(
             }
         }
         ColumnWithDefault {
-            if (productList.isEmpty())
-                Text(
-                    text = "음식을 검색하거나,\n카메라로 바코드를 찍으세요!\n이곳에 표시됩니다.",
-                    modifier = Modifier.padding(16.dp),
-                    color = Color.Gray
+            if (productList.isEmpty()) Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth().height(100.dp)
+            ) {
+                DescriptionText(
+                    text = "음식을 검색하거나,\n" +
+                            "카메라로 바코드를 찍으세요.\n" +
+                            "이곳에 표시됩니다.",
                 )
+            }
             else productList.forEachIndexed { index, (productInfo, amount) ->
                 FoodModificationCard(
                     product = productInfo,

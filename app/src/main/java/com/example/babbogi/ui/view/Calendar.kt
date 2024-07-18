@@ -112,9 +112,10 @@ fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Button(onClick = { onSubmit(today) }) {
-                    Text("Submit")
-                }
+                FixedColorButton(
+                    onClick = { onSubmit(today) },
+                    text = "확인",
+                )
             }
         }
     }

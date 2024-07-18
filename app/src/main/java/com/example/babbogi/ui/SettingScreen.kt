@@ -39,6 +39,7 @@ import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
+import com.example.babbogi.ui.view.FixedColorSwitch
 import com.example.babbogi.ui.view.HealthAbstraction
 import com.example.babbogi.ui.view.InputHolder
 import com.example.babbogi.ui.view.ListModificationPopup
@@ -59,10 +60,7 @@ fun SettingScreen(viewModel: BabbogiViewModel, navController: NavController) {
         healthState = viewModel.healthState,
         recommendation = viewModel.nutritionRecommendation,
         notificationState = viewModel.notificationActivation,
-        onNotificationStateChanged = {
-            /* TODO: 뷰모델에 알림 처리 추가 */
-            viewModel.notificationActivation = it
-        },
+        onNotificationStateChanged = { viewModel.notificationActivation = it },
         onHealthCardClicked = { navController.navigate(Screen.HealthProfile.name) },
         onRecommendationChanged = {
             navController.navigate(Screen.Loading.name)
@@ -135,7 +133,7 @@ fun Setting(
                         Text(text = "알림을 받으려면 알림 권한을 활성화해야 해요.")
                     }
                     Spacer(modifier = Modifier.requiredWidth(20.dp))
-                    Switch(
+                    FixedColorSwitch(
                         checked = notificationState,
                         onCheckedChange = onNotificationStateChanged
                     )
