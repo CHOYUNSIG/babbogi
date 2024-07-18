@@ -137,8 +137,8 @@ private fun FoodPopup(
     onDismiss: () -> Unit,
 ) {
     ListModificationPopup(
-        defaultTexts = listOf(product.name) + Nutrition.entries.map {
-            product.nutrition?.get(it)?.toString()?.let { if (it == "0.0") null else it } ?: ""
+        defaultTexts = listOf(product.name) + Nutrition.entries.map { nutrition ->
+            product.nutrition?.get(nutrition)?.toString()?.let { if (it == "0.0") null else it } ?: ""
         },
         types = listOf(KeyboardType.Text) + List(Nutrition.entries.size) { KeyboardType.Number },
         labels = listOf("상품명") + Nutrition.entries.map { stringResource(id = it.res) },
