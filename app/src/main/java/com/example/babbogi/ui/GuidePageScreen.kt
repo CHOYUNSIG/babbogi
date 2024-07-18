@@ -2,6 +2,8 @@ package com.example.babbogi.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,12 +43,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.babbogi.R
+import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun GuidePageScreen(viewModel: BabbogiViewModel, navController: NavController) {
     GuidePage(
@@ -60,7 +64,10 @@ fun GuidePageScreen(viewModel: BabbogiViewModel, navController: NavController) {
         ),
         onComplete = {
             viewModel.isTutorialDone = true
-            navController.popBackStack()
+            if (viewModel.healthState == null)
+                navController.navigate(Screen.HealthProfile.name)
+            else
+                navController.popBackStack()
         }
     )
 }

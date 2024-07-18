@@ -40,13 +40,19 @@ enum class Screen(
 ) {
     Tutorial(screenComposable = { v, n -> GuidePageScreen(v, n) }),
     Loading(screenComposable = { v, n -> LoadingScreen(v, n) }),
+    @RequiresApi(Build.VERSION_CODES.O)
     NutritionDailyAnalyze(screenComposable = { v, n -> NutritionDailyAnalyzeScreen(v, n) }),
+    @RequiresApi(Build.VERSION_CODES.O)
     NutritionPeriodAnalyze(screenComposable = { v, n -> NutritionPeriodAnalyzeScreen(v, n) }),
+    @RequiresApi(Build.VERSION_CODES.O)
     NutritionOverview(screenComposable = { v, n -> NutritionOverviewScreen(v, n) }),
+    @RequiresApi(Build.VERSION_CODES.O)
     FoodList(screenComposable = { v, n -> FoodListScreen(v, n) }),
     Camera(screenComposable = { v, n -> CameraViewScreen(v, n) }),
     FoodSearch(screenComposable = { v, n -> FoodSearchScreen(v, n) }),
+    @RequiresApi(Build.VERSION_CODES.O)
     Setting(screenComposable = { v, n -> SettingScreen(v, n) }),
+    @RequiresApi(Build.VERSION_CODES.O)
     HealthProfile(screenComposable = { v, n -> HealthProfileScreen(v, n) }),
 }
 
@@ -84,10 +90,8 @@ fun MainApp(viewModel: BabbogiViewModel) {
     Scaffold(
         bottomBar = {
             if (
-                !listOf(
-                    Screen.Tutorial,
-                    Screen.Loading,
-                ).map { it.name }.contains(currentScreen)
+                !listOf(Screen.Tutorial, Screen.Loading).map { it.name }.contains(currentScreen) &&
+                viewModel.healthState != null
             ) CustomNavigationBar(
                 navController = navController,
                 screens = listOf(
@@ -110,7 +114,12 @@ fun MainApp(viewModel: BabbogiViewModel) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.NutritionDailyAnalyze.name,
+            startDestination = if (!viewModel.isTutorialDone)
+                Screen.Tutorial.name
+            else if (viewModel.healthState == null)
+                Screen.HealthProfile.name
+            else
+                Screen.NutritionDailyAnalyze.name,
             modifier = Modifier.padding(innerPadding)
         ) {
             Screen.entries.forEach { screen ->
