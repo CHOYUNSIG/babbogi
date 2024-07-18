@@ -54,13 +54,20 @@ interface ServerApiService {
 
     @GET("food")
     suspend fun getFoodNutrition(
-        @Query(value = "name") name: String
+        @Query(value = "foodname") name: String
     ): ServerFoodFormat
 
     @GET("dailyreport")
     suspend fun getDailyReport(
         @Query(value = "id") id: Long,
         @Query(value = "date") date: String,
+    ): String
+
+    @GET("report")
+    suspend fun getPeriodReport(
+        @Query(value = "id") id: Long,
+        @Query(value = "startdate") startDate: String,
+        @Query(value = "enddate") endDate: String
     ): String
 
     @POST("consumptions")
@@ -119,6 +126,11 @@ object ServerApi {
     suspend fun getDailyReport(id: Long, date: LocalDate): String {
         Log.d("ServerApi", "getDailyReport($id, $date)")
         return retrofitService.getDailyReport(id, date.toString())
+    }
+
+    suspend fun getPeriodReport(id: Long, startDate: LocalDate, endDate: LocalDate): String {
+        Log.d("ServerApi", "getPeriodReport($id, $startDate, $endDate)")
+        return retrofitService.getPeriodReport(id, startDate.toString(), endDate.toString())
     }
 
     suspend fun postProductList(id: Long, productList: List<Pair<Product, Int>>) {

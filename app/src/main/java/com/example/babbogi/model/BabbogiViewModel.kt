@@ -40,7 +40,7 @@ class BabbogiViewModel: ViewModel() {
     private val _productList = mutableStateOf(BabbogiModel.productList)
     @RequiresApi(Build.VERSION_CODES.O)
     private val _today = mutableStateOf(LocalDate.now())
-    private val _periodReport = mutableStateOf<String?>(null)
+    private val _periodReport = mutableStateOf<Pair<List<LocalDate>, String?>?>(null)
     private val foodLists = mutableStateMapOf<LocalDate, List<Pair<Product, Int>>>()
     private val dailyReport = mutableStateMapOf<LocalDate, String>()
 
@@ -53,11 +53,17 @@ class BabbogiViewModel: ViewModel() {
 
     var nutritionRecommendation: NutritionRecommendation
         get() = _nutritionRecommendation.value
-        private set(nutritionRecommendation) { _nutritionRecommendation.value = nutritionRecommendation }
+        private set(nutritionRecommendation) {
+            _nutritionRecommendation.value = nutritionRecommendation
+            BabbogiModel.nutritionRecommendation = nutritionRecommendation
+        }
 
     var healthState: HealthState?
         get() = _healthState.value
-        private set(healthState) { _healthState.value = healthState }
+        private set(healthState) {
+            _healthState.value = healthState
+            BabbogiModel.healthState = healthState
+        }
 
     var today: LocalDate
         @RequiresApi(Build.VERSION_CODES.O)
@@ -79,7 +85,7 @@ class BabbogiViewModel: ViewModel() {
             BabbogiModel.notificationActivation = notificationActivation
         }
 
-    var periodReport: String?
+    var periodReport: Pair<List<LocalDate>, String?>?
         get() = _periodReport.value
         private set(periodReport) { _periodReport.value = periodReport }
 
@@ -215,8 +221,7 @@ class BabbogiViewModel: ViewModel() {
                 val newId = ServerApi.postHealthState(BabbogiModel.id, BabbogiModel.token!!, healthState)
                 val recommendation = ServerApi.getNutritionRecommendation(newId)
                 BabbogiModel.id = newId
-                BabbogiModel.healthState = healthState
-                BabbogiModel.nutritionRecommendation = recommendation
+                this@BabbogiViewModel.healthState = healthState
                 nutritionRecommendation = recommendation
                 success = true
             }
@@ -236,7 +241,6 @@ class BabbogiViewModel: ViewModel() {
             var success = false
             try {
                 healthState = ServerApi.getHealthState(BabbogiModel.id!!)
-                BabbogiModel.healthState = healthState
                 success = true
             }
             catch (e: Exception) {
@@ -259,7 +263,6 @@ class BabbogiViewModel: ViewModel() {
             val success = false
             try {
                 ServerApi.putNutritionRecommendation(BabbogiModel.id!!, recommendation)
-                BabbogiModel.nutritionRecommendation = recommendation
                 nutritionRecommendation = recommendation
             }
             catch (e: Exception) {
@@ -329,6 +332,33 @@ class BabbogiViewModel: ViewModel() {
             catch (e: Exception) {
                 e.printStackTrace()
                 Log.d("ViewModel", "Cannot get daily report.")
+            }
+            finally {
+                onFetchingEnded(report)
+            }
+        }
+    }
+
+    // 서버에서 기간 레포트 받아오기
+    fun getPeriodReport(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        refresh: Boolean = false,
+        onFetchingEnded: (report: String?) -> Unit,
+    ) {
+        viewModelScope.launch {
+            var report: String? = null
+            try {
+                periodReport?.let { (period, preReport) ->
+                    report = if (preReport == null || period.first() != startDate || period.last() != endDate || refresh)
+                        ServerApi.getPeriodReport(BabbogiModel.id!!, startDate, endDate)
+                    else preReport
+                }
+                periodReport = listOf(startDate, endDate) to report
+            }
+            catch(e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot get period report.")
             }
             finally {
                 onFetchingEnded(report)
