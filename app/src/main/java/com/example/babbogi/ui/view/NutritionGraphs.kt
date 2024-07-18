@@ -1,7 +1,6 @@
 package com.example.babbogi.ui.view
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -16,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,7 +51,6 @@ import com.patrykandpatrick.vico.core.common.shape.Shape
 import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import kotlin.math.log
 import kotlin.math.min
 
 private fun getColorListByRatio(ratio: Float): List<Color> {
@@ -66,8 +65,12 @@ private fun getColorListByRatio(ratio: Float): List<Color> {
 @Composable
 fun NutritionCircularGraph(nutrition: Nutrition, recommendation: Float, intake: Float) {
     val animatedValue = remember { Animatable(0f) }
+    var preIntake by remember { mutableFloatStateOf(intake) }
 
-    LaunchedEffect(true) {
+    if (preIntake != intake)
+        preIntake = intake
+
+    LaunchedEffect(preIntake) {
         animatedValue.animateTo(
             targetValue = intake / recommendation * 360,
             animationSpec = tween(durationMillis = 500, easing = LinearEasing)
@@ -108,11 +111,15 @@ fun NutritionCircularGraph(nutrition: Nutrition, recommendation: Float, intake: 
 @Composable
 fun NutritionBarGraph(nutrition: Nutrition, recommendation: Float, intake: Float) {
     val animatedValue = remember { Animatable(0f) }
+    var preIntake by remember { mutableFloatStateOf(intake) }
 
-    LaunchedEffect(true) {
+    if (preIntake != intake)
+        preIntake = intake
+
+    LaunchedEffect(preIntake) {
         animatedValue.animateTo(
             targetValue = intake / recommendation,
-            animationSpec = tween(durationMillis = 2000, easing = LinearEasing)
+            animationSpec = tween(durationMillis = 500, easing = LinearEasing)
         )
     }
 
