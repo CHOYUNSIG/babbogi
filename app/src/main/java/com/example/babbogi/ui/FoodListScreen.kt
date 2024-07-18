@@ -65,10 +65,7 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController) {
                 amount = newAmount
             )
         },
-        onAddByHandClicked = {
-            viewModel.addProduct()
-            selectedIndex = viewModel.productList.lastIndex
-        },
+        onAddByHandConfirmed = { viewModel.addProduct(it) },
         onSearchClicked = { navController.navigate(Screen.FoodSearch.name) },
         onCameraClicked = { navController.navigate(Screen.Camera.name) },
         onModifyClicked = { index, product ->
@@ -216,7 +213,7 @@ private fun FoodList(
     onAmountChanged: (index: Int, change: Int) -> Unit,
     onModifyClicked: (index: Int, Product) -> Unit,
     onDeleteClicked: (index: Int) -> Unit,
-    onAddByHandClicked: () -> Unit,
+    onAddByHandConfirmed: (Product) -> Unit,
     onSearchClicked: () -> Unit,
     onCameraClicked: () -> Unit,
     onSubmitClicked: () -> Unit,
@@ -224,6 +221,7 @@ private fun FoodList(
 ) {
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
     var showAddOption by remember { mutableStateOf(false) }
+    var isAddingByHand by remember { mutableStateOf(false) }
 
     if (index != null) selectedIndex = index
 
@@ -282,10 +280,19 @@ private fun FoodList(
         )
     }
 
+    if (isAddingByHand) FoodPopup(
+        product = Product("", null),
+        onModifyClicked = {
+            onAddByHandConfirmed(it)
+            isAddingByHand = false
+        },
+        onDismiss = { isAddingByHand = false },
+    )
+
     if (showAddOption) {
         OptionDialog(
             onDismissRequest = { showAddOption = false },
-            onAddByHandClicked = onAddByHandClicked,
+            onAddByHandClicked = { isAddingByHand = true },
             onSearchClicked = onSearchClicked,
             onCameraClicked = onCameraClicked,
         )
@@ -303,7 +310,7 @@ fun PreviewFoodList() {
                     productList = testProductList,
                     index = null,
                     onAmountChanged = { _, _ -> },
-                    onAddByHandClicked = {},
+                    onAddByHandConfirmed = {},
                     onCameraClicked = {},
                     onSearchClicked = {},
                     onModifyClicked = { _, _ -> },
