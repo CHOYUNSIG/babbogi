@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -50,7 +50,6 @@ import com.example.babbogi.ui.view.NutritionAbstraction
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
-import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
@@ -66,8 +65,6 @@ fun NutritionDailyAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavC
     var foodList by remember { mutableStateOf<List<Pair<Product, Int>>?>(null) }
     var intake by remember { mutableStateOf<NutritionIntake?>(null) }
     var report by remember { mutableStateOf<String?>(null) }
-
-    if (!viewModel.isTutorialDone) navController.navigate(Screen.Tutorial.name)
 
     LaunchedEffect(viewModel.today) {
         viewModel.getFoodLists(viewModel.today) {
@@ -143,9 +140,9 @@ fun NutritionDailyAnalyze(
                         )
                     }
                 }
-                NutritionAbstraction(
+                if (intake != null) NutritionAbstraction(
                     recommendation = recommendation,
-                    intake = intake ?: Nutrition.entries.associateWith { 0f },
+                    intake = intake,
                     onClick = onNutritionCardClicked,
                 )
                 GptAnalyzeReport(
@@ -192,7 +189,7 @@ fun MealList(foodList: List<Pair<Product, Int>>?) {
         }
         else ColumnWithDefault(
             modifier = Modifier
-                .height(500.dp)
+                .heightIn(max = 500.dp)
                 .verticalScroll(rememberScrollState())
         ) {
             foodList.forEach { (product, amount) ->
