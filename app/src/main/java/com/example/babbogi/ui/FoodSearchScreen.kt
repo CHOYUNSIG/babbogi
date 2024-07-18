@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +16,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -86,6 +88,16 @@ fun FoodSearch(
                         HorizontalDivider()
                     }
                 }
+                //serch Tip 코드
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    SearchTip()
+                }
+
             }
 
             if (isLoading) Box(
@@ -95,6 +107,22 @@ fun FoodSearch(
                 CircularProgressIndicator(modifier = Modifier.size(50.dp))
             }
         }
+    }
+}
+
+@Composable
+fun SearchTip() {
+    Box(modifier = Modifier
+        .padding(16.dp)
+        .fillMaxWidth()
+    ) {
+        Text(
+            text = "Tip  " +
+                    "\n 두 글자 이상 검색하시오." +
+                    "\n (예시)음식 이름을 입력하여 검색해보세요." +
+                    "\n예: '김치', '된장찌개'",
+            style = TextStyle(color = MaterialTheme.colorScheme.primary)
+        )
     }
 }
 

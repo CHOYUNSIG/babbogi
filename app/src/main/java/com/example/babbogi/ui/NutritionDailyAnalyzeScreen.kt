@@ -215,7 +215,7 @@ fun PreviewNutritionDailyAnalyze() {
                     recommendation = testNutritionRecommendation,
                     intake = testNutritionIntake,
                     foodList = testProductList,
-                    report = "이것은 챗지피티가 생성한 일일 레포트입니다.".repeat(100),
+                    report = null,
                     onDateChanged = {},
                     onNutritionCardClicked = {},
                     onNewReportRequested = {},

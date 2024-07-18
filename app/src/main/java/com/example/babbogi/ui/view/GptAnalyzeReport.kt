@@ -1,9 +1,11 @@
 package com.example.babbogi.ui.view
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -61,17 +64,27 @@ fun GptAnalyzeReport(
                         .verticalScroll(rememberScrollState())
                 ) {
                     Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                        if (isLoading)
-                            CircularProgressIndicator(modifier = Modifier.size(50.dp))
-                        else if (report != null)
+                        if (isLoading) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                CircularProgressIndicator(modifier = Modifier.size(50.dp))
+                                Text(
+                                    text = "레포트를 생성하는 데 10초에서 30초 정도 걸릴 수 있습니다.",
+                                    fontSize = 12.sp,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
+                        } else if (report != null) {
                             Text(text = report)
-                        else FixedColorButton(
-                            onClick = {
-                                isLoading = true
-                                onNewReportRequested { isLoading = false }
-                            },
-                            text = "레포트를 생성하려면 클릭하세요"
-                        )
+                        } else {
+                            FixedColorButton(
+                                onClick = {
+                                    isLoading = true
+                                    onNewReportRequested { isLoading = false }
+                                },
+                                text = "레포트를 생성하려면 클릭하세요"
+                            )
+                        }
                     }
                 }
             }
@@ -82,7 +95,7 @@ fun GptAnalyzeReport(
 @Preview
 @Composable
 fun PreviewGptAnalyzeReport() {
-    val report = "이것은 챗지피티가 제작한 일일 영양소 레포트입니다. ".repeat(100)
+    val report = null
 
     GptAnalyzeReport(
         title = "레포트 제목",
