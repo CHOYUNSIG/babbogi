@@ -1,8 +1,10 @@
 package com.example.babbogi.ui.view
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -26,6 +28,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.babbogi.R
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
+
 
 @Composable
 fun GptAnalyzeReport(
@@ -66,7 +73,15 @@ fun GptAnalyzeReport(
                     Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                         if (isLoading) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                CircularProgressIndicator(modifier = Modifier.size(50.dp))
+                                val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId = R.raw.send))
+
+                                Box() {
+                                    LottieAnimation(
+                                        composition = composition,
+                                        iterations = LottieConstants.IterateForever,
+                                        modifier = Modifier.size(150.dp)
+                                    )
+                                }
                                 Text(
                                     text = "레포트를 생성하는 데 10초에서 30초 정도 걸릴 수 있습니다.",
                                     fontSize = 12.sp,
