@@ -43,6 +43,7 @@ import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomAlertDialog
+import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.FixedColorButton
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
@@ -120,26 +121,27 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController) 
     }
 }
 
+@Preview
 @Composable
 private fun CameraPermissionDenied() {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth(0.8f)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.baseline_mode_24),
+                painter = painterResource(id = R.drawable.baseline_photo_camera_24),
                 contentDescription = null,
                 modifier = Modifier
                     .size(50.dp)
                     .padding(end = 8.dp)
             )
-            Text(
-                text = "This function needs camera permission. Please grant it.",
-                textAlign = TextAlign.Center
+            DescriptionText(
+                text = "이 기능은 카메라 권한이 필요합니다.\n" +
+                        "사용하려면 카메라 권한을 부여하세요."
             )
         }
     }
