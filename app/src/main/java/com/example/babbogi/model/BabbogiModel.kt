@@ -19,7 +19,7 @@ object BabbogiModel {
     var isTutorialDone: Boolean
         get() = sharedPreferences.getBoolean("tutorial", false)
         set(isTutorialDone) {
-            sharedPreferences.edit().putBoolean("tutorial", true).apply()
+            sharedPreferences.edit().putBoolean("tutorial", isTutorialDone).apply()
         }
 
     var notificationActivation: Boolean
