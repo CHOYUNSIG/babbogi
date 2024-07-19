@@ -67,7 +67,7 @@ fun SettingScreen(viewModel: BabbogiViewModel, navController: NavController) {
             navController.navigate(Screen.Loading.name)
             viewModel.changeNutritionRecommendation(it) {
                 navController.navigate(Screen.Setting.name) {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    popUpTo(Screen.Setting.name) { inclusive = true }
                 }
             }
         },
@@ -159,7 +159,10 @@ fun Setting(
 
     if (showRecommendationDialog) NutritionRecommendationPopup(
         recommendation = recommendation,
-        onModifyClicked = onRecommendationChanged,
+        onModifyClicked = {
+            showRecommendationDialog = false
+            onRecommendationChanged(it)
+        },
         onDismiss = { showRecommendationDialog = false },
     )
 }
