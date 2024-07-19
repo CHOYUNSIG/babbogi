@@ -64,7 +64,10 @@ fun FoodSearchScreen(
             }
         },
         onWordSelected = lambda@ { word, onEnded ->
-            if (word.length < 2) return@lambda
+            if (word.length < 2) {
+                showSnackBar("오류: 두 글자 이상 입력하세요.", "확인", SnackbarDuration.Short)
+                return@lambda
+            }
             viewModel.getProductByNameSearch(word) {
                 if (it != null) viewModel.addProduct(it)
                 onEnded()
