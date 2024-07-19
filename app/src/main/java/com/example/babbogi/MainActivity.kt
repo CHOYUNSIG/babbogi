@@ -97,6 +97,7 @@ fun MainApp(viewModel: BabbogiViewModel) {
     val showSnackBar = remember {
         { text: String, label: String, duration: SnackbarDuration ->
             scope.launch {
+                snackBarHostState.currentSnackbarData?.dismiss()
                 snackBarHostState.showSnackbar(
                     message = text,
                     actionLabel = label,
