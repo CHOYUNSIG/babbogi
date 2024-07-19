@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,7 +52,8 @@ fun FoodSearchScreen(viewModel: BabbogiViewModel, navController: NavController) 
                 onEnded()
             }
         },
-        onWordSelected = { word, onEnded ->
+        onWordSelected = lambda@ { word, onEnded ->
+            if (word.length < 2) return@lambda
             viewModel.getProductByNameSearch(word) {
                 if (it != null) viewModel.addProduct(it)
                 onEnded(it != null)
@@ -84,7 +86,7 @@ fun FoodSearch(
                     },
                     onValueChange = { word = it }
                 )
-                LazyColumn(modifier = Modifier.fillMaxHeight()) {
+                LazyColumn(modifier = Modifier.wrapContentHeight()) {
                     items(count = searchResult.size) { index ->
                         ClickableText(
                             text = AnnotatedString(searchResult[index]),
