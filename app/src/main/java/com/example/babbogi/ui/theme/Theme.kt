@@ -19,10 +19,10 @@ import androidx.core.view.WindowCompat
 private val DarkColorScheme = darkColorScheme(
     primary = Color.LightGray,
     onPrimary = Color.LightGray,
-    primaryContainer = Color(0xFF222222),
+    primaryContainer = Color(0xFF333333),
     onPrimaryContainer = Color.LightGray,
 
-    background = Color(0xFF111111),
+    background = Color(0xFF222222),
     surface = BabbogiGreen,
 )
 
@@ -56,8 +56,8 @@ fun BabbogiTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            window.statusBarColor = Color.Black.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
 
