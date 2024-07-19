@@ -74,8 +74,7 @@ fun SettingScreen(
                     popUpTo(Screen.Setting.name) { inclusive = true }
                 }
                 showSnackBar(
-                    if (success) "권장 섭취량이 변경되었습니다."
-                    else "오류: 변경된 섭취량을 전송하는 데 실패했습니다.",
+                    if (success) "권장 섭취량이 변경되었습니다." else "오류: 변경된 섭취량을 전송하는 데 실패했습니다.",
                     "확인",
                     SnackbarDuration.Short
                 )

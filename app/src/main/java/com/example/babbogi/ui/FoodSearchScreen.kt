@@ -61,7 +61,7 @@ fun FoodSearchScreen(
             viewModel.searchWord(word) {
                 if (it != null) searchResult = it
                 else showSnackBar(
-                    "음식을 검색하지 못했습니다.",
+                    "오류: 음식을 검색하지 못했습니다.",
                     "확인",
                     SnackbarDuration.Short
                 )

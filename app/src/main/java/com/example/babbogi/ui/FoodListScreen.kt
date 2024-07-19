@@ -88,10 +88,15 @@ fun FoodListScreen(
         },
         onSubmitClicked = {
             navController.navigate(Screen.Loading.name)
-            viewModel.sendList {
-                navController.navigate(Screen.NutritionDailyAnalyze.name) {
+            viewModel.sendList { success ->
+                if (success) navController.navigate(Screen.NutritionDailyAnalyze.name) {
                     popUpTo(navController.graph.startDestinationId) { inclusive = false }
                 }
+                else navController.popBackStack()
+                showSnackBar(
+                    if (success) "음식이 전송되었습니다." else "오류: 음식 전송에 실패했습니다.",
+                    "확인",
+                    SnackbarDuration.Short)
             }
         },
         onSettingClicked = { navController.navigate(Screen.Setting.name) }
@@ -250,6 +255,7 @@ private fun FoodList(
 ) {
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
     var showAddOption by remember { mutableStateOf(false) }
+    var showConfirmSubmitPopup by remember { mutableStateOf(false) }
     var isAddingByHand by remember { mutableStateOf(false) }
 
     if (index != null) selectedIndex = index
@@ -300,7 +306,7 @@ private fun FoodList(
             modifier = Modifier.fillMaxWidth()
         ) {
             CustomIconButton(onClick = { showAddOption = true }, R.drawable.baseline_add_24)
-            CustomIconButton(onSubmitClicked, R.drawable.baseline_send_24)
+            CustomIconButton(onClick = { showConfirmSubmitPopup = true }, R.drawable.baseline_send_24)
         }
     }
 
@@ -324,13 +330,25 @@ private fun FoodList(
         onDismiss = { isAddingByHand = false },
     )
 
-    if (showAddOption) {
-        OptionDialog(
-            onDismissRequest = { showAddOption = false },
-            onAddByHandClicked = { isAddingByHand = true },
-            onSearchClicked = onSearchClicked,
-            onCameraClicked = onCameraClicked,
-        )
+    if (showAddOption) OptionDialog(
+        onDismissRequest = { showAddOption = false },
+        onAddByHandClicked = { isAddingByHand = true },
+        onSearchClicked = onSearchClicked,
+        onCameraClicked = onCameraClicked,
+    )
+
+    if (showConfirmSubmitPopup) CustomPopup(
+        callbacks = listOf(onSubmitClicked, { showConfirmSubmitPopup = false }),
+        labels = listOf("확인", "취소"),
+        onDismiss = { showConfirmSubmitPopup = false },
+        title = "음식 리스트를 제출하시겠습니까?",
+        icon = R.drawable.baseline_send_24,
+    ) {
+        Column {
+            productList.forEach { (product, amount) ->
+                Text(text = "${product.name} ×${amount}")
+            }
+        }
     }
 }
 

@@ -197,7 +197,7 @@ fun ProductAbstraction(
                         overflow = TextOverflow.Ellipsis,
                     )
                     if (amount != null)
-                        Text(text = "x$amount", fontSize = 16.sp)
+                        Text(text = "×$amount", fontSize = 16.sp)
                 }
                 icon()
             }
