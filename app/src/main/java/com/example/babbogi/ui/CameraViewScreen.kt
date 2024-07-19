@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -42,10 +41,9 @@ import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
-import com.example.babbogi.ui.view.CustomAlertDialog
 import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
-import com.example.babbogi.ui.view.FixedColorButton
+import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
@@ -168,27 +166,23 @@ private fun ProductPopup(
             }
         }
     }
-    else if (product != null) Dialog(onDismissRequest = onCancelClicked) {
-        ElevatedCardWithDefault {
-            ColumnWithDefault {
-                ProductAbstraction(product = product, nullMessage = "서버에 영양 정보가 없습니다.")
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    FixedColorButton(onClick = onAddClicked, text = "추가")
-                    FixedColorButton(onClick = onCancelClicked, text = "취소")
-                }
-            }
-        }
+    else if (product != null) CustomPopup(
+        callbacks = listOf(onAddClicked, onCancelClicked),
+        labels = listOf("추가", "취소"),
+        onDismiss = onCancelClicked,
+        title = "다음 상품을 추가하시겠습니까?"
+    ) {
+        ProductAbstraction(product = product, nullMessage = "서버에 영양 정보가 없습니다.")
     }
-    else CustomAlertDialog(
-        onDismissRequest = onCancelClicked,
-        onConfirmation = onCancelClicked,
-        dialogTitle = "제품 정보 없음",
-        dialogText = "바코드에 해당되는 제품 정보가 없습니다.",
-        iconResId = R.drawable.baseline_not_find_30
-    )
+    else CustomPopup(
+        callbacks = listOf(onCancelClicked),
+        labels = listOf("확인"),
+        onDismiss = onCancelClicked,
+        title = "제품 정보 없음",
+        icon = R.drawable.baseline_not_find_30
+    ) {
+        Text(text = "해당 상품은 찾을 수 없는 상품입니다.")
+    }
 }
 
 @Composable
@@ -215,7 +209,7 @@ private fun CameraView(
                     modifier = Modifier.fillMaxSize(),
                 )
             }
-            Text("카메라로 바코드를 인식하세요")
+            DescriptionText("카메라로 바코드를 인식하세요")
         }
     }
 

@@ -41,6 +41,7 @@ import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomIconButton
+import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.FixedColorButton
@@ -98,6 +99,8 @@ private fun FoodModificationCard(
     onDecrease: () -> Unit,
     onDelete: () -> Unit
 ) {
+    var showConfirmDeletionPopup by remember { mutableStateOf(false) }
+
     ElevatedCardWithDefault {
         ColumnWithDefault {
             ProductAbstraction(
@@ -122,7 +125,7 @@ private fun FoodModificationCard(
                     Text(text = amount.toString(), fontSize = 16.sp)
                     FixedColorButton(onClick = onIncrease, text = "+")
                 }
-                IconButton(onClick = onDelete, modifier = Modifier.weight(1f)) {
+                IconButton(onClick = { showConfirmDeletionPopup = true }, modifier = Modifier.weight(1f)) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_delete_24),
                         contentDescription = "삭제",
@@ -130,6 +133,16 @@ private fun FoodModificationCard(
                 }
             }
         }
+    }
+
+    if (showConfirmDeletionPopup) CustomPopup(
+        callbacks = listOf(onDelete, { showConfirmDeletionPopup = false }),
+        labels = listOf("삭제", "취소"),
+        onDismiss = { showConfirmDeletionPopup = false },
+        title = "다음 식품을 삭제하시겠습니까?",
+        icon = R.drawable.baseline_delete_24
+    ) {
+        Text(text = product.name)
     }
 }
 
@@ -240,7 +253,9 @@ private fun FoodList(
         ColumnWithDefault {
             if (productList.isEmpty()) Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxWidth().height(100.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
             ) {
                 DescriptionText(
                     text = "음식을 검색하거나,\n" +

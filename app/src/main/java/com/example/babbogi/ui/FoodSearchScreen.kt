@@ -2,7 +2,6 @@ package com.example.babbogi.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.animation.core.animateDecay
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -18,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +34,7 @@ import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
-import com.example.babbogi.ui.view.Popup
+import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.SearchBar
@@ -90,7 +90,7 @@ fun FoodSearch(
                         ClickableText(
                             text = AnnotatedString(it),
                             onClick = { _ -> selectedWord = it; showConfirmingPopup = true },
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
                             style = TextStyle(color = MaterialTheme.colorScheme.onPrimary)
                         )
                         HorizontalDivider()
@@ -120,22 +120,27 @@ fun FoodSearch(
         }
     }
     
-    if (showConfirmingPopup) Popup(
-        onConfirm = {
-            onWordSelected(selectedWord) { addedSuccessfully = it }
-            showConfirmingPopup = false
-        },
-        onCancel = { showConfirmingPopup = false },
+    if (showConfirmingPopup) CustomPopup(
+        callbacks = listOf(
+            {
+                onWordSelected(selectedWord) { addedSuccessfully = it }
+                showConfirmingPopup = false
+            },
+            { showConfirmingPopup = false },
+        ),
+        labels = listOf("추가", "취소"),
         onDismiss = { showConfirmingPopup = false },
-        mainText = "다음 상품을 추가하시겠습니까?",
-        subText = selectedWord,
-    )
+        title = "다음 상품을 추가하시겠습니까?",
+    ) {
+        Text(text = selectedWord)
+    }
 
     addedSuccessfully?.let { success ->
-        Popup(
-            onConfirm = { addedSuccessfully = null },
+        CustomPopup(
+            callbacks = listOf { addedSuccessfully = null },
+            labels = listOf("확인"),
             onDismiss = { addedSuccessfully = null },
-            mainText = if (success) "음식이 추가되었습니다." else "음식이 추가되지 못했습니다.",
+            title = if (success) "음식이 추가되었습니다." else "음식이 추가되지 못했습니다.",
             icon = if (success) R.drawable.baseline_check_24 else R.drawable.baseline_not_find_30
         )
     }
