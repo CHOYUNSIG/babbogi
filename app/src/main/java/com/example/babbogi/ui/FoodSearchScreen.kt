@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.network.response.ServerSearchResultFormat
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomPopup
@@ -48,7 +49,7 @@ fun FoodSearchScreen(
     navController: NavController,
     showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
 ) {
-    var searchResult by remember { mutableStateOf<List<String>>(emptyList()) }
+    var searchResult by remember { mutableStateOf<List<ServerSearchResultFormat>>(emptyList()) }
 
     FoodSearch(
         searchResult = searchResult,
@@ -83,7 +84,7 @@ fun FoodSearchScreen(
 
 @Composable
 fun FoodSearch(
-    searchResult: List<String>,
+    searchResult: List<ServerSearchResultFormat>,
     onSearchWordSubmitted: (String, onEnded: () -> Unit) -> Unit,
     onWordSelected: (String, onEnded: () -> Unit) -> Unit,
 ) {
@@ -107,8 +108,8 @@ fun FoodSearch(
                 LazyColumn(modifier = Modifier.wrapContentHeight()) {
                     items(count = searchResult.size) { index ->
                         ClickableText(
-                            text = AnnotatedString(searchResult[index]),
-                            onClick = { _ -> selectedWord = searchResult[index]; showConfirmingPopup = true },
+                            text = AnnotatedString(searchResult[index].name),
+                            onClick = { _ -> selectedWord = searchResult[index].name; showConfirmingPopup = true },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp),
@@ -166,14 +167,7 @@ fun PreviewFoodSearch() {
         Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
             Box(modifier = Modifier.padding(it)) {
                 FoodSearch(
-                    searchResult = listOf(
-                        "김치",
-                        "김치찌개",
-                        "김치전",
-                        "김치볶음밥",
-                        "갓김치",
-                        "열무김치",
-                    ),
+                    searchResult = listOf(),
                     onSearchWordSubmitted = { _, _ -> },
                     onWordSelected = { _, _ -> },
                 )
