@@ -64,7 +64,13 @@ import java.time.LocalDate
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavController) {
-    var period by remember { LocalDate.now().let { mutableStateOf(listOf(it.minusDays(6), it)) } }
+    var period by remember {
+        mutableStateOf(
+            viewModel.periodReport?.let {
+                listOf(it.first.first(), it.first.last())
+            } ?: listOf(LocalDate.now().minusDays(6), LocalDate.now())
+        )
+    }
     var intakes by remember { mutableStateOf<Map<LocalDate, NutritionIntake>?>(null) }
     var report by remember { mutableStateOf<String?>(null) }
     val getIntakes = remember {
@@ -76,6 +82,11 @@ fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: Nav
         }
     }
 
+    LaunchedEffect(true) {
+        viewModel.getPeriodReport(period.first(), period.last(), generate = false) {
+            report = it
+        }
+    }
     LaunchedEffect(period) { getIntakes.invoke(null) }
 
     NutritionPeriodAnalyze(

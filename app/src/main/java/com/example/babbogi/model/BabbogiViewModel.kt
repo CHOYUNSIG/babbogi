@@ -319,13 +319,14 @@ class BabbogiViewModel: ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     fun getDailyReport(
         date: LocalDate,
+        generate: Boolean = true,
         refresh: Boolean = false,
         onFetchingEnded: (report: String?) -> Unit,
     ) {
         viewModelScope.launch {
             var report: String? = null
             try {
-                if (!dailyReport.containsKey(date) || refresh)
+                if (generate && (!dailyReport.containsKey(date) || refresh))
                     dailyReport[date] = ServerApi.getDailyReport(BabbogiModel.id!!, date)
                 report = dailyReport[date]
             }
@@ -343,6 +344,7 @@ class BabbogiViewModel: ViewModel() {
     fun getPeriodReport(
         startDate: LocalDate,
         endDate: LocalDate,
+        generate: Boolean = true,
         refresh: Boolean = false,
         onFetchingEnded: (report: String?) -> Unit,
     ) {
@@ -350,7 +352,7 @@ class BabbogiViewModel: ViewModel() {
             var report: String? = null
             try {
                 periodReport?.let { (period, preReport) ->
-                    report = if (preReport == null || period.first() != startDate || period.last() != endDate || refresh)
+                    report = if (generate && (preReport == null || period.first() != startDate || period.last() != endDate || refresh))
                         ServerApi.getPeriodReport(BabbogiModel.id!!, startDate, endDate)
                     else preReport
                 }

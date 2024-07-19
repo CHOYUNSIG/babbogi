@@ -73,6 +73,9 @@ fun NutritionDailyAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavC
                 intake = foodList?.toNutritionIntake()
             }
         }
+        viewModel.getDailyReport(viewModel.today, generate = false) {
+            report = it
+        }
     }
 
     NutritionDailyAnalyze(
