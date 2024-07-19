@@ -3,6 +3,7 @@ package com.example.babbogi.ui.view
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -73,7 +74,7 @@ fun NutritionCircularGraph(nutrition: Nutrition, recommendation: Float, intake: 
     LaunchedEffect(preIntake) {
         animatedValue.animateTo(
             targetValue = intake / recommendation * 360,
-            animationSpec = tween(durationMillis = 500, easing = LinearEasing)
+            animationSpec = tween(durationMillis = 2000, easing = EaseOutCubic)
         )
     }
 
@@ -119,7 +120,7 @@ fun NutritionBarGraph(nutrition: Nutrition, recommendation: Float, intake: Float
     LaunchedEffect(preIntake) {
         animatedValue.animateTo(
             targetValue = intake / recommendation,
-            animationSpec = tween(durationMillis = 500, easing = LinearEasing)
+            animationSpec = tween(durationMillis = 2000, easing = EaseOutCubic)
         )
     }
 

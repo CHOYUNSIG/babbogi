@@ -4,6 +4,7 @@ import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -55,7 +56,7 @@ fun NutritionOverviewScreen(viewModel: BabbogiViewModel, navController: NavContr
 
     LaunchedEffect(true) {
         viewModel.getFoodLists(viewModel.today) { foodList ->
-            if (foodList != null) intake = foodList[viewModel.today]!!.toNutritionIntake()
+            if (foodList != null) intake = foodList[viewModel.today]?.toNutritionIntake()
         }
     }
 
@@ -71,14 +72,14 @@ fun CircularGraphCard(
     recommendation: Float,
     intake: Float,
 ) {
-    val targetValue = remember { (intake / recommendation).roundToInt() }
+    val targetValue = remember { (intake / recommendation * 100).roundToInt() }
     var animatedValue by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(targetValue) {
         animate(
             initialValue = 0f,
             targetValue = targetValue.toFloat(),
-            animationSpec = tween(durationMillis = 500) // 1초 동안 애니메이션
+            animationSpec = tween(durationMillis = 2000, easing = EaseOutCubic)
         ) { value, _ ->
             animatedValue = value.toInt()
         }
@@ -131,11 +132,11 @@ fun NutritionOverview(
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         TitleBar("전체 영양 정보")
         ColumnWithDefault {
-            Nutrition.entries.forEach { nutrition ->
+            if (intake != null) Nutrition.entries.forEach { nutrition ->
                 CircularGraphCard(
                     nutrition = nutrition,
                     recommendation = recommendation[nutrition]!!,
-                    intake = intake?.get(nutrition) ?: 0f,
+                    intake = intake[nutrition]!!,
                 )
             }
         }
