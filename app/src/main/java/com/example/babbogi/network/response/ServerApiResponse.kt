@@ -6,6 +6,7 @@ import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.Product
+import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -108,6 +109,14 @@ data class ServerConsumeFormat(
         this.toMap()
     )
 }
+
+@Serializable
+data class ServerSearchResultFormat(
+    @SerializedName("foodname") val name: String,
+    @SerializedName("foodgroup") val mainCategory: String?,
+    @SerializedName("food") val subCategory: String,
+    @SerializedName("company") val company: String?,
+)
 
 @Serializable
 data class ServerFoodFormat(

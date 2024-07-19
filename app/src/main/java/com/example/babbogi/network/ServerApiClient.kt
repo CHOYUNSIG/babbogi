@@ -7,6 +7,7 @@ import com.example.babbogi.BuildConfig
 import com.example.babbogi.network.response.ServerConsumeFormat
 import com.example.babbogi.network.response.ServerFoodFormat
 import com.example.babbogi.network.response.ServerNutritionFormat
+import com.example.babbogi.network.response.ServerSearchResultFormat
 import com.example.babbogi.network.response.ServerUserStateFormat
 import com.example.babbogi.network.response.toServerNutritionFormat
 import com.example.babbogi.network.response.toServerUserStateFormat
@@ -61,7 +62,7 @@ interface ServerApiService {
     @GET("search")
     suspend fun getSearchResult(
         @Query(value = "name") word: String
-    ): List<String>
+    ): List<ServerSearchResultFormat>
 
     @GET("food")
     suspend fun getFoodNutrition(
@@ -130,7 +131,7 @@ object ServerApi {
         return retrofitService.getNutritionRecommendation(id).toMap()
     }
 
-    suspend fun getSearchResult(word: String): List<String> {
+    suspend fun getSearchResult(word: String): List<ServerSearchResultFormat> {
         Log.d("ServerApi", "getSearchResult($word)")
         return retrofitService.getSearchResult(word)
     }

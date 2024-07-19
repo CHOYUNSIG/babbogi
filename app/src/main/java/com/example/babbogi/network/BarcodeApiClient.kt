@@ -3,7 +3,6 @@ package com.example.babbogi.network
 import android.util.Log
 import com.example.babbogi.BuildConfig
 import com.example.babbogi.network.response.BarcodeApiResponse
-import com.example.babbogi.network.response.toProduct
 import com.example.babbogi.util.Product
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit

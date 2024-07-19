@@ -3,7 +3,6 @@ package com.example.babbogi.network
 import android.util.Log
 import com.example.babbogi.BuildConfig
 import com.example.babbogi.network.response.NutritionApiResponse
-import com.example.babbogi.network.response.toNutritionMap
 import com.example.babbogi.util.NutritionMap
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit
@@ -31,6 +30,6 @@ object NutritionApi {
     suspend fun getNutrition(prodName: String): List<NutritionMap<Float>> {
         val response = retrofitService.getNutrition(prodName.replace(" ", "_")).I2790.row
         Log.d("NutritionApi", "$response")
-        return response?.map { row -> row.toNutritionMap() } ?: emptyList()
+        return response?.map { row -> row.toMap() } ?: emptyList()
     }
 }

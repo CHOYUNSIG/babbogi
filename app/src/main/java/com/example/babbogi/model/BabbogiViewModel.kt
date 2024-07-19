@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.babbogi.network.BarcodeApi
 import com.example.babbogi.network.NutritionApi
 import com.example.babbogi.network.ServerApi
+import com.example.babbogi.network.response.ServerSearchResultFormat
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionRecommendation
@@ -286,10 +287,10 @@ class BabbogiViewModel: ViewModel() {
     // 서버에 음식 이름 검색
     fun searchWord(
         word: String,
-        onSearchDone: (List<String>?) -> Unit
+        onSearchDone: (List<ServerSearchResultFormat>?) -> Unit
     ) {
         viewModelScope.launch {
-            var result: List<String>? = null
+            var result: List<ServerSearchResultFormat>? = null
             try {
                 result = ServerApi.getSearchResult(word)
             }
