@@ -39,8 +39,8 @@ private val dayWidth = 32.dp
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Calendar(onSubmit: (date: LocalDate) -> Unit) {
-    var today by remember { mutableStateOf(LocalDate.now()) }
+fun Calendar(initDate: LocalDate = LocalDate.now(), onSubmit: (date: LocalDate) -> Unit) {
+    var today by remember { mutableStateOf(initDate) }
 
     ElevatedCardWithDefault {
         var day = -(today.minusDays((today.dayOfMonth).toLong()).dayOfWeek.value % 7)
@@ -190,8 +190,8 @@ fun DateSelector(
         }
     }
 
-    if (showCalendar) Dialog(onDismissRequest = { showCalendar = false}) {
-        Calendar {
+    if (showCalendar) Dialog(onDismissRequest = { showCalendar = false }) {
+        Calendar(initDate = today) {
             showCalendar = false
             onDateChanged(it)
         }
@@ -203,4 +203,11 @@ fun DateSelector(
 @Composable
 fun PreviewCalendar() {
     Calendar(onSubmit = {})
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview
+@Composable
+fun PreviewDateSelector() {
+    DateSelector(today = LocalDate.now(), onDateChanged = {})
 }
