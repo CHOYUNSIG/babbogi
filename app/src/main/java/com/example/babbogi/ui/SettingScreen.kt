@@ -38,6 +38,7 @@ import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.FixedColorSwitch
 import com.example.babbogi.ui.view.HealthAbstraction
@@ -130,7 +131,7 @@ fun Setting(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = "알림을 받으려면 알림 권한을 활성화해야 해요.")
+                        DescriptionText(text = "알림을 받으려면 알림 권한을 활성화해야 해요.")
                     }
                     Spacer(modifier = Modifier.requiredWidth(20.dp))
                     FixedColorSwitch(

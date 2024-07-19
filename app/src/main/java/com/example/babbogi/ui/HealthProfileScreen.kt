@@ -128,21 +128,21 @@ fun HealthProfile(
                 content = "키",
                 value = heightText,
                 onValueChange = { heightText = it },
-                labeling = "본인의 키를 입력하시오",
+                labeling = "본인의 키를 입력하세요",
                 keyboardType = KeyboardType.Number,
             )
             TextInputHolder(
                 content = "몸무게",
                 value = weightText,
                 onValueChange = { weightText = it },
-                labeling = "본인의 몸무게를 입력하시오",
+                labeling = "본인의 몸무게를 입력하세요",
                 keyboardType = KeyboardType.Number,
             )
             TextInputHolder(
                 content = "나이",
                 value = ageText,
                 onValueChange = { ageText = it },
-                labeling = "본인의 나이를 입력하시오",
+                labeling = "본인의 나이를 입력하세요",
                 keyboardType = KeyboardType.Number,
             )
             InputHolder("성별") {
