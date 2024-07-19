@@ -32,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,8 +44,9 @@ import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
-import com.example.babbogi.ui.view.CustomAlertDialog
+import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DateSelector
+import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.FixedColorButton
 import com.example.babbogi.ui.view.GptAnalyzeReport
@@ -65,15 +65,18 @@ import java.time.LocalDate
 @Composable
 fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavController) {
     var period by remember { LocalDate.now().let { mutableStateOf(listOf(it.minusDays(6), it)) } }
-    var intakes by remember { mutableStateOf<Map<LocalDate, NutritionIntake>>(emptyMap()) }
+    var intakes by remember { mutableStateOf<Map<LocalDate, NutritionIntake>?>(null) }
     var report by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(period) {
-        val length = period.last().toEpochDay() - period.first().toEpochDay() + 1
-        if (length <= 7) viewModel.getFoodLists(period.first(), period.last()) {
-            if (it != null) intakes = it.mapValues { (_, foodList) -> foodList.toNutritionIntake() }
+    val getIntakes = remember {
+        { endRefresh: (() -> Unit)? ->
+            viewModel.getFoodLists(period.first(), period.last()) {
+                if (it != null) intakes = it.mapValues { (_, foodList) -> foodList.toNutritionIntake() }
+            }
+            endRefresh?.invoke()
         }
     }
+
+    LaunchedEffect(period) { getIntakes.invoke(null) }
 
     NutritionPeriodAnalyze(
         period = period,
@@ -88,13 +91,7 @@ fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: Nav
             }
         },
         onSettingClicked = { navController.navigate(Screen.Setting.name) },
-        onRefresh = { endRefresh ->
-            val length = period.last().toEpochDay() - period.first().toEpochDay() + 1
-            if (length <= 7) viewModel.getFoodLists(period.first(), period.last()) {
-                if (it != null) intakes = it.mapValues { (_, foodList) -> foodList.toNutritionIntake() }
-                endRefresh()
-            }
-        },
+        onRefresh = { it -> getIntakes.invoke(it) },
     )
 }
 
@@ -120,14 +117,14 @@ fun NutritionCheckBox(onSelected: (Nutrition) -> Unit) {
 fun NutritionPeriodAnalyze(
     period: List<LocalDate>,
     recommendation: NutritionRecommendation,
-    intakes: Map<LocalDate, NutritionIntake>,
+    intakes: Map<LocalDate, NutritionIntake>?,
     report: String?,
     onPeriodChanged: (List<LocalDate>) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
     onSettingClicked: () -> Unit,
     onRefresh: (endRefresh: () -> Unit) -> Unit
 ) {
-    var selectedNutrition by remember { mutableStateOf<Nutrition?>(null) }
+    var selectedNutrition by remember { mutableStateOf(Nutrition.Calorie) }
     var selectedPeriod by remember { mutableStateOf(period) }
     var showLongPeriodAlert by remember { mutableStateOf(false) }
     var showInvalidPeriodAlert by remember { mutableStateOf(false) }
@@ -175,9 +172,7 @@ fun NutritionPeriodAnalyze(
                         ) {
                             FixedColorButton(
                                 onClick = {
-                                    val length =
-                                        selectedPeriod.last().toEpochDay() - selectedPeriod.first()
-                                            .toEpochDay() + 1
+                                    val length = selectedPeriod.last().toEpochDay() - selectedPeriod.first().toEpochDay() + 1
                                     if (length > 7)
                                         showLongPeriodAlert = true
                                     else if (length < 1)
@@ -185,27 +180,26 @@ fun NutritionPeriodAnalyze(
                                     else
                                         onPeriodChanged(selectedPeriod)
                                 },
-                                text = "적용"
+                                text = "조회"
                             )
                         }
                     }
                 }
                 ElevatedCardWithDefault {
                     ColumnWithDefault {
-                        selectedNutrition?.let {
-                            Text(text = stringResource(id = it.res), fontSize = 20.sp)
-                            NutritionPeriodBarGraph(
-                                nutrition = it,
-                                recommend = recommendation[it]!!,
-                                intakes = intakes.mapValues { (_, intake) -> intake[it]!! }
-                            )
-                        } ?: Box(
+                        Text(text = stringResource(id = selectedNutrition.res), fontSize = 20.sp)
+                        if (intakes != null) NutritionPeriodBarGraph(
+                            nutrition = selectedNutrition,
+                            recommend = recommendation[selectedNutrition]!!,
+                            intakes = intakes.mapValues { (_, intake) -> intake[selectedNutrition]!! }
+                        )
+                        else Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(200.dp)
                         ) {
-                            Text(text = "아래에서 영양소를 선택하세요", color = Color.Gray)
+                            DescriptionText(text = "기간을 설정하고\n조회 버튼을 클릭하세요.\n이곳에 그래프가 표시됩니다.")
                         }
                         NutritionCheckBox(onSelected = { selectedNutrition = it })
                     }
@@ -224,21 +218,25 @@ fun NutritionPeriodAnalyze(
         )
     }
 
-    if (showLongPeriodAlert) CustomAlertDialog(
-        onDismissRequest = { showLongPeriodAlert = false },
-        onConfirmation = { showLongPeriodAlert = false },
-        dialogTitle = "기간이 너무 김",
-        dialogText = "조회 기간을 일주일 이내로 설정하세요.",
-        iconResId = R.drawable.baseline_not_find_30,
-    )
+    if (showLongPeriodAlert) CustomPopup(
+        callbacks = listOf { showLongPeriodAlert = false },
+        labels = listOf("확인"),
+        onDismiss = { showLongPeriodAlert = false },
+        title = "기간이 너무 김",
+        icon = R.drawable.baseline_not_find_30,
+    ) {
+        Text(text = "조회 기간을 일주일 이내로 설정하세요.")
+    }
 
-    if (showInvalidPeriodAlert) CustomAlertDialog(
-        onDismissRequest = { showInvalidPeriodAlert = false },
-        onConfirmation = { showInvalidPeriodAlert = false },
-        dialogTitle = "잘못된 기간",
-        dialogText = "종료일이 시작일보다 앞설 수 없습니다.",
-        iconResId = R.drawable.baseline_not_find_30,
-    )
+    if (showInvalidPeriodAlert) CustomPopup(
+        callbacks = listOf { showInvalidPeriodAlert = false },
+        labels = listOf("확인"),
+        onDismiss = { showInvalidPeriodAlert = false },
+        title = "잘못된 기간",
+        icon = R.drawable.baseline_not_find_30,
+    ) {
+        Text(text = "종료일이 시작일보다 앞설 수 없습니다.")
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
