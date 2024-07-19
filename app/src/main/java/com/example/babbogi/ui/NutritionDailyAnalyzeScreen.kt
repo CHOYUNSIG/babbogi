@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,6 +46,7 @@ import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.DateSelector
+import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.GptAnalyzeReport
 import com.example.babbogi.ui.view.NutritionAbstraction
@@ -188,28 +190,34 @@ fun MealList(foodList: List<Pair<Product, Int>>?) {
                     fontWeight = FontWeight.Bold,
                 )
             }
-        }
-        if (foodList == null)  Row (
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            CircularProgressIndicator(modifier = Modifier
-                .size(50.dp)
-                .padding(16.dp))
-        }
-        else if (foodList.isEmpty()) Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
-        ) {
-            Text("섭취한 음식이 없어요!", color = Color.Gray, modifier = Modifier.padding(16.dp))
-        }
-        else ColumnWithDefault(
-            modifier = Modifier
-                .heightIn(max = 500.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            foodList.forEach { (product, amount) ->
-                ProductAbstraction(product = product, amount = amount)
+            if (foodList == null) Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .padding(16.dp)
+                )
+            }
+            else if (foodList.isEmpty()) Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                DescriptionText(text = "섭취한 음식이 없어요!")
+            }
+            else LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.heightIn(max = 500.dp)
+            ) {
+                items(foodList.size) { index ->
+                    ProductAbstraction(
+                        product = foodList[index].first,
+                        amount = foodList[index].second
+                    )
+                }
             }
         }
     }
