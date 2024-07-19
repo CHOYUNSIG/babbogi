@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,6 +21,8 @@ import com.example.babbogi.R
 
 @Composable
 fun SearchBar(value: String, onValueChange: (String) -> Unit, onSubmit: (String) -> Unit) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
@@ -29,7 +32,12 @@ fun SearchBar(value: String, onValueChange: (String) -> Unit, onSubmit: (String)
             onValueChange = onValueChange,
             label = { Text("검색") },
             trailingIcon = {
-                IconButton(onClick = { onSubmit(value) }) {
+                IconButton(
+                    onClick = {
+                        keyboardController?.hide()
+                        onSubmit(value)
+                    }
+                ) {
                     Icon(
                         painterResource(id = R.drawable.baseline_search_24),
                         contentDescription = "검색",
@@ -41,7 +49,10 @@ fun SearchBar(value: String, onValueChange: (String) -> Unit, onSubmit: (String)
                 focusedContainerColor = Color.Gray.copy(alpha = 0.1f),
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = { onSubmit(value) }),
+            keyboardActions = KeyboardActions(onSearch = {
+                keyboardController?.hide()
+                onSubmit(value)
+            }),
             modifier = Modifier.fillMaxWidth()
         )
     }
