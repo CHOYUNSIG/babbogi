@@ -179,7 +179,7 @@ fun ProductAbstraction(
         } else listOf(nullMessage to Pair("", "")),
         onClick = onClick
     ) {
-        Column {
+        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
