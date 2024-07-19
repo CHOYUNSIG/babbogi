@@ -23,6 +23,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.concurrent.ExecutorService
 
 private val barcodeRecognizer = BarcodeScanning.getClient(
@@ -41,6 +42,7 @@ class BabbogiViewModel: ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     private val _today = mutableStateOf(LocalDate.now())
     private val _periodReport = mutableStateOf<Pair<List<LocalDate>, String?>?>(null)
+    private val _weightHistory = mutableStateOf<List<Pair<LocalDateTime, Float>>?>(null)
     private val foodLists = mutableStateMapOf<LocalDate, List<Pair<Product, Int>>>()
     private val dailyReport = mutableStateMapOf<LocalDate, String>()
 
@@ -83,6 +85,12 @@ class BabbogiViewModel: ViewModel() {
         set(notificationActivation) {
             _notificationActivation.value = notificationActivation
             BabbogiModel.notificationActivation = notificationActivation
+        }
+
+    var weightHistory: List<Pair<LocalDateTime, Float>>?
+        get() = _weightHistory.value
+        set(weightHistory) {
+            _weightHistory.value = weightHistory
         }
 
     var periodReport: Pair<List<LocalDate>, String?>?
@@ -364,6 +372,27 @@ class BabbogiViewModel: ViewModel() {
             }
             finally {
                 onFetchingEnded(report)
+            }
+        }
+    }
+
+    // 서버에서 몸무게 추이 받아오기
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getWeightHistory(
+        refresh: Boolean = false,
+        onFetchingEnded: (weightHistory: List<Pair<LocalDateTime, Float>>?) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                if (refresh || weightHistory == null)
+                    weightHistory = ServerApi.getWeightHistory(BabbogiModel.id!!)
+            }
+            catch(e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot get weight history.")
+            }
+            finally {
+                onFetchingEnded(weightHistory)
             }
         }
     }

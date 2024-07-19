@@ -25,6 +25,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Query
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 private val retrofit = Retrofit.Builder()
     .client(
@@ -116,6 +117,12 @@ object ServerApi {
     suspend fun getHealthState(id: Long): HealthState {
         Log.d("ServerApi", "getHealthState($id)")
         return retrofitService.getUserData(id).last().toHealthState()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun getWeightHistory(id: Long): List<Pair<LocalDateTime, Float>> {
+        Log.d("ServerApi", "getWeightTransition($id)")
+        return retrofitService.getUserData(id).map { LocalDateTime.parse(it.date) to it.weight.toFloat() }
     }
 
     suspend fun getNutritionRecommendation(id: Long): NutritionRecommendation {
