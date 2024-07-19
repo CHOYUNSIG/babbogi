@@ -136,13 +136,16 @@ private fun FoodModificationCard(
     }
 
     if (showConfirmDeletionPopup) CustomPopup(
-        callbacks = listOf(onDelete, { showConfirmDeletionPopup = false }),
+        callbacks = listOf(
+            { onDelete(); showConfirmDeletionPopup = false },
+            { showConfirmDeletionPopup = false }
+        ),
         labels = listOf("삭제", "취소"),
         onDismiss = { showConfirmDeletionPopup = false },
         title = "다음 식품을 삭제하시겠습니까?",
         icon = R.drawable.baseline_delete_24
     ) {
-        Text(text = product.name)
+        Text(text = product.name.ifEmpty { "(이름 없음)" })
     }
 }
 
