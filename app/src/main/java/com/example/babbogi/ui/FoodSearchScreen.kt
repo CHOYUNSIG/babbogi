@@ -10,9 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -85,11 +84,11 @@ fun FoodSearch(
                     },
                     onValueChange = { word = it }
                 )
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    searchResult.forEach {
+                LazyColumn(modifier = Modifier.fillMaxHeight()) {
+                    items(count = searchResult.size) { index ->
                         ClickableText(
-                            text = AnnotatedString(it),
-                            onClick = { _ -> selectedWord = it; showConfirmingPopup = true },
+                            text = AnnotatedString(searchResult[index]),
+                            onClick = { _ -> selectedWord = searchResult[index]; showConfirmingPopup = true },
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
                             style = TextStyle(color = MaterialTheme.colorScheme.onPrimary)
                         )
