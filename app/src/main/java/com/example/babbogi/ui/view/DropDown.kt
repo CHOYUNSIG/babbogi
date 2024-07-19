@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,16 +28,22 @@ fun DropDown(
     index: Int?,
     onChange: (index: Int?) -> Unit
 ) {
-    val realOptions = listOf(nullOption) + options
+    var realOptions by remember { mutableStateOf(listOf(nullOption) + options) }
     var selectedText: String? by remember { mutableStateOf(if (index != null) options[index] else null) }
     var isExpended by remember { mutableStateOf(false) }
+
+    LaunchedEffect(options) {
+        realOptions = listOf(nullOption) + options
+    }
 
     ExposedDropdownMenuBox(
         expanded = isExpended,
         onExpandedChange = { isExpended = it },
     ) {
         TextField(
-            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
             value = selectedText?: realOptions.first(),
             onValueChange = {},
             readOnly = true,
@@ -76,7 +83,7 @@ fun DropDown(
 @Composable
 fun PreviewDropDown() {
     DropDown(
-        options = listOf("항목 1", "항목 2", "항목 3"),
+        options = remember { listOf("항목 1", "항목 2", "항목 3") },
         nullOption = "해당 없음",
         index = 1,
         onChange = {}
