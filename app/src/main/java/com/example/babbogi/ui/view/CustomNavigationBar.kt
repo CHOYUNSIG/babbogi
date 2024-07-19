@@ -1,5 +1,7 @@
 package com.example.babbogi.ui.view
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,7 +52,7 @@ fun CustomNavigationBar(
                         isSelected = isSelected,
                         onClick = {
                             navController.navigate(screen.name) {
-                                popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                                popUpTo(screen.name) { inclusive = true }
                             }
                         },
                     )
@@ -87,6 +89,7 @@ fun CustomNavigationBarItem(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun PreviewCustomNavigationBar() {
