@@ -16,7 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,7 +56,7 @@ import com.example.babbogi.util.toFloat2
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun SettingScreen(viewModel: BabbogiViewModel, navController: NavController) {
+fun SettingScreen(viewModel: BabbogiViewModel, navController: NavController, snackBarHostState: SnackbarHostState) {
     Setting(
         healthState = viewModel.healthState,
         recommendation = viewModel.nutritionRecommendation,
@@ -191,6 +191,7 @@ private fun NutritionRecommendationPopup(
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable

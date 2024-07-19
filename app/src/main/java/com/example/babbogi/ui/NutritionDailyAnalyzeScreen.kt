@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -61,7 +62,7 @@ import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NutritionDailyAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavController) {
+fun NutritionDailyAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavController, snackBarHostState: SnackbarHostState) {
     var foodList by remember { mutableStateOf<List<Pair<Product, Int>>?>(null) }
     var intake by remember { mutableStateOf<NutritionIntake?>(null) }
     var report by remember { mutableStateOf<String?>(null) }

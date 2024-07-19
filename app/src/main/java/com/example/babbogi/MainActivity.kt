@@ -8,6 +8,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,24 +38,25 @@ import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.CustomNavigationBar
 
 enum class Screen(
-    val screenComposable: @Composable (BabbogiViewModel, NavHostController) -> Unit
+    val screenComposable: @Composable (BabbogiViewModel, NavHostController, SnackbarHostState) -> Unit
 ) {
-    Tutorial(screenComposable = { v, n -> GuidePageScreen(v, n) }),
-    Loading(screenComposable = { v, n -> LoadingScreen(v, n) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    NutritionDailyAnalyze(screenComposable = { v, n -> NutritionDailyAnalyzeScreen(v, n) }),
+    Tutorial(screenComposable = { v, n, s -> GuidePageScreen(v, n, s) }),
+    Loading(screenComposable = { v, n, s -> LoadingScreen(v, n, s) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    NutritionPeriodAnalyze(screenComposable = { v, n -> NutritionPeriodAnalyzeScreen(v, n) }),
+    NutritionDailyAnalyze(screenComposable = { v, n, s -> NutritionDailyAnalyzeScreen(v, n, s) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    NutritionOverview(screenComposable = { v, n -> NutritionOverviewScreen(v, n) }),
+    NutritionPeriodAnalyze(screenComposable = { v, n, s -> NutritionPeriodAnalyzeScreen(v, n, s) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    FoodList(screenComposable = { v, n -> FoodListScreen(v, n) }),
-    Camera(screenComposable = { v, n -> CameraViewScreen(v, n) }),
-    FoodSearch(screenComposable = { v, n -> FoodSearchScreen(v, n) }),
+    NutritionOverview(screenComposable = { v, n, s -> NutritionOverviewScreen(v, n, s) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    Setting(screenComposable = { v, n -> SettingScreen(v, n) }),
+    FoodList(screenComposable = { v, n, s -> FoodListScreen(v, n, s) }),
+    Camera(screenComposable = { v, n, s -> CameraViewScreen(v, n, s) }),
+    FoodSearch(screenComposable = { v, n, s -> FoodSearchScreen(v, n, s) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    HealthProfile(screenComposable = { v, n -> HealthProfileScreen(v, n) }),
+    Setting(screenComposable = { v, n, s -> SettingScreen(v, n, s) }),
+    @RequiresApi(Build.VERSION_CODES.O)
+    HealthProfile(screenComposable = { v, n, s -> HealthProfileScreen(v, n, s) }),
 }
 
 class MainActivity : ComponentActivity() {
@@ -80,9 +83,10 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainApp(viewModel: BabbogiViewModel) {
+    val snackBarHostState = remember { SnackbarHostState() }
     val navController = rememberNavController()
-    var currentScreen by remember { mutableStateOf<String?>(null) }
 
+    var currentScreen by remember { mutableStateOf<String?>(null) }
     navController.addOnDestinationChangedListener { _, destination, _ ->
         currentScreen = destination.route
     }
@@ -111,6 +115,7 @@ fun MainApp(viewModel: BabbogiViewModel) {
                 )
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) { innerPadding ->
         NavHost(
             navController = navController,
@@ -124,7 +129,7 @@ fun MainApp(viewModel: BabbogiViewModel) {
         ) {
             Screen.entries.forEach { screen ->
                 composable(screen.name) {
-                    screen.screenComposable(viewModel, navController)
+                    screen.screenComposable(viewModel, navController, snackBarHostState)
                 }
             }
         }

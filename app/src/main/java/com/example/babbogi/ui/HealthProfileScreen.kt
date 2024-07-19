@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -54,7 +55,7 @@ import com.example.babbogi.util.testHealthState
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HealthProfileScreen(viewModel: BabbogiViewModel, navController: NavController) {
+fun HealthProfileScreen(viewModel: BabbogiViewModel, navController: NavController, snackBarHostState: SnackbarHostState) {
     HealthProfile(
         healthState = viewModel.healthState,
         onModifyClicked = {
