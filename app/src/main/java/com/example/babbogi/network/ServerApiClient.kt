@@ -15,8 +15,10 @@ import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
 import com.google.gson.GsonBuilder
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -25,6 +27,14 @@ import retrofit2.http.Query
 import java.time.LocalDate
 
 private val retrofit = Retrofit.Builder()
+    .client(
+        OkHttpClient.Builder()
+            .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+    )
+    .addConverterFactory(ScalarsConverterFactory.create())
     .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
     .baseUrl(BuildConfig.SERVER_URL + BuildConfig.SERVER_API_KEY)
     .build()
