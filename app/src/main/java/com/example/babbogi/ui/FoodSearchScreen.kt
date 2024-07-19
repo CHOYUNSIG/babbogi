@@ -2,6 +2,8 @@ package com.example.babbogi.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -17,12 +19,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,9 +44,15 @@ import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.SearchBar
 import com.example.babbogi.ui.view.TitleBar
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
-fun FoodSearchScreen(viewModel: BabbogiViewModel, navController: NavController, snackBarHostState: SnackbarHostState) {
+fun FoodSearchScreen(
+    viewModel: BabbogiViewModel,
+    navController: NavController,
+    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+) {
     var searchResult by remember { mutableStateOf<List<String>>(emptyList()) }
 
     FoodSearch(
@@ -50,6 +60,11 @@ fun FoodSearchScreen(viewModel: BabbogiViewModel, navController: NavController, 
         onSearchWordSubmitted = { word, onEnded ->
             viewModel.searchWord(word) {
                 if (it != null) searchResult = it
+                else showSnackBar(
+                    "음식을 검색하지 못했습니다.",
+                    "확인",
+                    SnackbarDuration.Short
+                )
                 onEnded()
             }
         },
@@ -57,7 +72,12 @@ fun FoodSearchScreen(viewModel: BabbogiViewModel, navController: NavController, 
             if (word.length < 2) return@lambda
             viewModel.getProductByNameSearch(word) {
                 if (it != null) viewModel.addProduct(it)
-                onEnded(it != null)
+                onEnded()
+                showSnackBar(
+                    if (it != null) "음식이 추가되었습니다." else "오류: 음식을 추가할 수 없습니다.",
+                    "확인",
+                    SnackbarDuration.Short
+                )
             }
         },
     )
@@ -67,13 +87,12 @@ fun FoodSearchScreen(viewModel: BabbogiViewModel, navController: NavController, 
 fun FoodSearch(
     searchResult: List<String>,
     onSearchWordSubmitted: (String, onEnded: () -> Unit) -> Unit,
-    onWordSelected: (String, onEnded: (success: Boolean) -> Unit) -> Unit,
+    onWordSelected: (String, onEnded: () -> Unit) -> Unit,
 ) {
     var word by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var selectedWord by remember { mutableStateOf("") }
     var showConfirmingPopup by remember { mutableStateOf(false) }
-    var addedSuccessfully by remember { mutableStateOf<Boolean?>(null) }
 
     Column(modifier = Modifier.fillMaxHeight()) {
         TitleBar(title = "음식 검색")
@@ -92,7 +111,9 @@ fun FoodSearch(
                         ClickableText(
                             text = AnnotatedString(searchResult[index]),
                             onClick = { _ -> selectedWord = searchResult[index]; showConfirmingPopup = true },
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
                             style = TextStyle(color = MaterialTheme.colorScheme.onPrimary)
                         )
                         HorizontalDivider()
@@ -125,7 +146,7 @@ fun FoodSearch(
     if (showConfirmingPopup) CustomPopup(
         callbacks = listOf(
             {
-                onWordSelected(selectedWord) { addedSuccessfully = it }
+                onWordSelected(selectedWord) { isLoading = false }
                 showConfirmingPopup = false
             },
             { showConfirmingPopup = false },
@@ -136,18 +157,9 @@ fun FoodSearch(
     ) {
         Text(text = selectedWord)
     }
-
-    addedSuccessfully?.let { success ->
-        CustomPopup(
-            callbacks = listOf { addedSuccessfully = null },
-            labels = listOf("확인"),
-            onDismiss = { addedSuccessfully = null },
-            title = if (success) "음식이 추가되었습니다." else "음식이 추가되지 못했습니다.",
-            icon = if (success) R.drawable.baseline_check_24 else R.drawable.baseline_not_find_30
-        )
-    }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable

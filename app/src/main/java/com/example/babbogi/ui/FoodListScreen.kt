@@ -17,7 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,7 +56,11 @@ import com.example.babbogi.util.toFloat2
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController, snackBarHostState: SnackbarHostState) {
+fun FoodListScreen(
+    viewModel: BabbogiViewModel,
+    navController: NavController,
+    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+) {
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
     FoodList(
@@ -70,13 +73,19 @@ fun FoodListScreen(viewModel: BabbogiViewModel, navController: NavController, sn
                 amount = newAmount
             )
         },
-        onAddByHandConfirmed = { viewModel.addProduct(it) },
+        onAddByHandConfirmed = {
+            viewModel.addProduct(it)
+            showSnackBar("음식이 추가되었습니다.", "확인", SnackbarDuration.Short)
+        },
         onSearchClicked = { navController.navigate(Screen.FoodSearch.name) },
         onCameraClicked = { navController.navigate(Screen.Camera.name) },
         onModifyClicked = { index, product ->
             viewModel.modifyProduct(index = index, product = product)
         },
-        onDeleteClicked = { viewModel.deleteProduct(it) },
+        onDeleteClicked = {
+            viewModel.deleteProduct(it)
+            showSnackBar("음식이 제거되었습니다.", "확인", SnackbarDuration.Short)
+        },
         onSubmitClicked = {
             navController.navigate(Screen.Loading.name)
             viewModel.sendList {
@@ -325,6 +334,7 @@ private fun FoodList(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable

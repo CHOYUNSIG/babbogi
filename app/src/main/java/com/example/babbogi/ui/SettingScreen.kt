@@ -16,7 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,7 +56,11 @@ import com.example.babbogi.util.toFloat2
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun SettingScreen(viewModel: BabbogiViewModel, navController: NavController, snackBarHostState: SnackbarHostState) {
+fun SettingScreen(
+    viewModel: BabbogiViewModel,
+    navController: NavController,
+    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+) {
     Setting(
         healthState = viewModel.healthState,
         recommendation = viewModel.nutritionRecommendation,
@@ -65,10 +69,16 @@ fun SettingScreen(viewModel: BabbogiViewModel, navController: NavController, sna
         onHealthCardClicked = { navController.navigate(Screen.HealthProfile.name) },
         onRecommendationChanged = {
             navController.navigate(Screen.Loading.name)
-            viewModel.changeNutritionRecommendation(it) {
+            viewModel.changeNutritionRecommendation(it) { success ->
                 navController.navigate(Screen.Setting.name) {
                     popUpTo(Screen.Setting.name) { inclusive = true }
                 }
+                showSnackBar(
+                    if (success) "권장 섭취량이 변경되었습니다."
+                    else "오류: 변경된 섭취량을 전송하는 데 실패했습니다.",
+                    "확인",
+                    SnackbarDuration.Short
+                )
             }
         },
         onTutorialRestartClicked = {

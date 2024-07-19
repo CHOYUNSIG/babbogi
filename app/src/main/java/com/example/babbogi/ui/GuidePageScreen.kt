@@ -27,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,7 +54,11 @@ import kotlin.math.absoluteValue
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun GuidePageScreen(viewModel: BabbogiViewModel, navController: NavController, snackBarHostState: SnackbarHostState) {
+fun GuidePageScreen(
+    viewModel: BabbogiViewModel,
+    navController: NavController,
+    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+) {
     GuidePage(
         list = listOf(
             R.drawable.guide_page1,

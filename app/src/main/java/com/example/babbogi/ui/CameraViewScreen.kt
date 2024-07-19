@@ -20,7 +20,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,9 +42,9 @@ import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
-import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
@@ -57,10 +57,11 @@ import java.util.concurrent.Executors
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController, snackBarHostState: SnackbarHostState) {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-
+fun CameraViewScreen(
+    viewModel: BabbogiViewModel,
+    navController: NavController,
+    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+) {
     // 카메라 권한 설정
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
 
@@ -75,6 +76,8 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController, 
         var recognizedCount by remember { mutableStateOf(0) }
 
         // 카메라 사용 설정
+        val context = LocalContext.current
+        val lifecycleOwner = LocalLifecycleOwner.current
         val previewView = remember { PreviewView(context) }
         val cameraController = remember { LifecycleCameraController(context) }
         val executor = remember { Executors.newSingleThreadExecutor() }
@@ -110,6 +113,7 @@ fun CameraViewScreen(viewModel: BabbogiViewModel, navController: NavController, 
                 product = null
                 showDialog = false
                 recognizedCount++
+                showSnackBar("음식이 추가되었습니다.", "확인", SnackbarDuration.Short)
             },
             onCancelClicked = {
                 product = null

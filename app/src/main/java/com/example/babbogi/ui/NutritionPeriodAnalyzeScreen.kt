@@ -21,7 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -64,7 +64,11 @@ import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: NavController, snackBarHostState: SnackbarHostState) {
+fun NutritionPeriodAnalyzeScreen(
+    viewModel: BabbogiViewModel,
+    navController: NavController,
+    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+) {
     var period by remember {
         mutableStateOf(
             viewModel.periodReport?.let {
@@ -78,8 +82,13 @@ fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: Nav
         { endRefresh: (() -> Unit)? ->
             viewModel.getFoodLists(period.first(), period.last()) {
                 if (it != null) intakes = it.mapValues { (_, foodList) -> foodList.toNutritionIntake() }
+                else showSnackBar(
+                    "오류: 영양 정보를 받아오지 못했습니다.",
+                    "확인",
+                    SnackbarDuration.Short
+                )
+                endRefresh?.invoke()
             }
-            endRefresh?.invoke()
         }
     }
 
@@ -88,6 +97,7 @@ fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: Nav
             report = it
         }
     }
+
     LaunchedEffect(period) { getIntakes.invoke(null) }
 
     NutritionPeriodAnalyze(
@@ -99,11 +109,16 @@ fun NutritionPeriodAnalyzeScreen(viewModel: BabbogiViewModel, navController: Nav
         onNewReportRequested = { onLoadingEnded ->
             viewModel.getPeriodReport(period.first(), period.last()) {
                 report = it
+                if (it == null) showSnackBar(
+                    "오류: 레포트를 받아오지 못했습니다.",
+                    "확인",
+                    SnackbarDuration.Short
+                )
                 onLoadingEnded()
             }
         },
         onSettingClicked = { navController.navigate(Screen.Setting.name) },
-        onRefresh = { it -> getIntakes.invoke(it) },
+        onRefresh = { getIntakes.invoke(it) },
     )
 }
 

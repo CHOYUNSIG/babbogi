@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -15,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +38,14 @@ import com.example.babbogi.ui.NutritionPeriodAnalyzeScreen
 import com.example.babbogi.ui.SettingScreen
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.CustomNavigationBar
+import kotlinx.coroutines.launch
 
 enum class Screen(
-    val screenComposable: @Composable (BabbogiViewModel, NavHostController, SnackbarHostState) -> Unit
+    val screenComposable: @Composable (
+        BabbogiViewModel,
+        NavHostController,
+        showSnackBar: (text: String, label: String, duration: SnackbarDuration) -> Unit
+    ) -> Unit,
 ) {
     @RequiresApi(Build.VERSION_CODES.O)
     Tutorial(screenComposable = { v, n, s -> GuidePageScreen(v, n, s) }),
@@ -83,8 +90,21 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainApp(viewModel: BabbogiViewModel) {
+    val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val navController = rememberNavController()
+
+    val showSnackBar = remember {
+        { text: String, label: String, duration: SnackbarDuration ->
+            scope.launch {
+                snackBarHostState.showSnackbar(
+                    message = text,
+                    actionLabel = label,
+                    duration = duration
+                )
+            }
+        }
+    }
 
     var currentScreen by remember { mutableStateOf<String?>(null) }
     navController.addOnDestinationChangedListener { _, destination, _ ->
@@ -129,7 +149,7 @@ fun MainApp(viewModel: BabbogiViewModel) {
         ) {
             Screen.entries.forEach { screen ->
                 composable(screen.name) {
-                    screen.screenComposable(viewModel, navController, snackBarHostState)
+                    screen.screenComposable(viewModel, navController, showSnackBar)
                 }
             }
         }

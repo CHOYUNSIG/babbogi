@@ -17,12 +17,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,10 +54,15 @@ import com.example.babbogi.util.AdultDisease
 import com.example.babbogi.util.Gender
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.testHealthState
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HealthProfileScreen(viewModel: BabbogiViewModel, navController: NavController, snackBarHostState: SnackbarHostState) {
+fun HealthProfileScreen(
+    viewModel: BabbogiViewModel,
+    navController: NavController,
+    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+) {
     HealthProfile(
         healthState = viewModel.healthState,
         onModifyClicked = {
@@ -65,6 +72,11 @@ fun HealthProfileScreen(viewModel: BabbogiViewModel, navController: NavControlle
                     popUpTo(navController.graph.startDestinationId) { inclusive = false }
                 }
                 else navController.popBackStack()
+                showSnackBar(
+                    if (success) "건강 정보가 수정되었습니다." else "오류: 건강 정보를 서버로 전송하지 못했습니다.",
+                    "확인",
+                    SnackbarDuration.Short
+                )
             }
         },
     )
