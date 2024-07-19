@@ -73,7 +73,7 @@ fun NutritionCircularGraph(nutrition: Nutrition, recommendation: Float, intake: 
 
     LaunchedEffect(preIntake) {
         animatedValue.animateTo(
-            targetValue = intake / recommendation * 360,
+            targetValue = min(intake / recommendation * 360, 360f),
             animationSpec = tween(durationMillis = 2000, easing = EaseOutCubic)
         )
     }
@@ -119,7 +119,7 @@ fun NutritionBarGraph(nutrition: Nutrition, recommendation: Float, intake: Float
 
     LaunchedEffect(preIntake) {
         animatedValue.animateTo(
-            targetValue = intake / recommendation,
+            targetValue = min(intake / recommendation, 1f),
             animationSpec = tween(durationMillis = 2000, easing = EaseOutCubic)
         )
     }
