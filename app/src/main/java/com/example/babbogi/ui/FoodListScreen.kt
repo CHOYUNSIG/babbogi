@@ -86,7 +86,11 @@ fun FoodListScreen(
             viewModel.deleteProduct(it)
             showSnackBar("음식이 제거되었습니다.", "확인", SnackbarDuration.Short)
         },
-        onSubmitClicked = {
+        onSubmitClicked = lambda@ {
+            if (viewModel.productList.isEmpty()) {
+                showSnackBar("음식을 1개 이상 추가해주세요.", "확인", SnackbarDuration.Short)
+                return@lambda
+            }
             navController.navigate(Screen.Loading.name)
             viewModel.sendList { success ->
                 if (success) navController.navigate(Screen.NutritionDailyAnalyze.name) {
@@ -96,7 +100,8 @@ fun FoodListScreen(
                 showSnackBar(
                     if (success) "음식이 전송되었습니다." else "오류: 음식 전송에 실패했습니다.",
                     "확인",
-                    SnackbarDuration.Short)
+                    SnackbarDuration.Short
+                )
             }
         },
         onSettingClicked = { navController.navigate(Screen.Setting.name) }
@@ -305,8 +310,16 @@ private fun FoodList(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            CustomIconButton(onClick = { showAddOption = true }, R.drawable.baseline_add_24)
-            CustomIconButton(onClick = { showConfirmSubmitPopup = true }, R.drawable.baseline_send_24)
+            CustomIconButton(onClick = { showAddOption = true }, icon = R.drawable.baseline_add_24)
+            CustomIconButton(
+                onClick = {
+                    if (productList.isNotEmpty())
+                        showConfirmSubmitPopup = true
+                    else
+                        onSubmitClicked()
+                },
+                icon = R.drawable.baseline_send_24
+            )
         }
     }
 
@@ -338,7 +351,10 @@ private fun FoodList(
     )
 
     if (showConfirmSubmitPopup) CustomPopup(
-        callbacks = listOf(onSubmitClicked, { showConfirmSubmitPopup = false }),
+        callbacks = listOf(
+            { showConfirmSubmitPopup = false; onSubmitClicked() },
+            { showConfirmSubmitPopup = false },
+        ),
         labels = listOf("확인", "취소"),
         onDismiss = { showConfirmSubmitPopup = false },
         title = "음식 리스트를 제출하시겠습니까?",
