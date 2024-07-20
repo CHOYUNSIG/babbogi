@@ -48,12 +48,24 @@ import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.getRandomTestProduct
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionRequired
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
+
+private val barcodeRecognizer = BarcodeScanning.getClient(
+    BarcodeScannerOptions.Builder()
+        .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+        .enableAllPotentialBarcodes()
+        .build()
+)
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -89,27 +101,51 @@ fun CameraViewScreen(
         }
 
         LaunchedEffect(recognizedCount) {
-            viewModel.startCameraRoutine(
-                cameraController = cameraController,
-                executor = executor,
-                onBarcodeRecognized = {
-                    showDialog = true
-                    isFetching = true
-                },
-                onProductFetched = {
-                    isFetching = false
-                    product = it
+            cameraController.setImageAnalysisAnalyzer(executor) analyzing@ { imageProxy ->
+                val image = imageProxy.image
+                if (image == null) {
+                    imageProxy.close()
+                    return@analyzing
                 }
-            )
+                barcodeRecognizer.process(
+                    InputImage.fromMediaImage(image, imageProxy.imageInfo.rotationDegrees)
+                ).addOnCompleteListener onCompleted@ { task ->
+                    val barcode = task.result.map { raw -> raw.rawValue }.firstOrNull { it?.isNotEmpty() ?: false }
+                    if (barcode == null) {
+                        imageProxy.close()
+                        return@onCompleted
+                    }
+                    isFetching = true
+                    showDialog = true
+                    viewModel.getProductByBarcode(barcode) {
+                        cameraController.clearImageAnalysisAnalyzer()
+                        product = it
+                        isFetching = false
+                        imageProxy.close()
+                    }
+                }
+            }
         }
 
         CameraView(
-            cameraView = previewView,
+            cameraView = {
+                AndroidView(
+                    factory = { previewView },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            },
             showDialog = showDialog,
             isFetching = isFetching,
             product = product,
             onAddClicked = {
-                product?.let { viewModel.addProduct(it) }
+                product?.let {
+                    viewModel.addProduct(
+                        Product(
+                            name = it.name,
+                            nutrition = it.nutrition ?: Nutrition.entries.associateWith { 0f },
+                        )
+                    )
+                }
                 product = null
                 showDialog = false
                 recognizedCount++
@@ -192,7 +228,7 @@ private fun ProductPopup(
 
 @Composable
 private fun CameraView(
-    cameraView: PreviewView,
+    cameraView: @Composable () -> Unit,
     showDialog: Boolean,
     isFetching: Boolean,
     product: Product?,
@@ -209,10 +245,7 @@ private fun CameraView(
                     .fillMaxSize()
                     .weight(1f)
             ) {
-                AndroidView(
-                    factory = { cameraView },
-                    modifier = Modifier.fillMaxSize(),
-                )
+                cameraView()
             }
             DescriptionText("카메라로 바코드를 인식하세요")
         }
@@ -240,10 +273,8 @@ fun PreviewCameraView() {
     BabbogiTheme {
         Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
             Box(modifier = Modifier.padding(it)) {
-                val context = LocalContext.current
-
                 CameraView(
-                    cameraView = remember {  PreviewView(context) },
+                    cameraView = {},
                     showDialog = true,
                     isFetching = false,
                     product = getRandomTestProduct(true),
