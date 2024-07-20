@@ -33,7 +33,7 @@ fun LoadingScreen(
 }
 
 @Composable
-fun Loading() {
+private fun Loading() {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId = R.raw.loading))
 
     Box(

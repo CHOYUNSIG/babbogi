@@ -83,7 +83,7 @@ fun FoodSearchScreen(
 }
 
 @Composable
-fun FoodSearch(
+private fun FoodSearch(
     searchResult: List<ServerSearchResultFormat>,
     onSearchWordSubmitted: (String, onEnded: () -> Unit) -> Unit,
     onWordSelected: (String, onEnded: () -> Unit) -> Unit,

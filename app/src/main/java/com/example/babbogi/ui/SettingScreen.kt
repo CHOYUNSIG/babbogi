@@ -87,7 +87,7 @@ fun SettingScreen(
 }
 
 @Composable
-fun Setting(
+private fun Setting(
     healthState: HealthState?,
     recommendation: NutritionRecommendation,
     notificationState: Boolean,

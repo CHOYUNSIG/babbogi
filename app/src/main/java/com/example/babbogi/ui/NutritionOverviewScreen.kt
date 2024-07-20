@@ -72,7 +72,7 @@ fun NutritionOverviewScreen(
 }
 
 @Composable
-fun CircularGraphCard(
+private fun CircularGraphCard(
     nutrition: Nutrition,
     recommendation: Float,
     intake: Float,
@@ -130,7 +130,7 @@ fun CircularGraphCard(
 }
 
 @Composable
-fun NutritionOverview(
+private fun NutritionOverview(
     recommendation: NutritionRecommendation,
     intake: NutritionIntake?,
 ) {

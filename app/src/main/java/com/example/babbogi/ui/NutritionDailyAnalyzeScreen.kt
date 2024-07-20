@@ -121,7 +121,7 @@ fun NutritionDailyAnalyzeScreen(
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NutritionDailyAnalyze(
+private fun NutritionDailyAnalyze(
     today: LocalDate,
     recommendation: NutritionRecommendation,
     intake: NutritionIntake?,
@@ -180,7 +180,7 @@ fun NutritionDailyAnalyze(
 }
 
 @Composable
-fun MealList(foodList: List<Triple<Product, LocalDateTime, Int>>?) {
+private fun MealList(foodList: List<Triple<Product, LocalDateTime, Int>>?) {
     ElevatedCardWithDefault {
         ColumnWithDefault {
             Row(modifier = Modifier.fillMaxWidth()) {

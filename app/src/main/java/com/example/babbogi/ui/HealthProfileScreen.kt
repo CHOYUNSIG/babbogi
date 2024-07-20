@@ -83,7 +83,7 @@ fun HealthProfileScreen(
 }
 
 @Composable
-fun Selector(
+private fun Selector(
     options: List<String>,
     index: Int?,
     onChange: (index: Int) -> Unit
@@ -124,7 +124,7 @@ fun Selector(
 }
 
 @Composable
-fun HealthProfile(
+private fun HealthProfile(
     healthState: HealthState?,
     onModifyClicked: (HealthState) -> Unit,
 ) {
@@ -202,6 +202,7 @@ fun HealthProfile(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable

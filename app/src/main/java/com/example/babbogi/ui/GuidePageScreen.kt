@@ -80,7 +80,7 @@ fun GuidePageScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CustomSlider(
+private fun CustomSlider(
     modifier: Modifier = Modifier,
     sliderList: List<Int>, // Change to List<Int> for drawable resources
     backwardIcon: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
@@ -154,13 +154,14 @@ fun CustomSlider(
 }
 
 @Composable
-fun GuidePage(
+private fun GuidePage(
     list: List<Int>,
     onComplete: () -> Unit,
 ) {
     CustomSlider(sliderList = list, onComplete = onComplete)
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable

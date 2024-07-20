@@ -124,7 +124,7 @@ fun NutritionPeriodAnalyzeScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun NutritionCheckBox(onSelected: (Nutrition) -> Unit) {
+private fun NutritionCheckBox(onSelected: (Nutrition) -> Unit) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         modifier = Modifier.fillMaxWidth()
@@ -141,7 +141,7 @@ fun NutritionCheckBox(onSelected: (Nutrition) -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NutritionPeriodAnalyze(
+private fun NutritionPeriodAnalyze(
     period: List<LocalDate>,
     recommendation: NutritionRecommendation,
     intakes: Map<LocalDate, NutritionIntake>?,
