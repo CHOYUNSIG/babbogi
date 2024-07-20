@@ -106,7 +106,7 @@ fun PreviewGptAnalyzeReport() {
 
     GptAnalyzeReport(
         title = "레포트 제목",
-        report = null,
+        report = report,
         onNewReportRequested = {},
     )
 }

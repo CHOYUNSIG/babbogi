@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
@@ -66,26 +65,6 @@ fun CustomPopup(
     }
 }
 
-@Preview
-@Composable
-fun PreviewCustomPopup() {
-    CustomPopup(
-        callbacks = listOf(
-            {},
-            {},
-        ),
-        labels = listOf(
-            "예",
-            "아니오"
-        ),
-        onDismiss = {},
-        // icon = R.drawable.baseline_search_24,
-        title = "다음 상품을 추가하시겠습니까?"
-    ) {
-        Text("깍두기")
-    }
-}
-
 @Composable
 fun ListModificationPopup(
     defaultTexts: List<String>,
@@ -127,6 +106,20 @@ fun ListModificationPopup(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewCustomPopup() {
+    CustomPopup(
+        callbacks = listOf({}, {}),
+        labels = listOf("예", "아니오"),
+        onDismiss = {},
+        // icon = R.drawable.baseline_search_24,
+        title = "다음 상품을 추가하시겠습니까?"
+    ) {
+        Text("깍두기")
     }
 }
 

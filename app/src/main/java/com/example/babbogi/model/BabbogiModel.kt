@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import com.example.babbogi.util.HealthState
-import com.example.babbogi.util.Nutrition
+import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.Product
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -51,7 +51,7 @@ object BabbogiModel {
             Log.d("DataPreference", "Health State is saved.")
         }
 
-    var nutritionRecommendation: Map<Nutrition, Float>?
+    var nutritionRecommendation: NutritionMap<Float>?
         get() = sharedPreferences.getString("nutrition_recommendation", null).let { if (it != null) Json.decodeFromString(it) else null }
         set(nutritionRecommendation) {
             if (nutritionRecommendation == null) return
