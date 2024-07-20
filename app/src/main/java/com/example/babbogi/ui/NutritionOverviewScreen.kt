@@ -20,7 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,7 +45,7 @@ import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
-import com.example.babbogi.util.testNutritionIntake
+import com.example.babbogi.util.getRandomNutritionIntake
 import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.toNutritionIntake
 import kotlin.math.roundToInt
@@ -149,6 +148,7 @@ fun NutritionOverview(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
@@ -158,7 +158,7 @@ fun PreviewNutritionOverview() {
             Box(modifier = Modifier.padding(it)) {
                 NutritionOverview(
                     recommendation = testNutritionRecommendation,
-                    intake = testNutritionIntake,
+                    intake = getRandomNutritionIntake(),
                 )
             }
         }

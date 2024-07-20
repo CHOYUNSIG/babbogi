@@ -28,8 +28,8 @@ import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
+import com.example.babbogi.util.getRandomNutritionIntake
 import com.example.babbogi.util.testHealthState
-import com.example.babbogi.util.testNutritionIntake
 import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.testProduct1
 import com.example.babbogi.util.testProduct2
@@ -213,7 +213,7 @@ fun ProductAbstraction(
 fun PreviewNutritionAbstraction() {
     NutritionAbstraction(
         recommendation = testNutritionRecommendation,
-        intake = testNutritionIntake,
+        intake = getRandomNutritionIntake(),
     ) {}
 }
 

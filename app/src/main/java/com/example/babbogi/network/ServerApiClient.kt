@@ -108,11 +108,11 @@ object ServerApi {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getProductList(id: Long, date: LocalDate): List<Pair<Product, Int>> {
+    suspend fun getProductList(id: Long, date: LocalDate): List<Triple<Product, LocalDateTime, Int>> {
         Log.d("ServerApi", "getProductList($id, $date)")
         return retrofitService.getConsumeList(id, date.toString())
             .filter{ it.foodName != null }
-            .map { it.toProduct() to it.foodCount }
+            .map { Triple(it.toProduct(), LocalDateTime.parse(it.date), it.foodCount) }
     }
 
     suspend fun getHealthState(id: Long): HealthState {

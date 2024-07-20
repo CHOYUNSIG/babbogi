@@ -55,11 +55,12 @@ import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
-import com.example.babbogi.util.testNutritionIntake
+import com.example.babbogi.util.getRandomNutritionIntake
 import com.example.babbogi.util.testNutritionRecommendation
-import com.example.babbogi.util.testProductList
+import com.example.babbogi.util.testProductTripleList
 import com.example.babbogi.util.toNutritionIntake
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -68,7 +69,7 @@ fun NutritionDailyAnalyzeScreen(
     navController: NavController,
     showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
 ) {
-    var foodList by remember { mutableStateOf<List<Pair<Product, Int>>?>(null) }
+    var foodList by remember { mutableStateOf<List<Triple<Product, LocalDateTime, Int>>?>(null) }
     var intake by remember { mutableStateOf<NutritionIntake?>(null) }
     var report by remember { mutableStateOf<String?>(null) }
 
@@ -124,7 +125,7 @@ fun NutritionDailyAnalyze(
     today: LocalDate,
     recommendation: NutritionRecommendation,
     intake: NutritionIntake?,
-    foodList: List<Pair<Product, Int>>?,
+    foodList: List<Triple<Product, LocalDateTime, Int>>?,
     report: String?,
     onNutritionCardClicked: () -> Unit,
     onDateChanged: (LocalDate) -> Unit,
@@ -179,7 +180,7 @@ fun NutritionDailyAnalyze(
 }
 
 @Composable
-fun MealList(foodList: List<Pair<Product, Int>>?) {
+fun MealList(foodList: List<Triple<Product, LocalDateTime, Int>>?) {
     ElevatedCardWithDefault {
         ColumnWithDefault {
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -214,7 +215,7 @@ fun MealList(foodList: List<Pair<Product, Int>>?) {
                 items(foodList.size) { index ->
                     ProductAbstraction(
                         product = foodList[index].first,
-                        amount = foodList[index].second
+                        amount = foodList[index].third
                     )
                 }
             }
@@ -233,8 +234,8 @@ fun PreviewNutritionDailyAnalyze() {
                 NutritionDailyAnalyze(
                     today = LocalDate.now(),
                     recommendation = testNutritionRecommendation,
-                    intake = testNutritionIntake,
-                    foodList = testProductList,
+                    intake = getRandomNutritionIntake(),
+                    foodList = testProductTripleList,
                     report = null,
                     onDateChanged = {},
                     onNutritionCardClicked = {},

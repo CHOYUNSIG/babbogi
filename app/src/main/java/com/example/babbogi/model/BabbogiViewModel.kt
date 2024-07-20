@@ -2,10 +2,7 @@ package com.example.babbogi.model
 
 import android.os.Build
 import android.util.Log
-import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
-import androidx.camera.core.ExperimentalGetImage
-import androidx.camera.view.LifecycleCameraController
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -18,21 +15,9 @@ import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.concurrent.ExecutorService
-
-private val barcodeRecognizer = BarcodeScanning.getClient(
-    BarcodeScannerOptions.Builder()
-        .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
-        .enableAllPotentialBarcodes()
-        .build()
-)
 
 class BabbogiViewModel: ViewModel() {
     private val _nutritionRecommendation = mutableStateOf(BabbogiModel.nutritionRecommendation ?: Nutrition.entries.associateWith { it.defaultRecommend })
@@ -44,7 +29,7 @@ class BabbogiViewModel: ViewModel() {
     private val _today = mutableStateOf(LocalDate.now())
     private val _periodReport = mutableStateOf<Pair<List<LocalDate>, String?>?>(null)
     private val _weightHistory = mutableStateOf<List<Pair<LocalDateTime, Float>>?>(null)
-    private val foodLists = mutableStateMapOf<LocalDate, List<Pair<Product, Int>>>()
+    private val foodLists = mutableStateMapOf<LocalDate, List<Triple<Product, LocalDateTime, Int>>>()
     private val dailyReport = mutableStateMapOf<LocalDate, String>()
 
     var productList: List<Pair<Product, Int>>
@@ -98,56 +83,6 @@ class BabbogiViewModel: ViewModel() {
         get() = _periodReport.value
         private set(periodReport) { _periodReport.value = periodReport }
 
-    // 카메라를 이용해 상품 정보를 가져오기 시작함
-    @OptIn(ExperimentalGetImage::class)
-    fun startCameraRoutine(
-        cameraController: LifecycleCameraController,
-        executor: ExecutorService,
-        onBarcodeRecognized: (barcode: String) -> Unit,
-        onProductFetched: (product: Product?) -> Unit,
-    ) {
-        var isFetching = false
-        cameraController.setImageAnalysisAnalyzer(executor) analyzing@ { imageProxy ->
-            val image = imageProxy.image
-            if (isFetching || image == null) {
-                imageProxy.close()
-                return@analyzing
-            }
-            isFetching = true
-            barcodeRecognizer.process(
-                InputImage.fromMediaImage(image, imageProxy.imageInfo.rotationDegrees)
-            ).addOnCompleteListener { task ->
-                viewModelScope.launch {
-                    var success: Boolean? = null
-                    var product: Product? = null
-                    try {
-                        val barcode = task.result.firstOrNull { raw -> raw.rawValue?.isNotEmpty() ?: false }?.rawValue ?: return@launch
-                        onBarcodeRecognized(barcode)
-                        success = false
-                        val productName = BarcodeApi.getProducts(barcode).firstOrNull()?.name ?: return@launch
-                        product = Product(
-                            productName,
-                            NutritionApi.getNutrition(productName).firstOrNull(),
-                        )
-                        success = true
-                    }
-                    catch (e: Exception) {
-                        e.printStackTrace()
-                        Log.d("ViewModel", "Cannot get product info")
-                    }
-                    finally {
-                        if (success != null) {
-                            onProductFetched(product)
-                            cameraController.clearImageAnalysisAnalyzer()
-                        }
-                        isFetching = false
-                        imageProxy.close()
-                    }
-                }
-            }
-        }
-    }
-
     // 제품을 리스트에 추가
     fun addProduct(product: Product = Product(name = "", Nutrition.entries.associateWith { 0f })) {
         productList = productList.plus(product to 1)
@@ -165,6 +100,27 @@ class BabbogiViewModel: ViewModel() {
     // 리스트에서 제품 삭제
     fun deleteProduct(index: Int) {
         productList = productList.filterIndexed { i, _ -> i != index }
+    }
+
+    // 공공데이터 API로 상품 검색
+    fun getProductByBarcode(barcode: String, onFetchingEnded: (Product?) -> Unit) {
+        viewModelScope.launch {
+            var product: Product? = null
+            try {
+                val productName = BarcodeApi.getProducts(barcode).firstOrNull()?.name ?: return@launch
+                product = Product(
+                    productName,
+                    NutritionApi.getNutrition(productName).firstOrNull(),
+                )
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot get product by barcode.")
+            }
+            finally {
+                onFetchingEnded(product)
+            }
+        }
     }
 
     // 섭취 리스트 서버 전송
@@ -197,10 +153,10 @@ class BabbogiViewModel: ViewModel() {
         startDate: LocalDate,
         endDate: LocalDate = startDate,
         refresh: Boolean = false,
-        onFetchingEnded: (foodLists: Map<LocalDate, List<Pair<Product, Int>>>?) -> Unit
+        onFetchingEnded: (foodLists: Map<LocalDate, List<Triple<Product, LocalDateTime, Int>>>?) -> Unit
     ) {
         viewModelScope.launch {
-            var result: MutableMap<LocalDate, List<Pair<Product, Int>>>? = mutableMapOf()
+            var result: MutableMap<LocalDate, List<Triple<Product, LocalDateTime, Int>>>? = mutableMapOf()
             try {
                 var date = startDate
                 while (date <= endDate) {

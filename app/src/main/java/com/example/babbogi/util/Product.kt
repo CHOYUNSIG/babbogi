@@ -1,6 +1,9 @@
 package com.example.babbogi.util
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
 import kotlin.random.Random
 import kotlin.random.nextUInt
 
@@ -12,9 +15,9 @@ data class Product(
     val nutrition: NutritionMap<Float>?
 )
 
-fun List<Pair<Product, Int>>.toNutritionIntake(): NutritionIntake = Nutrition.entries.associateWith { nutrition ->
+fun List<Triple<Product, LocalDateTime, Int>>.toNutritionIntake(): NutritionIntake = Nutrition.entries.associateWith { nutrition ->
     this.sumOf {
-        ((it.first.nutrition?.get(nutrition) ?: 0f) * it.second).toDouble()
+        ((it.first.nutrition?.get(nutrition) ?: 0f) * it.third).toDouble()
     }.toFloat()
 }
 
@@ -74,7 +77,11 @@ fun getRandomTestProduct(includeNull: Boolean = false) = listOf(testProduct1, te
     .plus(if (includeNull) listOf(testProductNull) else emptyList())
     .random()
 
-val testProductList: List<Pair<Product, Int>> = emptyList<Pair<Product, Int>>().toMutableList().also {
-    repeat(10) { _ -> it.add(
-        getRandomTestProduct() to Random.nextUInt().mod(5u).toInt() + 1) }
-}.toList()
+val testProductPairList: List<Pair<Product, Int>> = List(10) {
+    getRandomTestProduct() to Random.nextUInt().mod(5u).toInt() + 1
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+val testProductTripleList: List<Triple<Product, LocalDateTime, Int>> = List(10) {
+    Triple(getRandomTestProduct(), LocalDateTime.now(), Random.nextUInt().mod(5u).toInt())
+}
