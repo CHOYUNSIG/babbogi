@@ -51,7 +51,7 @@ import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
-import com.example.babbogi.util.testProductList
+import com.example.babbogi.util.testProductPairList
 import com.example.babbogi.util.toFloat2
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -87,10 +87,6 @@ fun FoodListScreen(
             showSnackBar("음식이 제거되었습니다.", "확인", SnackbarDuration.Short)
         },
         onSubmitClicked = lambda@ {
-            if (viewModel.productList.isEmpty()) {
-                showSnackBar("음식을 1개 이상 추가해주세요.", "확인", SnackbarDuration.Short)
-                return@lambda
-            }
             navController.navigate(Screen.Loading.name)
             viewModel.sendList { success ->
                 if (success) navController.navigate(Screen.NutritionDailyAnalyze.name) {
@@ -207,14 +203,24 @@ private fun OptionDialog(
     onSearchClicked: () -> Unit,
     onCameraClicked: () -> Unit,
 ) {
-    val callbacks = listOf(onAddByHandClicked, onSearchClicked, onCameraClicked, onDismissRequest)
-    val texts = listOf("수동 입력", "음식 검색", "바코드 스캔", "취소")
-    val icons = listOf(
+    val callbacks by remember { mutableStateOf(listOf(
+        onAddByHandClicked,
+        onSearchClicked,
+        onCameraClicked,
+        onDismissRequest,
+    )) }
+    val texts by remember { mutableStateOf(listOf(
+        "수동 입력",
+        "음식 검색",
+        "바코드 스캔",
+        "취소",
+    )) }
+    val icons by remember { mutableStateOf(listOf(
         R.drawable.baseline_edit_24,
         R.drawable.baseline_search_24,
         R.drawable.baseline_photo_camera_24,
         R.drawable.baseline_arrow_back_24,
-    )
+    )) }
 
     Dialog(onDismissRequest = onDismissRequest) {
         Box(
@@ -261,6 +267,7 @@ private fun FoodList(
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
     var showAddOption by remember { mutableStateOf(false) }
     var showConfirmSubmitPopup by remember { mutableStateOf(false) }
+    var showNoFoodPopup by remember { mutableStateOf(false) }
     var isAddingByHand by remember { mutableStateOf(false) }
 
     if (index != null) selectedIndex = index
@@ -316,7 +323,7 @@ private fun FoodList(
                     if (productList.isNotEmpty())
                         showConfirmSubmitPopup = true
                     else
-                        onSubmitClicked()
+                        showNoFoodPopup = true
                 },
                 icon = R.drawable.baseline_send_24
             )
@@ -366,6 +373,16 @@ private fun FoodList(
             }
         }
     }
+
+    if (showNoFoodPopup) CustomPopup(
+        callbacks = listOf { showNoFoodPopup = false },
+        labels = listOf("확인"),
+        onDismiss = { showNoFoodPopup = false },
+        title = "보낼 음식 없음",
+        icon = R.drawable.baseline_cancel_24,
+    ) {
+        Text(text = "음식을 1개 이상 추가하세요.")
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -377,7 +394,7 @@ fun PreviewFoodList() {
         Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
             Box(modifier = Modifier.padding(it)) {
                 FoodList(
-                    productList = testProductList,
+                    productList = testProductPairList,
                     index = null,
                     onAmountChanged = { _, _ -> },
                     onAddByHandConfirmed = {},
