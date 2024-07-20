@@ -68,8 +68,8 @@ data class ServerNutritionFormat(
 
 @Serializable
 data class ServerConsumeFormat(
-    val id: Long,  // 필요 없음
-    val userId: Long,  // 필요 없음
+    val id: Long,
+    val userId: Long,
     val foodName: String?,
     val foodCount: Int,
     val kcal: Double?,
