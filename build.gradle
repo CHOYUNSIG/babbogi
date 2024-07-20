@@ -1,7 +1,32 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     id 'com.android.application' version '8.5.1' apply false
     id 'com.android.library' version '8.5.1' apply false
     id 'org.jetbrains.kotlin.android' version '1.9.23' apply false
-    id 'com.google.gms.google-services' version '4.4.1' apply false
+    id 'com.google.gms.google-services' version '4.4.2' apply false
+}
+
+subprojects {
+    tasks.withType(KotlinCompile).configureEach { task ->
+        task.kotlinOptions {
+            if (project.findProperty("composeCompilerReports") == "true") {
+                freeCompilerArgs += [
+                        "-P",
+                        "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + project.layout.buildDirectory.get().asFile + "/compose_compiler"
+                ]
+            }
+            if (project.findProperty("composeCompilerMetrics") == "true") {
+                freeCompilerArgs += [
+                        "-P",
+                        "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" + project.layout.buildDirectory.get().asFile + "/compose_compiler"
+                ]
+            }
+            freeCompilerArgs += [
+                    "-P",
+                    "plugin:androidx.compose.compiler.plugins.kotlin:stabilityConfigurationPath=" + project.projectDir + "/compose_compiler_config.conf"
+            ]
+        }
+    }
 }
