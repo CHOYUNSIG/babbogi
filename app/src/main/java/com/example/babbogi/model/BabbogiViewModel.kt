@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.babbogi.network.BarcodeApi
 import com.example.babbogi.network.NutritionApi
 import com.example.babbogi.network.ServerApi
+import com.example.babbogi.util.Consumption
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionRecommendation
@@ -29,7 +30,7 @@ class BabbogiViewModel: ViewModel() {
     private val _today = mutableStateOf(LocalDate.now())
     private val _periodReport = mutableStateOf<Pair<List<LocalDate>, String?>?>(null)
     private val _weightHistory = mutableStateOf<List<Pair<LocalDateTime, Float>>?>(null)
-    private val foodLists = mutableStateMapOf<LocalDate, List<Triple<Product, LocalDateTime, Int>>>()
+    private val foodLists = mutableStateMapOf<LocalDate, List<Consumption>>()
     private val dailyReport = mutableStateMapOf<LocalDate, String>()
 
     var productList: List<Pair<Product, Int>>
@@ -153,10 +154,10 @@ class BabbogiViewModel: ViewModel() {
         startDate: LocalDate,
         endDate: LocalDate = startDate,
         refresh: Boolean = false,
-        onFetchingEnded: (foodLists: Map<LocalDate, List<Triple<Product, LocalDateTime, Int>>>?) -> Unit
+        onFetchingEnded: (foodLists: Map<LocalDate, List<Consumption>>?) -> Unit
     ) {
         viewModelScope.launch {
-            var result: MutableMap<LocalDate, List<Triple<Product, LocalDateTime, Int>>>? = mutableMapOf()
+            var result: MutableMap<LocalDate, List<Consumption>>? = mutableMapOf()
             try {
                 var date = startDate
                 while (date <= endDate) {
@@ -248,7 +249,7 @@ class BabbogiViewModel: ViewModel() {
         viewModelScope.launch {
             var result: List<SearchResult>? = null
             try {
-                result = ServerApi.getSearchResult(word)
+                result = ServerApi.getSearchResult(word).sortedBy { it.name }
             }
             catch (e: Exception) {
                 e.printStackTrace()

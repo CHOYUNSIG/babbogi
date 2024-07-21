@@ -15,6 +15,7 @@ data class Product(
     val nutrition: NutritionMap<Float>?
 )
 
+
 fun List<Triple<Product, LocalDateTime, Int>>.toNutritionIntake(): NutritionIntake = Nutrition.entries.associateWith { nutrition ->
     this.sumOf {
         ((it.first.nutrition?.get(nutrition) ?: 0f) * it.third).toDouble()
@@ -79,9 +80,4 @@ fun getRandomTestProduct(includeNull: Boolean = false) = listOf(testProduct1, te
 
 val testProductPairList: List<Pair<Product, Int>> = List(10) {
     getRandomTestProduct() to Random.nextUInt().mod(5u).toInt() + 1
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-val testProductTripleList: List<Triple<Product, LocalDateTime, Int>> = List(10) {
-    Triple(getRandomTestProduct(), LocalDateTime.now(), Random.nextUInt().mod(5u).toInt())
 }

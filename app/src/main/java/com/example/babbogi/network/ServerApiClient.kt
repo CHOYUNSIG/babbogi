@@ -11,6 +11,7 @@ import com.example.babbogi.network.response.ServerSearchResultFormat
 import com.example.babbogi.network.response.ServerUserStateFormat
 import com.example.babbogi.network.response.toServerNutritionFormat
 import com.example.babbogi.network.response.toServerUserStateFormat
+import com.example.babbogi.util.Consumption
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.NutritionRecommendation
@@ -109,11 +110,21 @@ object ServerApi {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getProductList(id: Long, date: LocalDate): List<Triple<Product, LocalDateTime, Int>> {
+    suspend fun getProductList(id: Long, date: LocalDate): List<Consumption> {
         Log.d("ServerApi", "getProductList($id, $date)")
         return retrofitService.getConsumeList(id, date.toString())
             .filter{ it.foodName != null }
-            .map { Triple(it.toProduct(), LocalDateTime.parse(it.date), it.foodCount) }
+            .map {
+                Consumption(
+                    id = it.id,
+                    product = Product(
+                        name = it.foodName!!,
+                        nutrition = it.toMap(),
+                    ),
+                    amount = it.foodCount,
+                    time = LocalDateTime.parse(it.date)
+                )
+            }
     }
 
     suspend fun getHealthState(id: Long): HealthState {

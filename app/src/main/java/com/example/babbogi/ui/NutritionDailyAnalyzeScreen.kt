@@ -52,15 +52,14 @@ import com.example.babbogi.ui.view.NutritionAbstraction
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.util.Consumption
 import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
-import com.example.babbogi.util.Product
 import com.example.babbogi.util.getRandomNutritionIntake
+import com.example.babbogi.util.testConsumptionList
 import com.example.babbogi.util.testNutritionRecommendation
-import com.example.babbogi.util.testProductTripleList
 import com.example.babbogi.util.toNutritionIntake
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -69,7 +68,7 @@ fun NutritionDailyAnalyzeScreen(
     navController: NavController,
     showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
 ) {
-    var foodList by remember { mutableStateOf<List<Triple<Product, LocalDateTime, Int>>?>(null) }
+    var foodList by remember { mutableStateOf<List<Consumption>?>(null) }
     var intake by remember { mutableStateOf<NutritionIntake?>(null) }
     var report by remember { mutableStateOf<String?>(null) }
 
@@ -125,7 +124,7 @@ private fun NutritionDailyAnalyze(
     today: LocalDate,
     recommendation: NutritionRecommendation,
     intake: NutritionIntake?,
-    foodList: List<Triple<Product, LocalDateTime, Int>>?,
+    foodList: List<Consumption>?,
     report: String?,
     onNutritionCardClicked: () -> Unit,
     onDateChanged: (LocalDate) -> Unit,
@@ -182,7 +181,7 @@ private fun NutritionDailyAnalyze(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun MealList(foodList: List<Triple<Product, LocalDateTime, Int>>?) {
+private fun MealList(foodList: List<Consumption>?) {
     ElevatedCardWithDefault {
         ColumnWithDefault {
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -216,14 +215,14 @@ private fun MealList(foodList: List<Triple<Product, LocalDateTime, Int>>?) {
             ) {
                 items(foodList.size) { index ->
                     ProductAbstraction(
-                        product = foodList[index].first,
-                        amount = foodList[index].third
+                        product = foodList[index].product,
+                        amount = foodList[index].amount
                     ) {
                         DescriptionText(
-                            text = "${if (foodList[index].second.hour < 12) "오전" else "오후"} %02d:%02d"
+                            text = "${if (foodList[index].time.hour < 12) "오전" else "오후"} %02d:%02d"
                                 .format(
-                                    (foodList[index].second.hour + 11) % 12 + 1,
-                                    foodList[index].second.minute
+                                    (foodList[index].time.hour + 11) % 12 + 1,
+                                    foodList[index].time.minute
                                 )
                         )
                     }
@@ -245,7 +244,7 @@ fun PreviewNutritionDailyAnalyze() {
                     today = LocalDate.now(),
                     recommendation = testNutritionRecommendation,
                     intake = getRandomNutritionIntake(),
-                    foodList = testProductTripleList,
+                    foodList = testConsumptionList,
                     report = null,
                     onDateChanged = {},
                     onNutritionCardClicked = {},

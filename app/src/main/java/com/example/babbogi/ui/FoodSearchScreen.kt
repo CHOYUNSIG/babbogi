@@ -4,6 +4,7 @@ import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -116,21 +117,13 @@ private fun FoodSearch(
                 LazyColumn(modifier = Modifier.wrapContentHeight()) {
                     items(count = searchResult.size) { index ->
                         Column(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(8.dp).clickable {
+                                selectedWord = searchResult[index].name
+                                showConfirmingPopup = true
+                            },
                             verticalArrangement = Arrangement.spacedBy(5.dp)
                         ) {
-                            ClickableText(
-                                text = AnnotatedString(searchResult[index].name),
-                                onClick = { _ ->
-                                    selectedWord = searchResult[index].name; showConfirmingPopup =
-                                    true
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                )
-                            )
+                            Text(text = AnnotatedString(searchResult[index].name), fontSize = 16.sp)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween,
