@@ -62,13 +62,6 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 
-private val barcodeRecognizer = BarcodeScanning.getClient(
-    BarcodeScannerOptions.Builder()
-        .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
-        .enableAllPotentialBarcodes()
-        .build()
-)
-
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CameraViewScreen(
@@ -90,6 +83,14 @@ fun CameraViewScreen(
         var recognizedCount by remember { mutableStateOf(0) }
 
         // 카메라 사용 설정
+        val barcodeRecognizer = remember {
+            BarcodeScanning.getClient(
+                BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+                    .enableAllPotentialBarcodes()
+                    .build()
+            )
+        }
         val context = LocalContext.current
         val lifecycleOwner = LocalLifecycleOwner.current
         val previewView = remember { PreviewView(context) }
@@ -162,7 +163,6 @@ fun CameraViewScreen(
     }
 }
 
-@Preview
 @Composable
 private fun CameraPermissionDenied() {
     Box(
