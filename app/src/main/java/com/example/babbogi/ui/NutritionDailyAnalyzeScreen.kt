@@ -180,6 +180,7 @@ private fun NutritionDailyAnalyze(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun MealList(foodList: List<Triple<Product, LocalDateTime, Int>>?) {
     ElevatedCardWithDefault {
@@ -217,7 +218,15 @@ private fun MealList(foodList: List<Triple<Product, LocalDateTime, Int>>?) {
                     ProductAbstraction(
                         product = foodList[index].first,
                         amount = foodList[index].third
-                    )
+                    ) {
+                        DescriptionText(
+                            text = "${if (foodList[index].second.hour < 12) "오전" else "오후"} %02d:%02d"
+                                .format(
+                                    (foodList[index].second.hour + 11) % 12 + 1,
+                                    foodList[index].second.minute
+                                )
+                        )
+                    }
                 }
             }
         }
