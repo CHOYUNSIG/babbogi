@@ -7,7 +7,6 @@ import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.SearchResult
-import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
 @Serializable
