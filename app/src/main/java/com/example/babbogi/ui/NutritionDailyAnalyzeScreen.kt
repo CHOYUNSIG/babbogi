@@ -153,7 +153,7 @@ private fun NutritionDailyAnalyze(
                 ElevatedCardWithDefault {
                     ColumnWithDefault {
                         DateSelector(
-                            today = today,
+                            initDate = today,
                             onDateChanged = onDateChanged,
                         )
                     }
@@ -165,6 +165,7 @@ private fun NutritionDailyAnalyze(
                 )
                 GptAnalyzeReport(
                     title = "일일 레포트",
+                    date = today,
                     report = report,
                     onNewReportRequested = onNewReportRequested,
                 )

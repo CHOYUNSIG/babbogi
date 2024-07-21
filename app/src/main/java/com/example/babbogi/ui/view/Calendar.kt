@@ -39,11 +39,14 @@ private val dayWidth = 32.dp
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Calendar(initDate: LocalDate = LocalDate.now(), onSubmit: (date: LocalDate) -> Unit) {
+fun Calendar(
+    initDate: LocalDate = LocalDate.now(),
+    allowFuture: Boolean = false,
+    onSubmit: (date: LocalDate) -> Unit
+) {
     var today by remember { mutableStateOf(initDate) }
 
     ElevatedCardWithDefault {
-        var day = -(today.minusDays((today.dayOfMonth).toLong()).dayOfWeek.value % 7)
         ColumnWithDefault {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -92,17 +95,23 @@ fun Calendar(initDate: LocalDate = LocalDate.now(), onSubmit: (date: LocalDate) 
                             ) { Text(text = "일월화수목금토"[it].toString()) }
                         }
                     }
+                    var day = today.withDayOfMonth(1).let {
+                        it.minusDays(it.dayOfWeek.value.toLong())
+                    }
                     repeat(6) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             repeat(7) {
-                                val now = day
-                                CalendarDay(day = if (0 < day && day <= today.lengthOfMonth()) day else null,
-                                    isSelected = day == today.dayOfMonth,
-                                    onClick = { today = today.withDayOfMonth(now) })
-                                day++
+                                val now = day.plusDays(0)
+                                CalendarDay(
+                                    day = if (day.month == today.month) day.dayOfMonth else null,
+                                    isSelected = day == today,
+                                    enable = allowFuture || day <= LocalDate.now(),
+                                    onClick = { today = now }
+                                )
+                                day = day.plusDays(1)
                             }
                         }
                     }
@@ -122,7 +131,12 @@ fun Calendar(initDate: LocalDate = LocalDate.now(), onSubmit: (date: LocalDate) 
 }
 
 @Composable
-private fun CalendarDay(day: Int? = null, isSelected: Boolean = false, onClick: () -> Unit = {}) {
+private fun CalendarDay(
+    day: Int? = null,
+    isSelected: Boolean = false,
+    enable: Boolean = true,
+    onClick: () -> Unit = {}
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -131,6 +145,7 @@ private fun CalendarDay(day: Int? = null, isSelected: Boolean = false, onClick: 
         if (day != null) {
             Button(
                 onClick = onClick,
+                enabled = enable,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isSelected) Color.Black.copy(alpha = 0.1f)
                     else Color.Transparent,
@@ -148,9 +163,11 @@ private fun CalendarDay(day: Int? = null, isSelected: Boolean = false, onClick: 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DateSelector(
-    today: LocalDate,
+    initDate: LocalDate = LocalDate.now(),
+    allowFuture: Boolean = false,
     onDateChanged: (LocalDate) -> Unit
 ) {
+    var today by remember { mutableStateOf(initDate) }
     var showCalendar by remember { mutableStateOf(false) }
 
     Row(
@@ -158,7 +175,12 @@ fun DateSelector(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { onDateChanged(today.minusDays(1)) }) {
+        IconButton(
+            onClick = {
+                today = today.minusDays(1)
+                onDateChanged(today)
+            }
+        ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_chevron_left_24),
                 contentDescription = "하루 전",
@@ -182,7 +204,15 @@ fun DateSelector(
                 )
             }
         }
-        IconButton(onClick = { onDateChanged(today.plusDays(1)) }) {
+        IconButton(
+            onClick = {
+                if (allowFuture || today.toEpochDay() < LocalDate.now().toEpochDay()) {
+                    today = today.plusDays(1)
+                    onDateChanged(today)
+                }
+            },
+            enabled = allowFuture || today.toEpochDay() < LocalDate.now().toEpochDay()
+        ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_chevron_right_24),
                 contentDescription = "하루 후"
@@ -191,8 +221,9 @@ fun DateSelector(
     }
 
     if (showCalendar) Dialog(onDismissRequest = { showCalendar = false }) {
-        Calendar(initDate = today) {
+        Calendar(initDate = today, allowFuture = allowFuture) {
             showCalendar = false
+            today = it
             onDateChanged(it)
         }
     }
@@ -209,5 +240,5 @@ fun PreviewCalendar() {
 @Preview
 @Composable
 fun PreviewDateSelector() {
-    DateSelector(today = LocalDate.now(), onDateChanged = {})
+    DateSelector(initDate = LocalDate.now(), onDateChanged = {})
 }

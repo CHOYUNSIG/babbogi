@@ -1,5 +1,7 @@
 package com.example.babbogi.ui.view
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,10 +30,13 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.babbogi.R
+import java.time.LocalDate
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun GptAnalyzeReport(
     title: String,
+    date: LocalDate,
     report: String?,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
 ) {
@@ -66,32 +71,29 @@ fun GptAnalyzeReport(
                         .verticalScroll(rememberScrollState())
                 ) {
                     Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                        if (isLoading) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId = R.raw.send))
+                        if (date == LocalDate.now()) DescriptionText(text = "당일 레포트는 생성할 수 없어요!")
+                        else if (isLoading) Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId = R.raw.send))
 
-                                Box {
-                                    LottieAnimation(
-                                        composition = composition,
-                                        iterations = LottieConstants.IterateForever,
-                                        modifier = Modifier.size(150.dp)
-                                    )
-                                }
-                                DescriptionText(
-                                    text = "레포트를 생성하는 데 10초에서 30초 정도 걸릴 수 있습니다.",
+                            Box {
+                                LottieAnimation(
+                                    composition = composition,
+                                    iterations = LottieConstants.IterateForever,
+                                    modifier = Modifier.size(150.dp)
                                 )
                             }
-                        } else if (report != null) {
-                            Text(text = report)
-                        } else {
-                            FixedColorButton(
-                                onClick = {
-                                    isLoading = true
-                                    onNewReportRequested { isLoading = false }
-                                },
-                                text = "레포트를 생성하려면 클릭하세요"
+                            DescriptionText(
+                                text = "레포트를 생성하는 데 10초에서 30초 정도 걸릴 수 있습니다.",
                             )
                         }
+                        else if (report != null) Text(text = report)
+                        else FixedColorButton(
+                            onClick = {
+                                isLoading = true
+                                onNewReportRequested { isLoading = false }
+                            },
+                            text = "레포트를 생성하려면 클릭하세요"
+                        )
                     }
                 }
             }
@@ -99,6 +101,7 @@ fun GptAnalyzeReport(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun PreviewGptAnalyzeReport() {
@@ -106,6 +109,7 @@ fun PreviewGptAnalyzeReport() {
 
     GptAnalyzeReport(
         title = "레포트 제목",
+        date = LocalDate.now(),
         report = report,
         onNewReportRequested = {},
     )

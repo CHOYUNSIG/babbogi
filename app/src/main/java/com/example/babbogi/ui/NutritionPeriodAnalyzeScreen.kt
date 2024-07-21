@@ -30,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,11 +74,11 @@ fun NutritionPeriodAnalyzeScreen(
         mutableStateOf(
             viewModel.periodReport?.let {
                 listOf(it.first.first(), it.first.last())
-            } ?: listOf(LocalDate.now().minusDays(6), LocalDate.now())
+            } ?: LocalDate.now().let { listOf(it.minusDays(6), it) }
         )
     }
     var intakes by remember { mutableStateOf<Map<LocalDate, NutritionIntake>?>(null) }
-    var report by remember { mutableStateOf<String?>(null) }
+    var report by remember { mutableStateOf(viewModel.periodReport?.second) }
     val getIntakes = remember {
         { endRefresh: (() -> Unit)? ->
             viewModel.getFoodLists(period.first(), period.last()) {
@@ -92,20 +93,15 @@ fun NutritionPeriodAnalyzeScreen(
         }
     }
 
-    LaunchedEffect(true) {
-        viewModel.getPeriodReport(period.first(), period.last(), generate = false) {
-            report = it
-        }
-    }
-
-    LaunchedEffect(period) { getIntakes.invoke(null) }
-
     NutritionPeriodAnalyze(
         period = period,
         recommendation = viewModel.nutritionRecommendation,
         intakes = intakes,
         report = report,
-        onPeriodChanged = { period = it },
+        onPeriodChanged = { newPeriod, onEnded ->
+            period = newPeriod
+            getIntakes.invoke(onEnded)
+        },
         onNewReportRequested = { onLoadingEnded ->
             viewModel.getPeriodReport(period.first(), period.last()) {
                 report = it
@@ -146,7 +142,7 @@ private fun NutritionPeriodAnalyze(
     recommendation: NutritionRecommendation,
     intakes: Map<LocalDate, NutritionIntake>?,
     report: String?,
-    onPeriodChanged: (List<LocalDate>) -> Unit,
+    onPeriodChanged: (List<LocalDate>, onEnded: () -> Unit) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
     onSettingClicked: () -> Unit,
     onRefresh: (endRefresh: () -> Unit) -> Unit
@@ -155,6 +151,7 @@ private fun NutritionPeriodAnalyze(
     var selectedPeriod by remember { mutableStateOf(period) }
     var showLongPeriodAlert by remember { mutableStateOf(false) }
     var showInvalidPeriodAlert by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
 
     if (refreshState.isRefreshing) {
@@ -183,7 +180,7 @@ private fun NutritionPeriodAnalyze(
                                     Spacer(modifier = Modifier.width(16.dp))
                                     Text(text = listOf("시작일", "종료일")[index])
                                     DateSelector(
-                                        today = selectedPeriod[index],
+                                        initDate = selectedPeriod[index],
                                         onDateChanged = {
                                             selectedPeriod = selectedPeriod.mapIndexed { i, date ->
                                                 if (i == index) it else date
@@ -204,8 +201,10 @@ private fun NutritionPeriodAnalyze(
                                         showLongPeriodAlert = true
                                     else if (length < 1)
                                         showInvalidPeriodAlert = true
-                                    else
-                                        onPeriodChanged(selectedPeriod)
+                                    else {
+                                        isLoading = true
+                                        onPeriodChanged(selectedPeriod) { isLoading = false }
+                                    }
                                 },
                                 text = "조회"
                             )
@@ -233,6 +232,7 @@ private fun NutritionPeriodAnalyze(
                 }
                 GptAnalyzeReport(
                     title = "기간 레포트",
+                    date = selectedPeriod.last(),
                     report = report,
                     onNewReportRequested = onNewReportRequested,
                 )
@@ -293,7 +293,7 @@ fun PreviewNutritionPeriodAnalyze() {
                     recommendation = testNutritionRecommendation,
                     intakes = data,
                     report = "이것은 챗지피티가 제작한 일일 영양소 레포트입니다. ".repeat(100),
-                    onPeriodChanged = {},
+                    onPeriodChanged = { _, _ -> },
                     onNewReportRequested = {},
                     onSettingClicked = {},
                     onRefresh = {}
