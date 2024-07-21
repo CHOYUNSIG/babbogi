@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.babbogi.R
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
@@ -74,13 +75,15 @@ fun FoodSearchScreen(
                 return@lambda
             }
             viewModel.getProductByNameSearch(word) {
-                if (it != null) viewModel.addProduct(it)
-                onEnded()
-                showSnackBar(
-                    if (it != null) "음식이 추가되었습니다." else "오류: 음식을 추가할 수 없습니다.",
-                    "확인",
-                    SnackbarDuration.Short
-                )
+                if (it != null) {
+                    viewModel.addProduct(it)
+                    showSnackBar(
+                        "음식이 추가되었습니다.",
+                        "확인",
+                        SnackbarDuration.Short
+                    )
+                }
+                onEnded(it != null)
             }
         },
     )
@@ -90,12 +93,13 @@ fun FoodSearchScreen(
 private fun FoodSearch(
     searchResult: List<SearchResult>,
     onSearchWordSubmitted: (String, onEnded: () -> Unit) -> Unit,
-    onWordSelected: (String, onEnded: () -> Unit) -> Unit,
+    onWordSelected: (String, onEnded: (success: Boolean) -> Unit) -> Unit,
 ) {
     var word by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var selectedWord by remember { mutableStateOf("") }
     var showConfirmingPopup by remember { mutableStateOf(false) }
+    var showCannotAddAlert by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxHeight()) {
         TitleBar(title = "음식 검색")
@@ -168,8 +172,11 @@ private fun FoodSearch(
     if (showConfirmingPopup) CustomPopup(
         callbacks = listOf(
             {
-                onWordSelected(selectedWord) { isLoading = false }
                 showConfirmingPopup = false
+                onWordSelected(selectedWord) {
+                    if (!it) showCannotAddAlert = true
+                    isLoading = false
+                }
             },
             { showConfirmingPopup = false },
         ),
@@ -179,6 +186,17 @@ private fun FoodSearch(
     ) {
         Text(text = selectedWord)
     }
+
+    if (showCannotAddAlert) CustomPopup(
+        callbacks = listOf { showCannotAddAlert = false },
+        labels = listOf("확인"),
+        onDismiss = { showCannotAddAlert = false },
+        title = "오류",
+        icon = R.drawable.baseline_cancel_24
+    ) {
+        Text(text = "음식을 추가할 수 없습니다.")
+    }
+
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
