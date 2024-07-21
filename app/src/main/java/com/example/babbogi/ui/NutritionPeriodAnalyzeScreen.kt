@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -118,23 +119,7 @@ fun NutritionPeriodAnalyzeScreen(
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun NutritionCheckBox(onSelected: (Nutrition) -> Unit) {
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Nutrition.entries.forEach { nutrition ->
-            FixedColorButton(
-                onClick = { onSelected(nutrition) },
-                text = stringResource(id = nutrition.res)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun NutritionPeriodAnalyze(
@@ -212,22 +197,46 @@ private fun NutritionPeriodAnalyze(
                     }
                 }
                 ElevatedCardWithDefault {
-                    ColumnWithDefault {
-                        Text(text = stringResource(id = selectedNutrition.res), fontSize = 20.sp)
-                        if (intakes != null) NutritionPeriodBarGraph(
-                            nutrition = selectedNutrition,
-                            recommend = recommendation[selectedNutrition]!!,
-                            intakes = intakes.mapValues { (_, intake) -> intake[selectedNutrition]!! }
-                        )
-                        else Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                        ) {
-                            DescriptionText(text = "기간을 설정하고\n조회 버튼을 클릭하세요.\n이곳에 그래프가 표시됩니다.")
+                    Box {
+                        ColumnWithDefault {
+                            Text(
+                                text = stringResource(id = selectedNutrition.res),
+                                fontSize = 20.sp
+                            )
+                            if (intakes != null) NutritionPeriodBarGraph(
+                                nutrition = selectedNutrition,
+                                recommend = recommendation[selectedNutrition]!!,
+                                intakes = intakes.mapValues { (_, intake) -> intake[selectedNutrition]!! }
+                            )
+                            else Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                            ) {
+                                DescriptionText(text = "기간을 설정하고\n조회 버튼을 클릭하세요.\n이곳에 그래프가 표시됩니다.")
+                            }
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(
+                                    8.dp,
+                                    Alignment.CenterHorizontally
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Nutrition.entries.forEach { nutrition ->
+                                    FixedColorButton(
+                                        onClick = { selectedNutrition = nutrition },
+                                        text = stringResource(id = nutrition.res)
+                                    )
+                                }
+                            }
                         }
-                        NutritionCheckBox(onSelected = { selectedNutrition = it })
+                        if (isLoading) Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.matchParentSize(),
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(100.dp))
+                        }
                     }
                 }
                 GptAnalyzeReport(
