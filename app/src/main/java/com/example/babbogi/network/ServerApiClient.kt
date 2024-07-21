@@ -15,6 +15,7 @@ import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
+import com.example.babbogi.util.SearchResult
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -131,9 +132,9 @@ object ServerApi {
         return retrofitService.getNutritionRecommendation(id).toMap()
     }
 
-    suspend fun getSearchResult(word: String): List<ServerSearchResultFormat> {
+    suspend fun getSearchResult(word: String): List<SearchResult> {
         Log.d("ServerApi", "getSearchResult($word)")
-        return retrofitService.getSearchResult(word)
+        return retrofitService.getSearchResult(word).map { it.toSearchResult() }
     }
 
     suspend fun getMatchedProduct(name: String): Product {

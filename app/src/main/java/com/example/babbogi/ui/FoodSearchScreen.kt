@@ -4,8 +4,10 @@ import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,9 +34,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.network.response.ServerSearchResultFormat
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomPopup
@@ -42,6 +44,8 @@ import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.SearchBar
 import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.util.SearchResult
+import com.example.babbogi.util.getRandomTestSearchResult
 
 @Composable
 fun FoodSearchScreen(
@@ -49,7 +53,7 @@ fun FoodSearchScreen(
     navController: NavController,
     showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
 ) {
-    var searchResult by remember { mutableStateOf<List<ServerSearchResultFormat>>(emptyList()) }
+    var searchResult by remember { mutableStateOf<List<SearchResult>>(emptyList()) }
 
     FoodSearch(
         searchResult = searchResult,
@@ -84,7 +88,7 @@ fun FoodSearchScreen(
 
 @Composable
 private fun FoodSearch(
-    searchResult: List<ServerSearchResultFormat>,
+    searchResult: List<SearchResult>,
     onSearchWordSubmitted: (String, onEnded: () -> Unit) -> Unit,
     onWordSelected: (String, onEnded: () -> Unit) -> Unit,
 ) {
@@ -107,14 +111,33 @@ private fun FoodSearch(
                 )
                 LazyColumn(modifier = Modifier.wrapContentHeight()) {
                     items(count = searchResult.size) { index ->
-                        ClickableText(
-                            text = AnnotatedString(searchResult[index].name),
-                            onClick = { _ -> selectedWord = searchResult[index].name; showConfirmingPopup = true },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            style = TextStyle(color = MaterialTheme.colorScheme.onPrimary)
-                        )
+                        Column(
+                            modifier = Modifier.padding(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            ClickableText(
+                                text = AnnotatedString(searchResult[index].name),
+                                onClick = { _ ->
+                                    selectedWord = searchResult[index].name; showConfirmingPopup =
+                                    true
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                style = TextStyle(
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                )
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                DescriptionText(
+                                    text = "${searchResult[index].mainCategory} > ${searchResult[index].subCategory}",
+                                )
+                                DescriptionText(text = searchResult[index].company ?: "")
+                            }
+                        }
                         HorizontalDivider()
                     }
                 }
@@ -167,7 +190,7 @@ fun PreviewFoodSearch() {
         Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
             Box(modifier = Modifier.padding(it)) {
                 FoodSearch(
-                    searchResult = listOf(),
+                    searchResult = List(10) { getRandomTestSearchResult() },
                     onSearchWordSubmitted = { _, _ -> },
                     onWordSelected = { _, _ -> },
                 )

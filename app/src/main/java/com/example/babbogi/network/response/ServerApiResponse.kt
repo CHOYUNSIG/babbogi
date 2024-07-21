@@ -6,6 +6,7 @@ import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.Product
+import com.example.babbogi.util.SearchResult
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
@@ -112,11 +113,18 @@ data class ServerConsumeFormat(
 
 @Serializable
 data class ServerSearchResultFormat(
-    @SerializedName("foodname") val name: String,
-    @SerializedName("foodgroup") val mainCategory: String?,
-    @SerializedName("food") val subCategory: String,
-    @SerializedName("company") val company: String?,
-)
+    val foodname: String,
+    val foodgroup: String,
+    val food: String,
+    val company: String,
+) {
+    fun toSearchResult(): SearchResult = SearchResult(
+        name = foodname,
+        mainCategory = foodgroup,
+        subCategory = food,
+        company = if (company.startsWith("해당없음")) null else company,
+    )
+}
 
 @Serializable
 data class ServerFoodFormat(

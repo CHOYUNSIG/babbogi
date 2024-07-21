@@ -15,6 +15,7 @@ import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
+import com.example.babbogi.util.SearchResult
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -243,10 +244,10 @@ class BabbogiViewModel: ViewModel() {
     // 서버에 음식 이름 검색
     fun searchWord(
         word: String,
-        onSearchDone: (List<ServerSearchResultFormat>?) -> Unit
+        onSearchDone: (List<SearchResult>?) -> Unit
     ) {
         viewModelScope.launch {
-            var result: List<ServerSearchResultFormat>? = null
+            var result: List<SearchResult>? = null
             try {
                 result = ServerApi.getSearchResult(word)
             }
