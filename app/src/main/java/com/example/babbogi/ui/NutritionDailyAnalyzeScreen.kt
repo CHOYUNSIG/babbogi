@@ -52,6 +52,7 @@ import com.example.babbogi.ui.view.NutritionAbstraction
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.ui.view.WeightHistoryPopup
 import com.example.babbogi.util.Consumption
 import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
@@ -60,6 +61,7 @@ import com.example.babbogi.util.testConsumptionList
 import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.toNutritionIntake
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -101,6 +103,12 @@ fun NutritionDailyAnalyzeScreen(
                 onLoadingEnded()
             }
         },
+        onWeightClicked = { onLoaded ->
+            viewModel.getWeightHistory(true) {
+                onLoaded(it, viewModel.healthState?.height)
+            }
+        },
+        onChangeWeightClicked = { navController.navigate(Screen.HealthProfile.name) },
         onSettingClicked = { navController.navigate(Screen.Setting.name) },
         onRefresh = { endRefresh ->
             viewModel.getFoodLists(viewModel.today, refresh = true) {
@@ -129,9 +137,12 @@ private fun NutritionDailyAnalyze(
     onNutritionCardClicked: () -> Unit,
     onDateChanged: (LocalDate) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
+    onWeightClicked: (onLoaded: (Map<LocalDateTime, Float>?, Float?) -> Unit) -> Unit,
+    onChangeWeightClicked: () -> Unit,
     onSettingClicked: () -> Unit,
     onRefresh: (endRefresh: () -> Unit) -> Unit,
 ) {
+    var showWeightHistoryPopup by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
 
     if (refreshState.isRefreshing) {
@@ -141,11 +152,19 @@ private fun NutritionDailyAnalyze(
     Box(modifier = Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
             TitleBar(title = "일일 분석") {
-                IconButton(onClick = onSettingClicked) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_settings_24),
-                        contentDescription = "설정",
-                    )
+                Row(horizontalArrangement = Arrangement.End) {
+                    IconButton(onClick = { showWeightHistoryPopup = true }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_accessibility_24),
+                            contentDescription = "몸무게 변화 보기",
+                        )
+                    }
+                    IconButton(onClick = onSettingClicked) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_settings_24),
+                            contentDescription = "설정",
+                        )
+                    }
                 }
             }
             ColumnWithDefault {
@@ -177,6 +196,16 @@ private fun NutritionDailyAnalyze(
             modifier = Modifier.align(Alignment.TopCenter)
         )
     }
+
+    if (showWeightHistoryPopup) WeightHistoryPopup(
+        onStarted = onWeightClicked,
+        onDismissRequest = { showWeightHistoryPopup = false },
+        onConfirmClicked = { showWeightHistoryPopup = false },
+        onChangeWeightClicked = {
+            showWeightHistoryPopup = false
+            onChangeWeightClicked()
+        }
+    )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -213,7 +242,7 @@ private fun MealList(foodList: List<Consumption>?) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.heightIn(max = 500.dp)
             ) {
-                items(foodList.size) { index ->
+                items(foodList.size, key = { foodList[it].id }) { index ->
                     ProductAbstraction(
                         product = foodList[index].product,
                         amount = foodList[index].amount
@@ -246,6 +275,8 @@ fun PreviewNutritionDailyAnalyze() {
                     intake = getRandomNutritionIntake(),
                     foodList = testConsumptionList,
                     report = null,
+                    onWeightClicked = {},
+                    onChangeWeightClicked = {},
                     onDateChanged = {},
                     onNutritionCardClicked = {},
                     onNewReportRequested = {},

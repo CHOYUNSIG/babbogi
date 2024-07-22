@@ -29,7 +29,7 @@ class BabbogiViewModel: ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     private val _today = mutableStateOf(LocalDate.now())
     private val _periodReport = mutableStateOf<Pair<List<LocalDate>, String?>?>(null)
-    private val _weightHistory = mutableStateOf<List<Pair<LocalDateTime, Float>>?>(null)
+    private val _weightHistory = mutableStateOf<Map<LocalDateTime, Float>?>(null)
     private val foodLists = mutableStateMapOf<LocalDate, List<Consumption>>()
     private val dailyReport = mutableStateMapOf<LocalDate, String>()
 
@@ -74,7 +74,7 @@ class BabbogiViewModel: ViewModel() {
             BabbogiModel.notificationActivation = notificationActivation
         }
 
-    var weightHistory: List<Pair<LocalDateTime, Float>>?
+    var weightHistory: Map<LocalDateTime, Float>?
         get() = _weightHistory.value
         set(weightHistory) {
             _weightHistory.value = weightHistory
@@ -338,7 +338,7 @@ class BabbogiViewModel: ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     fun getWeightHistory(
         refresh: Boolean = false,
-        onFetchingEnded: (weightHistory: List<Pair<LocalDateTime, Float>>?) -> Unit
+        onFetchingEnded: (weightHistory: Map<LocalDateTime, Float>?) -> Unit
     ) {
         viewModelScope.launch {
             try {

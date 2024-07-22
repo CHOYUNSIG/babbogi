@@ -56,6 +56,7 @@ import com.example.babbogi.ui.view.GptAnalyzeReport
 import com.example.babbogi.ui.view.NutritionPeriodBarGraph
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.ui.view.WeightHistoryPopup
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
@@ -63,6 +64,7 @@ import com.example.babbogi.util.getRandomNutritionIntake
 import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.toNutritionIntake
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -114,6 +116,12 @@ fun NutritionPeriodAnalyzeScreen(
                 onLoadingEnded()
             }
         },
+        onWeightClicked = { onLoaded ->
+            viewModel.getWeightHistory(true) {
+                onLoaded(it, viewModel.healthState?.height)
+            }
+        },
+        onChangeWeightClicked = { navController.navigate(Screen.HealthProfile.name) },
         onSettingClicked = { navController.navigate(Screen.Setting.name) },
         onRefresh = { getIntakes.invoke(it) },
     )
@@ -129,6 +137,8 @@ private fun NutritionPeriodAnalyze(
     report: String?,
     onPeriodChanged: (List<LocalDate>, onEnded: () -> Unit) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
+    onWeightClicked: (onLoaded: (Map<LocalDateTime, Float>?, Float?) -> Unit) -> Unit,
+    onChangeWeightClicked: () -> Unit,
     onSettingClicked: () -> Unit,
     onRefresh: (endRefresh: () -> Unit) -> Unit
 ) {
@@ -136,6 +146,7 @@ private fun NutritionPeriodAnalyze(
     var selectedPeriod by remember { mutableStateOf(period) }
     var showLongPeriodAlert by remember { mutableStateOf(false) }
     var showInvalidPeriodAlert by remember { mutableStateOf(false) }
+    var showWeightHistoryPopup by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
 
@@ -273,6 +284,16 @@ private fun NutritionPeriodAnalyze(
     ) {
         Text(text = "종료일이 시작일보다 앞설 수 없습니다.")
     }
+
+    if (showWeightHistoryPopup) WeightHistoryPopup(
+        onStarted = onWeightClicked,
+        onDismissRequest = { showWeightHistoryPopup = false },
+        onConfirmClicked = { showWeightHistoryPopup = false },
+        onChangeWeightClicked = {
+            showWeightHistoryPopup = false
+            onChangeWeightClicked()
+        }
+    )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -303,6 +324,8 @@ fun PreviewNutritionPeriodAnalyze() {
                     intakes = data,
                     report = "이것은 챗지피티가 제작한 일일 영양소 레포트입니다. ".repeat(100),
                     onPeriodChanged = { _, _ -> },
+                    onWeightClicked = {},
+                    onChangeWeightClicked = {},
                     onNewReportRequested = {},
                     onSettingClicked = {},
                     onRefresh = {}
