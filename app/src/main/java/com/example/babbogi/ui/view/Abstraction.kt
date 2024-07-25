@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -188,6 +190,7 @@ fun ProductAbstraction(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalAlignment = Alignment.Bottom,
+                    modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         text = product.name.ifEmpty { "(이름 없음)" },
@@ -195,10 +198,13 @@ fun ProductAbstraction(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     if (amount != null)
                         Text(text = "×$amount", fontSize = 16.sp)
                 }
+                Spacer(modifier = Modifier.width(5.dp))
                 icon()
             }
             HorizontalDivider(thickness = 2.dp, color = BabbogiGreen)

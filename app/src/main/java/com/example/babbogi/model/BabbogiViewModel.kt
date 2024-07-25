@@ -354,4 +354,25 @@ class BabbogiViewModel: ViewModel() {
             }
         }
     }
+    
+    // 서버에서 음식 삭제
+    fun deleteConsumption(
+        id: Long,
+        onEnded: (success: Boolean) -> Unit,
+    ) {
+        viewModelScope.launch {
+            var success = false
+            try {
+                ServerApi.deleteConsumption(id)
+                success = true
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot delete consumption.")
+            }
+            finally {
+                onEnded(success)
+            }
+        }
+    }
 }
