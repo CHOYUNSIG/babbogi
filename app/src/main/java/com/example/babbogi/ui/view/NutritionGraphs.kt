@@ -6,7 +6,9 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -123,14 +125,15 @@ fun NutritionBarGraph(nutrition: Nutrition, recommendation: Float, intake: Float
         )
     }
 
-    Box(
-        contentAlignment = Alignment.BottomCenter,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         modifier = Modifier.padding(16.dp)
     ) {
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(30.dp)
+                .height(8.dp)
         ) {
             drawRoundRect(
                 color =  Color(0x504DED5D),
