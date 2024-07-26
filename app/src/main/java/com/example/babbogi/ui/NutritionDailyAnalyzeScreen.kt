@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -44,6 +46,7 @@ import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DateSelector
 import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
@@ -109,6 +112,9 @@ fun NutritionDailyAnalyzeScreen(
             }
         },
         onChangeWeightClicked = { navController.navigate(Screen.HealthProfile.name) },
+        onDeleteFoodClicked = { id, onEnded ->
+            viewModel.deleteConsumption(id) { onEnded(it) }
+        },
         onSettingClicked = { navController.navigate(Screen.Setting.name) },
         onRefresh = { endRefresh ->
             viewModel.getFoodLists(viewModel.today, refresh = true) {
@@ -139,10 +145,13 @@ private fun NutritionDailyAnalyze(
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
     onWeightClicked: (onLoaded: (Map<LocalDateTime, Float>?, Float?) -> Unit) -> Unit,
     onChangeWeightClicked: () -> Unit,
+    onDeleteFoodClicked: (id: Long, onEnded: (success: Boolean) -> Unit) -> Unit,
     onSettingClicked: () -> Unit,
     onRefresh: (endRefresh: () -> Unit) -> Unit,
 ) {
     var showWeightHistoryPopup by remember { mutableStateOf(false) }
+    var deletionConsumption by remember { mutableStateOf<Consumption?>(null) }
+    var isDeletionProcessing by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
 
     if (refreshState.isRefreshing) {
@@ -187,7 +196,10 @@ private fun NutritionDailyAnalyze(
                     report = report,
                     onNewReportRequested = onNewReportRequested,
                 )
-                MealList(foodList)
+                MealList(
+                    foodList = foodList,
+                    onDeleteClicked = { deletionConsumption = it },
+                )
             }
         }
 
@@ -206,11 +218,41 @@ private fun NutritionDailyAnalyze(
             onChangeWeightClicked()
         }
     )
+
+    deletionConsumption?.let { consumption ->
+        CustomPopup(
+            callbacks = listOf(
+                {
+                    isDeletionProcessing = true
+                    onDeleteFoodClicked(consumption.id) {
+                        isDeletionProcessing = false
+                        deletionConsumption = null
+                        refreshState.startRefresh()
+                        onRefresh { refreshState.endRefresh() }
+                    }
+                },
+                { deletionConsumption = null }
+            ),
+            labels = listOf("삭제", "취소"),
+            onDismiss = { deletionConsumption = null },
+            title = "다음 섭취 기록을 삭제하시겠습니까?"
+        ) {
+            if (isDeletionProcessing)
+                CircularProgressIndicator(modifier = Modifier.size(50.dp))
+            else
+                Text(text = consumption.product.name)
+        }
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun MealList(foodList: List<Consumption>?) {
+private fun MealList(
+    foodList: List<Consumption>?,
+    onDeleteClicked: (Consumption) -> Unit,
+) {
+    var showingConsumption by remember { mutableStateOf<Consumption?>(null) }
+
     ElevatedCardWithDefault {
         ColumnWithDefault {
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -243,20 +285,48 @@ private fun MealList(foodList: List<Consumption>?) {
                 modifier = Modifier.heightIn(max = 500.dp)
             ) {
                 items(foodList.size, key = { foodList[it].id }) { index ->
+                    val food = foodList[index]
                     ProductAbstraction(
-                        product = foodList[index].product,
-                        amount = foodList[index].amount
+                        product = food.product,
+                        amount = food.amount,
+                        onClick = { showingConsumption = food }
                     ) {
                         DescriptionText(
-                            text = "${if (foodList[index].time.hour < 12) "오전" else "오후"} %02d:%02d"
+                            text = "${if (food.time.hour < 12) "오전" else "오후"} %02d:%02d"
                                 .format(
-                                    (foodList[index].time.hour + 11) % 12 + 1,
-                                    foodList[index].time.minute
+                                    (food.time.hour + 11) % 12 + 1,
+                                    food.time.minute
                                 )
                         )
+                        IconButton(onClick = { onDeleteClicked(food) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_delete_24),
+                                contentDescription = "삭제"
+                            )
+                        }
                     }
                 }
+                item(key = null) { Spacer(modifier = Modifier.height(10.dp)) }
             }
+        }
+    }
+
+    showingConsumption?.let { consumption ->
+        CustomPopup(
+            callbacks = listOf(
+                { showingConsumption = null },
+                {
+                    showingConsumption = null
+                    onDeleteClicked(consumption)
+                },
+            ),
+            labels = listOf("확인", "삭제"),
+            onDismiss = { showingConsumption = null }
+        ) {
+            ProductAbstraction(
+                product = consumption.product,
+                amount = consumption.amount,
+            )
         }
     }
 }
@@ -279,6 +349,7 @@ fun PreviewNutritionDailyAnalyze() {
                     onChangeWeightClicked = {},
                     onDateChanged = {},
                     onNutritionCardClicked = {},
+                    onDeleteFoodClicked = { _, _ -> },
                     onNewReportRequested = {},
                     onSettingClicked = {},
                     onRefresh = {},

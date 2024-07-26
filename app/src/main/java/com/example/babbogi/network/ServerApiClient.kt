@@ -23,6 +23,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -104,6 +105,11 @@ interface ServerApiService {
         @Query(value = "id") id: Long,
         @Body nutrition: ServerNutritionFormat
     ): ServerNutritionFormat
+
+    @DELETE("consumptions/delete")
+    suspend fun deleteConsumption(
+        @Query(value = "id") seq: Long,
+    )
 }
 
 
@@ -182,6 +188,11 @@ object ServerApi {
     suspend fun putNutritionRecommendation(id: Long, nutrition: NutritionMap<Float>) {
         Log.d("ServerApi", "putNutritionRecommend($id, $nutrition)")
         retrofitService.putNutritionRecommendation(id, nutrition.toServerNutritionFormat(id))
+    }
+
+    suspend fun deleteConsumption(seq: Long) {
+        Log.d("ServerApi", "deleteConsumption($seq)")
+        retrofitService.deleteConsumption(seq)
     }
 }
 
