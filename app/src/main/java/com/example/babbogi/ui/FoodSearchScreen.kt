@@ -4,11 +4,13 @@ import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +46,7 @@ import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DescriptionText
+import com.example.babbogi.ui.view.DropDown
 import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.SearchBar
 import com.example.babbogi.ui.view.TitleBar
@@ -102,6 +106,20 @@ private fun FoodSearch(
     var showConfirmingPopup by remember { mutableStateOf(false) }
     var showCannotAddAlert by remember { mutableStateOf(false) }
 
+    // 필터 상태 추가
+    var selectedMainCategory by remember { mutableStateOf<String?>(null) }
+    var selectedSubCategory by remember { mutableStateOf<String?>(null) }
+
+    val mainCategories = searchResult.map { it.mainCategory }.distinct()
+    val subCategories = searchResult.map { it.subCategory }.distinct()
+
+    // 필터링된 검색 결과 리스트
+    val filteredSearchResult = searchResult.filter { result ->
+        val matchesMainCategory = selectedMainCategory?.let { result.mainCategory == it } ?: true
+        val matchesSubCategory = selectedSubCategory?.let { result.subCategory == it } ?: true
+        matchesMainCategory && matchesSubCategory
+    }
+
     Column(modifier = Modifier.fillMaxHeight()) {
         TitleBar(title = "음식 검색")
         Box {
@@ -114,11 +132,21 @@ private fun FoodSearch(
                     },
                     onValueChange = { word = it }
                 )
+
+                FoodFiltering(
+                    mainCategories = mainCategories,
+                    subCategories = subCategories,
+                    selectedMainCategory = selectedMainCategory,
+                    selectedSubCategory = selectedSubCategory,
+                    onMainCategoryChange = { selectedMainCategory = it },
+                    onSubCategoryChange = { selectedSubCategory = it }
+                )
+
                 LazyColumn(modifier = Modifier.wrapContentHeight()) {
-                    items(count = searchResult.size) { index ->
+                    items(count = filteredSearchResult.size) { index ->
                         Column(
                             modifier = Modifier.padding(8.dp).clickable {
-                                selectedWord = searchResult[index].name
+                                selectedWord = filteredSearchResult[index].name
                                 showConfirmingPopup = true
                             },
                             verticalArrangement = Arrangement.spacedBy(5.dp)
@@ -130,9 +158,9 @@ private fun FoodSearch(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 DescriptionText(
-                                    text = "${searchResult[index].mainCategory} > ${searchResult[index].subCategory}",
+                                    text = "${filteredSearchResult[index].mainCategory} > ${filteredSearchResult[index].subCategory}",
                                 )
-                                DescriptionText(text = searchResult[index].company ?: "")
+                                DescriptionText(text = filteredSearchResult[index].company ?: "")
                             }
                         }
                         HorizontalDivider()
@@ -192,6 +220,79 @@ private fun FoodSearch(
 
 }
 
+@Composable
+fun FoodFiltering(
+    mainCategories: List<String>,
+    subCategories: List<String>,
+    selectedMainCategory: String?,
+    selectedSubCategory: String?,
+    onMainCategoryChange: (String?) -> Unit,
+    onSubCategoryChange: (String?) -> Unit
+) {
+    var isMainExpanded by remember { mutableStateOf(false) }
+    var isSubExpanded by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = selectedMainCategory ?: "전체",
+                modifier = Modifier
+                    .clickable {
+                        isMainExpanded = !isMainExpanded
+                        if (isMainExpanded) isSubExpanded = false // Close subcategory menu if open
+                    }
+                    .padding(8.dp)
+            )
+            Text(" > ")
+            Text(
+                text = if (selectedMainCategory == null) "" else selectedSubCategory ?: "전체",
+                modifier = Modifier
+                    .clickable {
+                        if (selectedMainCategory != null) {
+                            isSubExpanded = !isSubExpanded
+                            if (isSubExpanded) isMainExpanded = false // Close main category menu if open
+                        }
+                    }
+                    .padding(8.dp)
+            )
+        }
+        if (isMainExpanded) {
+            Column(modifier = Modifier.background(Color.Gray.copy(alpha = 0.1f))) {
+                (listOf("전체") + mainCategories).forEach { category ->
+                    Text(
+                        text = category,
+                        modifier = Modifier
+                            .clickable {
+                                onMainCategoryChange(if (category == "전체") null else category)
+                                onSubCategoryChange(null) // Reset subcategory when main category changes
+                                isMainExpanded = false
+                            }
+                            .padding(8.dp)
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        if (isSubExpanded && selectedMainCategory != null) {
+            Column(modifier = Modifier.background(Color.Gray.copy(alpha = 0.1f))) {
+                (listOf("전체") + subCategories).forEach { category ->
+                    Text(
+                        text = category,
+                        modifier = Modifier
+                            .clickable {
+                                onSubCategoryChange(if (category == "전체") null else category)
+                                isSubExpanded = false
+                            }
+                            .padding(8.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 @Preview(uiMode = UI_MODE_NIGHT_YES)
@@ -202,8 +303,8 @@ fun PreviewFoodSearch() {
             Box(modifier = Modifier.padding(it)) {
                 FoodSearch(
                     searchResult = List(10) { getRandomTestSearchResult() },
-                    onSearchWordSubmitted = { _, _ -> },
-                    onWordSelected = { _, _ -> },
+                    onSearchWordSubmitted = { _, onEnded -> onEnded() },
+                    onWordSelected = { _, onEnded -> onEnded(true) },
                 )
             }
         }
