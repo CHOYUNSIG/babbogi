@@ -76,9 +76,7 @@ class BabbogiViewModel: ViewModel() {
 
     var weightHistory: Map<LocalDateTime, Float>?
         get() = _weightHistory.value
-        set(weightHistory) {
-            _weightHistory.value = weightHistory
-        }
+        set(weightHistory) { _weightHistory.value = weightHistory }
 
     var periodReport: Pair<List<LocalDate>, String?>?
         get() = _periodReport.value
@@ -343,7 +341,9 @@ class BabbogiViewModel: ViewModel() {
         viewModelScope.launch {
             try {
                 if (refresh || weightHistory == null)
-                    weightHistory = ServerApi.getWeightHistory(BabbogiModel.id!!)
+                    weightHistory = ServerApi.getWeightHistory(BabbogiModel.id!!).let { history ->
+                        healthState?.let { history.plus(LocalDateTime.now() to it.weight) } ?: history
+                    }
             }
             catch(e: Exception) {
                 e.printStackTrace()
