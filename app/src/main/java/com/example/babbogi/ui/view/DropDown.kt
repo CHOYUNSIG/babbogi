@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,13 +27,9 @@ fun DropDown(
     index: Int?,
     onChange: (index: Int?) -> Unit
 ) {
-    var realOptions by remember { mutableStateOf(listOf(nullOption) + options) }
-    var selectedText: String? by remember { mutableStateOf(if (index != null) options[index] else null) }
-    var isExpended by remember { mutableStateOf(false) }
-
-    LaunchedEffect(options) {
-        realOptions = listOf(nullOption) + options
-    }
+    val realOptions by remember(options) { mutableStateOf(listOf(nullOption) + options) }
+    var selectedText: String? by remember(options, index) { mutableStateOf(index?.let { options[index] }) }
+    var isExpended by remember(options) { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
         expanded = isExpended,
@@ -44,14 +39,15 @@ fun DropDown(
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth(),
-            value = selectedText?: realOptions.first(),
+            value = selectedText ?: realOptions.first(),
             onValueChange = {},
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpended) },
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = Color.Gray.copy(alpha = 0.2f),
                 focusedContainerColor = Color.Gray.copy(alpha = 0.1f),
-            )
+            ),
+            singleLine = true,
         )
         ExposedDropdownMenu(
             expanded = isExpended,
@@ -78,8 +74,6 @@ fun DropDown(
         }
     }
 }
-
-
 
 @Preview
 @Composable
