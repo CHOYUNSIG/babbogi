@@ -1,6 +1,9 @@
 package com.example.babbogi.network.response
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.example.babbogi.util.AdultDisease
+import com.example.babbogi.util.Consumption
 import com.example.babbogi.util.Gender
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
@@ -8,6 +11,7 @@ import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.SearchResult
 import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
 
 @Serializable
 data class ServerUserStateFormat (
@@ -53,7 +57,7 @@ data class ServerNutritionFormat(
     val natrium: Double,
     val cholesterol: Double,
 ) {
-    fun toMap(): NutritionMap<Float> = mapOf(
+    fun toNutritionMap(): NutritionMap<Float> = mapOf(
         Nutrition.Fat to this.fat.toFloat(),
         Nutrition.Salt to this.natrium.toFloat(),
         Nutrition.Sugar to this.sugar.toFloat(),
@@ -92,7 +96,18 @@ data class ServerConsumeFormat(
     val remainingNatrium: Double,
     val date: String,
 ) {
-    fun toMap(): NutritionMap<Float> = mapOf(
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun toConsumption(): Consumption = Consumption(
+        id = this.id,
+        product = Product(
+            name = this.foodName!!,
+            nutrition = this.toNutritionMap(),
+        ),
+        amount = this.foodCount,
+        time = LocalDateTime.parse(this.date)
+    )
+
+    fun toNutritionMap(): NutritionMap<Float> = mapOf(
         Nutrition.Fat to this.fat!!.toFloat(),
         Nutrition.Salt to this.natrium!!.toFloat(),
         Nutrition.Sugar to this.sugar!!.toFloat(),
@@ -103,25 +118,22 @@ data class ServerConsumeFormat(
         Nutrition.Carbohydrate to this.carbohydrate!!.toFloat(),
         Nutrition.SaturatedFat to this.saturatedfat!!.toFloat(),
     )
-
-    fun toProduct(): Product = Product(
-        name = this.foodName!!,
-        this.toMap()
-    )
 }
 
 @Serializable
 data class ServerSearchResultFormat(
+    val foodcode: String,
     val foodname: String,
     val foodgroup: String,
     val food: String,
     val company: String,
 ) {
     fun toSearchResult(): SearchResult = SearchResult(
+        id = foodcode,
         name = foodname,
         mainCategory = foodgroup,
         subCategory = food,
-        company = if (company.startsWith("해당없음")) null else company,
+        company = if (company.startsWith("해당 없음")) null else company,
     )
 }
 
@@ -143,7 +155,7 @@ data class ServerFoodFormat(
     val saturatedfat: Double,
     val transfat: Double,
 ) {
-    fun toMap(): NutritionMap<Float> = mapOf(
+    fun toNutritionMap(): NutritionMap<Float> = mapOf(
         Nutrition.Fat to this.fat.toFloat(),
         Nutrition.Salt to this.natrium.toFloat(),
         Nutrition.Sugar to this.sugar.toFloat(),
@@ -157,7 +169,7 @@ data class ServerFoodFormat(
 
     fun toProduct(): Product = Product(
         name = this.foodname,
-        nutrition = this.toMap()
+        nutrition = this.toNutritionMap()
     )
 }
 

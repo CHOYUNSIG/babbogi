@@ -32,8 +32,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-
-
 private val retrofit = Retrofit.Builder()
     .client(
         OkHttpClient.Builder()
@@ -46,7 +44,6 @@ private val retrofit = Retrofit.Builder()
     .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
     .baseUrl(BuildConfig.SERVER_URL + BuildConfig.SERVER_API_KEY)
     .build()
-
 
 interface ServerApiService {
     @GET("consumptions/user")
@@ -72,7 +69,7 @@ interface ServerApiService {
 
     @GET("food")
     suspend fun getFoodNutrition(
-        @Query(value = "foodname") name: String
+        @Query(value = "foodcode") id: String
     ): ServerFoodFormat
 
     @GET("dailyreport")
@@ -112,7 +109,6 @@ interface ServerApiService {
     )
 }
 
-
 object ServerApi {
     private val retrofitService : ServerApiService by lazy {
         retrofit.create(ServerApiService::class.java)
@@ -123,17 +119,7 @@ object ServerApi {
         Log.d("ServerApi", "getProductList($id, $date)")
         return retrofitService.getConsumeList(id, date.toString())
             .filter{ it.foodName != null }
-            .map {
-                Consumption(
-                    id = it.id,
-                    product = Product(
-                        name = it.foodName!!,
-                        nutrition = it.toMap(),
-                    ),
-                    amount = it.foodCount,
-                    time = LocalDateTime.parse(it.date)
-                )
-            }
+            .map { it.toConsumption() }
     }
 
     suspend fun getHealthState(id: Long): HealthState {
@@ -151,7 +137,7 @@ object ServerApi {
 
     suspend fun getNutritionRecommendation(id: Long): NutritionRecommendation {
         Log.d("ServerApi", "getNutritionRecommendation($id)")
-        return retrofitService.getNutritionRecommendation(id).toMap()
+        return retrofitService.getNutritionRecommendation(id).toNutritionMap()
     }
 
     suspend fun getSearchResult(word: String): List<SearchResult> {
@@ -159,9 +145,9 @@ object ServerApi {
         return retrofitService.getSearchResult(word).map { it.toSearchResult() }
     }
 
-    suspend fun getMatchedProduct(name: String): Product {
-        Log.d("ServerApi", "getMatchedProduct($name)")
-        return retrofitService.getFoodNutrition(name).toProduct()
+    suspend fun getMatchedProduct(id: String): Product {
+        Log.d("ServerApi", "getMatchedProduct($id)")
+        return retrofitService.getFoodNutrition(id).toProduct()
     }
 
     suspend fun getDailyReport(id: Long, date: LocalDate): String {

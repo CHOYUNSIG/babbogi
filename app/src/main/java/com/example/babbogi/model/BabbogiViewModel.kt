@@ -92,8 +92,8 @@ class BabbogiViewModel: ViewModel() {
     // 리스트에서 제품 정보 변경
     fun modifyProduct(
         index: Int,
-        product: Product = _productList.value[index].first,
-        amount: Int = _productList.value[index].second,
+        product: Product = productList[index].first,
+        amount: Int = productList[index].second,
     ) {
         productList = productList.mapIndexed { i, p -> if (i == index) product to amount else p }
     }
@@ -262,14 +262,14 @@ class BabbogiViewModel: ViewModel() {
     }
     
     // 서버에서 이름에 해당하는 음식 정보 얻어오기
-    fun getProductByNameSearch(
-        name: String,
+    fun getProductByID(
+        id: String,
         onSearchDone: (Product?) -> Unit
     ) {
         viewModelScope.launch {
             var result: Product? = null
             try {
-                result = ServerApi.getMatchedProduct(name)
+                result = ServerApi.getMatchedProduct(id)
             }
             catch (e: Exception) {
                 e.printStackTrace()

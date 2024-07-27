@@ -15,12 +15,10 @@ private val retrofit = Retrofit.Builder()
     .baseUrl("https://openapi.foodsafetykorea.go.kr/api/${BuildConfig.BARCODE_API_KEY}/C005/json/1/5/")
     .build()
 
-
 interface BarcodeApiService {
     @GET("BAR_CD={code}")
     suspend fun getProducts(@Path(value = "code") barcode: String): BarcodeApiResponse
 }
-
 
 object BarcodeApi {
     private val retrofitService : BarcodeApiService by lazy {
