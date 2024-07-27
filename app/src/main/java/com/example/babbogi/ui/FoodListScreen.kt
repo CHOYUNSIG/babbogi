@@ -17,7 +17,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,13 +58,11 @@ import com.example.babbogi.util.toFloat2
 fun FoodListScreen(
     viewModel: BabbogiViewModel,
     navController: NavController,
-    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+    showSnackBar: (message: String) -> Unit,
+    showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
-    var selectedIndex by remember { mutableStateOf<Int?>(null) }
-
     FoodList(
         productList = viewModel.productList,
-        index = selectedIndex,
         onAmountChanged = { index, change ->
             val newAmount = viewModel.productList[index].second + change
             if (newAmount > 0) viewModel.modifyProduct(
@@ -75,7 +72,7 @@ fun FoodListScreen(
         },
         onAddByHandConfirmed = {
             viewModel.addProduct(it)
-            showSnackBar("음식이 추가되었습니다.", "확인", SnackbarDuration.Short)
+            showSnackBar("음식이 추가되었습니다.")
         },
         onSearchClicked = { navController.navigate(Screen.FoodSearch.name) },
         onCameraClicked = { navController.navigate(Screen.Camera.name) },
@@ -84,26 +81,29 @@ fun FoodListScreen(
         },
         onDeleteClicked = {
             viewModel.deleteProduct(it)
-            showSnackBar("음식이 제거되었습니다.", "확인", SnackbarDuration.Short)
+            showSnackBar("음식이 제거되었습니다.")
         },
         onSubmitClicked = lambda@ {
             navController.navigate(Screen.Loading.name)
             viewModel.sendList { success ->
-                if (success) navController.navigate(Screen.NutritionDailyAnalyze.name) {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                if (success) {
+                    navController.navigate(Screen.NutritionDailyAnalyze.name) {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                    }
+                    showSnackBar("음식이 전송되었습니다.")
                 }
-                else navController.popBackStack()
-                showSnackBar(
-                    if (success) "음식이 전송되었습니다." else "오류: 음식 전송에 실패했습니다.",
-                    "확인",
-                    SnackbarDuration.Short
-                )
+                else {
+                    navController.popBackStack()
+                    showAlertPopup(
+                        "전송 실패",
+                        "음식 리스트를 전송하는 데 실패했습니다.",
+                        R.drawable.baseline_cancel_24,
+                    )
+                }
             }
         },
         onSettingClicked = { navController.navigate(Screen.Setting.name) }
     )
-
-    if (selectedIndex != null) selectedIndex = null
 }
 
 @Composable
@@ -230,7 +230,6 @@ private fun OptionDialog(
                 .padding(bottom = 50.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-
                 repeat(4) { index ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -254,7 +253,6 @@ private fun OptionDialog(
 @Composable
 private fun FoodList(
     productList: List<Pair<Product, Int>>,
-    index: Int?,
     onAmountChanged: (index: Int, change: Int) -> Unit,
     onModifyClicked: (index: Int, Product) -> Unit,
     onDeleteClicked: (index: Int) -> Unit,
@@ -269,8 +267,6 @@ private fun FoodList(
     var showConfirmSubmitPopup by remember { mutableStateOf(false) }
     var showNoFoodPopup by remember { mutableStateOf(false) }
     var isAddingByHand by remember { mutableStateOf(false) }
-
-    if (index != null) selectedIndex = index
 
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         TitleBar("음식 추가") {
@@ -395,7 +391,6 @@ fun PreviewFoodList() {
             Box(modifier = Modifier.padding(it)) {
                 FoodList(
                     productList = testProductPairList,
-                    index = null,
                     onAmountChanged = { _, _ -> },
                     onAddByHandConfirmed = {},
                     onCameraClicked = {},

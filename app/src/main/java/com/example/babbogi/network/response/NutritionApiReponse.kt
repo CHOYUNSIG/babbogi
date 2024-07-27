@@ -19,7 +19,6 @@ data class I2790(
 @Serializable
 data class I2790_row(
     val NUM: Int,
-
     val NUTR_CONT1: String,
     val NUTR_CONT2: String,
     val NUTR_CONT3: String,
@@ -29,7 +28,6 @@ data class I2790_row(
     val NUTR_CONT7: String,
     val NUTR_CONT8: String,
     val NUTR_CONT9: String,
-
     val SUB_REF_NAME: String,
     val RESEARCH_YEAR: String,
     val MAKER_NAME: String,
@@ -43,16 +41,18 @@ data class I2790_row(
     val SAMPLING_REGION_CD: String,
     val FOOD_CD: String
 ) {
-    fun toMap(): NutritionMap<Float> = mapOf(
-        Nutrition.Calorie to NUTR_CONT1.toFloat2(),
-        Nutrition.Carbohydrate to NUTR_CONT2.toFloat2(),
-        Nutrition.Protein to NUTR_CONT3.toFloat2(),
-        Nutrition.Fat to NUTR_CONT4.toFloat2(),
-        Nutrition.Sugar to NUTR_CONT5.toFloat2(),
-        Nutrition.Salt to NUTR_CONT6.toFloat2(),
-        Nutrition.Cholesterol to NUTR_CONT7.toFloat2(),
-        Nutrition.SaturatedFat to NUTR_CONT8.toFloat2(),
-        Nutrition.TransFat to NUTR_CONT9.toFloat2(),
-    )
+    fun toMap(): NutritionMap<Float> {
+        return mapOf(
+            Nutrition.Calorie to NUTR_CONT1.toFloat2(),
+            Nutrition.Carbohydrate to NUTR_CONT2.toFloat2(),
+            Nutrition.Protein to NUTR_CONT3.toFloat2(),
+            Nutrition.Fat to NUTR_CONT4.toFloat2(),
+            Nutrition.Sugar to NUTR_CONT5.toFloat2(),
+            Nutrition.Salt to NUTR_CONT6.toFloat2(),
+            Nutrition.Cholesterol to NUTR_CONT7.toFloat2(),
+            Nutrition.SaturatedFat to NUTR_CONT8.toFloat2(),
+            Nutrition.TransFat to NUTR_CONT9.toFloat2(),
+        )
+    }
 }
 

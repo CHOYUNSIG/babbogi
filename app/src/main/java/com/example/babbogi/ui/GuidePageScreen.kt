@@ -21,14 +21,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -37,7 +32,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,7 +51,8 @@ import kotlin.math.absoluteValue
 fun GuidePageScreen(
     viewModel: BabbogiViewModel,
     navController: NavController,
-    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+    showSnackBar: (message: String) -> Unit,
+    showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
     GuidePage(
         list = listOf(
@@ -82,9 +77,7 @@ fun GuidePageScreen(
 @Composable
 private fun CustomSlider(
     modifier: Modifier = Modifier,
-    sliderList: List<Int>, // Change to List<Int> for drawable resources
-    backwardIcon: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-    forwardIcon: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+    sliderList: List<Int>,
     dotsSize: Dp = 10.dp,
     imageCornerRadius: Dp = 16.dp,
     onComplete: () -> Unit

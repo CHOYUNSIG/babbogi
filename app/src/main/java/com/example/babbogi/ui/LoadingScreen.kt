@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,7 +26,8 @@ import com.example.babbogi.ui.theme.BabbogiTheme
 fun LoadingScreen(
     viewModel: BabbogiViewModel,
     navController: NavController,
-    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+    showSnackBar: (message: String) -> Unit,
+    showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
     Loading()
 }

@@ -15,12 +15,10 @@ private val retrofit = Retrofit.Builder()
     .baseUrl("https://openapi.foodsafetykorea.go.kr/api/${BuildConfig.NUTRITION_API_KEY}/I2790/json/1/5/")
     .build()
 
-
 interface NutritionApiService {
     @GET("DESC_KOR={name}")
     suspend fun getNutrition(@Path(value = "name") prodName: String): NutritionApiResponse
 }
-
 
 object NutritionApi {
     private val retrofitService : NutritionApiService by lazy {

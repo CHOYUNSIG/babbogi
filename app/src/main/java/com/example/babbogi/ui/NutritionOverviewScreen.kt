@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,7 +54,8 @@ import kotlin.math.roundToInt
 fun NutritionOverviewScreen(
     viewModel: BabbogiViewModel,
     navController: NavController,
-    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+    showSnackBar: (message: String) -> Unit,
+    showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
     var intake by remember { mutableStateOf<NutritionIntake?>(null) }
 

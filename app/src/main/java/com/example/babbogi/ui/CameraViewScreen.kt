@@ -22,7 +22,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -67,7 +66,8 @@ import java.util.concurrent.Executors
 fun CameraViewScreen(
     viewModel: BabbogiViewModel,
     navController: NavController,
-    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+    showSnackBar: (message: String) -> Unit,
+    showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
     // 카메라 권한 설정
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
@@ -151,8 +151,8 @@ fun CameraViewScreen(
                 }
                 product = null
                 showDialog = false
+                showSnackBar("음식이 추가되었습니다.")
                 recognizedCount++
-                showSnackBar("음식이 추가되었습니다.", "확인", SnackbarDuration.Short)
             },
             onCancelClicked = {
                 product = null
@@ -189,46 +189,6 @@ private fun CameraPermissionDenied() {
 }
 
 @Composable
-private fun ProductPopup(
-    isFetching: Boolean,
-    product: Product?,
-    onAddClicked: () -> Unit,
-    onCancelClicked: () -> Unit
-) {
-    if (isFetching) Dialog(onDismissRequest = onCancelClicked) {
-        ElevatedCardWithDefault {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(50.dp)
-                        .padding(16.dp)
-                )
-            }
-        }
-    }
-    else if (product != null) CustomPopup(
-        callbacks = listOf(onAddClicked, onCancelClicked),
-        labels = listOf("추가", "취소"),
-        onDismiss = onCancelClicked,
-        title = "다음 상품을 추가하시겠습니까?"
-    ) {
-        ProductAbstraction(product = product, nullMessage = "서버에 영양 정보가 없습니다.")
-    }
-    else CustomPopup(
-        callbacks = listOf(onCancelClicked),
-        labels = listOf("확인"),
-        onDismiss = onCancelClicked,
-        title = "제품 정보 없음",
-        icon = R.drawable.baseline_not_find_30
-    ) {
-        Text(text = "해당 상품은 찾을 수 없는 상품입니다.")
-    }
-}
-
-@Composable
 private fun CameraView(
     cameraView: @Composable () -> Unit,
     showDialog: Boolean,
@@ -237,7 +197,6 @@ private fun CameraView(
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit,
 ) {
-    // 카메라 화면
     Column {
         TitleBar("바코드 입력")
         ColumnWithDefault(modifier = Modifier.fillMaxHeight()) {
@@ -253,18 +212,38 @@ private fun CameraView(
         }
     }
 
-    if (showDialog) Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(horizontal = 30.dp)
-    ) {
-        ProductPopup(
-            isFetching = isFetching,
-            product = product,
-            onAddClicked = onAddClicked,
-            onCancelClicked = onCancelClicked,
-        )
+    if (showDialog) {
+        if (isFetching) Dialog(onDismissRequest = onCancelClicked) {
+            ElevatedCardWithDefault {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .padding(16.dp)
+                    )
+                }
+            }
+        }
+        else if (product != null) CustomPopup(
+            callbacks = listOf(onAddClicked, onCancelClicked),
+            labels = listOf("추가", "취소"),
+            onDismiss = onCancelClicked,
+            title = "다음 상품을 추가하시겠습니까?"
+        ) {
+            ProductAbstraction(product = product, nullMessage = "서버에 영양 정보가 없습니다.")
+        }
+        else CustomPopup(
+            callbacks = listOf(onCancelClicked),
+            labels = listOf("확인"),
+            onDismiss = onCancelClicked,
+            title = "제품 정보 없음",
+            icon = R.drawable.baseline_not_find_30
+        ) {
+            Text(text = "해당 상품은 찾을 수 없는 상품입니다.")
+        }
     }
 }
 

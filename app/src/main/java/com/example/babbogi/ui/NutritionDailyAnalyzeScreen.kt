@@ -22,7 +22,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -71,7 +70,8 @@ import java.time.LocalDateTime
 fun NutritionDailyAnalyzeScreen(
     viewModel: BabbogiViewModel,
     navController: NavController,
-    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+    showSnackBar: (message: String) -> Unit,
+    showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
     var foodList by remember { mutableStateOf<List<Consumption>?>(null) }
     var intake by remember { mutableStateOf<NutritionIntake?>(null) }
@@ -97,10 +97,10 @@ fun NutritionDailyAnalyzeScreen(
         onDateChanged = { viewModel.today = it },
         onNewReportRequested = { onLoadingEnded ->
             viewModel.getDailyReport(viewModel.today) {
-                if (it == null) showSnackBar(
-                    "오류: 레포트를 받아오지 못했습니다.",
-                    "확인",
-                    SnackbarDuration.Short
+                if (it == null) showAlertPopup(
+                    "레포트 생성 실패",
+                    "레포트를 받아오지 못했습니다.",
+                    R.drawable.baseline_cancel_24,
                 )
                 report = it
                 onLoadingEnded()
@@ -119,10 +119,10 @@ fun NutritionDailyAnalyzeScreen(
         onRefresh = { endRefresh ->
             viewModel.getFoodLists(viewModel.today, refresh = true) {
                 if (it != null) foodList = it[viewModel.today]
-                else showSnackBar(
-                    "오류: 식사 정보를 받아오지 못했습니다.",
-                    "확인",
-                    SnackbarDuration.Short
+                else showAlertPopup(
+                    "오류",
+                    "식사 정보를 받아오지 못했습니다.",
+                    R.drawable.baseline_cancel_24,
                 )
                 intake = foodList?.toNutritionIntake()
                 endRefresh()

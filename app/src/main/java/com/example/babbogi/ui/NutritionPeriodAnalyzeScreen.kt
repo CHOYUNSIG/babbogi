@@ -23,7 +23,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -47,7 +46,6 @@ import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
-import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DateSelector
 import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
@@ -71,7 +69,8 @@ import java.time.LocalDateTime
 fun NutritionPeriodAnalyzeScreen(
     viewModel: BabbogiViewModel,
     navController: NavController,
-    showSnackBar: (message: String, actionLabel: String, duration: SnackbarDuration) -> Unit
+    showSnackBar: (message: String) -> Unit,
+    showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
     var period by remember {
         mutableStateOf(
@@ -86,10 +85,10 @@ fun NutritionPeriodAnalyzeScreen(
         { endRefresh: (() -> Unit)? ->
             viewModel.getFoodLists(period.first(), period.last()) {
                 if (it != null) intakes = it.mapValues { (_, foodList) -> foodList.toNutritionIntake() }
-                else showSnackBar(
-                    "오류: 영양 정보를 받아오지 못했습니다.",
-                    "확인",
-                    SnackbarDuration.Short
+                else showAlertPopup(
+                    "오류",
+                    "영양 정보를 받아오지 못했습니다.",
+                    R.drawable.baseline_cancel_24,
                 )
                 endRefresh?.invoke()
             }
@@ -102,16 +101,35 @@ fun NutritionPeriodAnalyzeScreen(
         intakes = intakes,
         report = report,
         onPeriodChanged = { newPeriod, onEnded ->
-            period = newPeriod
-            getIntakes.invoke(onEnded)
+            val length = newPeriod.last().toEpochDay() - newPeriod.first().toEpochDay() + 1
+            if (length > 7) {
+                showAlertPopup(
+                    "기간이 너무 김",
+                    "조회 기간을 일주일 이내로 설정하세요.",
+                    R.drawable.baseline_not_find_30,
+                )
+                onEnded()
+            }
+            else if (length < 1) {
+                showAlertPopup(
+                    "잘못된 기간",
+                    "종료일이 시작일보다 앞설 수 없습니다.",
+                    R.drawable.baseline_not_find_30,
+                )
+                onEnded()
+            }
+            else {
+                period = newPeriod
+                getIntakes.invoke(onEnded)
+            }
         },
         onNewReportRequested = { onLoadingEnded ->
             viewModel.getPeriodReport(period.first(), period.last()) {
                 report = it
-                if (it == null) showSnackBar(
-                    "오류: 레포트를 받아오지 못했습니다.",
-                    "확인",
-                    SnackbarDuration.Short
+                if (it == null) showAlertPopup(
+                    "레포트 생성 실패",
+                    "레포트를 받아오지 못했습니다.",
+                    R.drawable.baseline_cancel_24,
                 )
                 onLoadingEnded()
             }
@@ -144,8 +162,6 @@ private fun NutritionPeriodAnalyze(
 ) {
     var selectedNutrition by remember { mutableStateOf(Nutrition.Calorie) }
     var selectedPeriod by remember { mutableStateOf(period) }
-    var showLongPeriodAlert by remember { mutableStateOf(false) }
-    var showInvalidPeriodAlert by remember { mutableStateOf(false) }
     var showWeightHistoryPopup by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
@@ -192,15 +208,8 @@ private fun NutritionPeriodAnalyze(
                         ) {
                             FixedColorButton(
                                 onClick = {
-                                    val length = selectedPeriod.last().toEpochDay() - selectedPeriod.first().toEpochDay() + 1
-                                    if (length > 7)
-                                        showLongPeriodAlert = true
-                                    else if (length < 1)
-                                        showInvalidPeriodAlert = true
-                                    else {
-                                        isLoading = true
-                                        onPeriodChanged(selectedPeriod) { isLoading = false }
-                                    }
+                                    isLoading = true
+                                    onPeriodChanged(selectedPeriod) { isLoading = false }
                                 },
                                 text = "조회"
                             )
@@ -263,26 +272,6 @@ private fun NutritionPeriodAnalyze(
             state = refreshState,
             modifier = Modifier.align(Alignment.TopCenter)
         )
-    }
-
-    if (showLongPeriodAlert) CustomPopup(
-        callbacks = listOf { showLongPeriodAlert = false },
-        labels = listOf("확인"),
-        onDismiss = { showLongPeriodAlert = false },
-        title = "기간이 너무 김",
-        icon = R.drawable.baseline_not_find_30,
-    ) {
-        Text(text = "조회 기간을 일주일 이내로 설정하세요.")
-    }
-
-    if (showInvalidPeriodAlert) CustomPopup(
-        callbacks = listOf { showInvalidPeriodAlert = false },
-        labels = listOf("확인"),
-        onDismiss = { showInvalidPeriodAlert = false },
-        title = "잘못된 기간",
-        icon = R.drawable.baseline_not_find_30,
-    ) {
-        Text(text = "종료일이 시작일보다 앞설 수 없습니다.")
     }
 
     if (showWeightHistoryPopup) WeightHistoryPopup(

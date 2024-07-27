@@ -12,8 +12,10 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,32 +40,34 @@ import com.example.babbogi.ui.NutritionPeriodAnalyzeScreen
 import com.example.babbogi.ui.SettingScreen
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.CustomNavigationBar
+import com.example.babbogi.ui.view.CustomPopup
 import kotlinx.coroutines.launch
 
 enum class Screen(
     val screenComposable: @Composable (
         BabbogiViewModel,
         NavHostController,
-        showSnackBar: (text: String, label: String, duration: SnackbarDuration) -> Unit
+        showSnackBar: (text: String) -> Unit,
+        showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
     ) -> Unit,
 ) {
     @RequiresApi(Build.VERSION_CODES.O)
-    Tutorial(screenComposable = { v, n, s -> GuidePageScreen(v, n, s) }),
-    Loading(screenComposable = { v, n, s -> LoadingScreen(v, n, s) }),
+    Tutorial(screenComposable = { v, n, s, a -> GuidePageScreen(v, n, s, a) }),
+    Loading(screenComposable = { v, n, s, a -> LoadingScreen(v, n, s, a) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    NutritionDailyAnalyze(screenComposable = { v, n, s -> NutritionDailyAnalyzeScreen(v, n, s) }),
+    NutritionDailyAnalyze(screenComposable = { v, n, s, a -> NutritionDailyAnalyzeScreen(v, n, s, a) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    NutritionPeriodAnalyze(screenComposable = { v, n, s -> NutritionPeriodAnalyzeScreen(v, n, s) }),
+    NutritionPeriodAnalyze(screenComposable = { v, n, s, a -> NutritionPeriodAnalyzeScreen(v, n, s, a) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    NutritionOverview(screenComposable = { v, n, s -> NutritionOverviewScreen(v, n, s) }),
+    NutritionOverview(screenComposable = { v, n, s, a -> NutritionOverviewScreen(v, n, s, a) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    FoodList(screenComposable = { v, n, s -> FoodListScreen(v, n, s) }),
-    Camera(screenComposable = { v, n, s -> CameraViewScreen(v, n, s) }),
-    FoodSearch(screenComposable = { v, n, s -> FoodSearchScreen(v, n, s) }),
+    FoodList(screenComposable = { v, n, s, a -> FoodListScreen(v, n, s, a) }),
+    Camera(screenComposable = { v, n, s, a -> CameraViewScreen(v, n, s, a) }),
+    FoodSearch(screenComposable = { v, n, s, a -> FoodSearchScreen(v, n, s, a) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    Setting(screenComposable = { v, n, s -> SettingScreen(v, n, s) }),
+    Setting(screenComposable = { v, n, s, a -> SettingScreen(v, n, s, a) }),
     @RequiresApi(Build.VERSION_CODES.O)
-    HealthProfile(screenComposable = { v, n, s -> HealthProfileScreen(v, n, s) }),
+    HealthProfile(screenComposable = { v, n, s, a -> HealthProfileScreen(v, n, s, a) }),
 }
 
 class MainActivity : ComponentActivity() {
@@ -90,32 +94,50 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainApp(viewModel: BabbogiViewModel) {
+    // 내비게이션 설정
+    val navController = rememberNavController()
+    var currentScreen by remember { mutableStateOf<String?>(null) }
+
+    navController.addOnDestinationChangedListener { _, destination, _ ->
+        currentScreen = destination.route
+    }
+    
+    // 스낵바 설정
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
-    val navController = rememberNavController()
-
     val showSnackBar = remember {
-        { text: String, label: String, duration: SnackbarDuration ->
+        { text: String ->
             scope.launch {
                 snackBarHostState.currentSnackbarData?.dismiss()
                 snackBarHostState.showSnackbar(
                     message = text,
-                    actionLabel = label,
-                    duration = duration
+                    actionLabel = "확인",
+                    duration = SnackbarDuration.Short,
                 )
             }
         }
     }
-
-    var currentScreen by remember { mutableStateOf<String?>(null) }
-    navController.addOnDestinationChangedListener { _, destination, _ ->
-        currentScreen = destination.route
+    
+    // 오류 팝업 설정
+    var isShowingAlert by remember { mutableStateOf(false) }
+    var alertTitle by remember { mutableStateOf("") }
+    var alertMessage by remember { mutableStateOf("") }
+    var alertIcon by remember { mutableIntStateOf(R.drawable.baseline_cancel_24) }
+    val showAlertPopup = remember {
+        { title: String, message: String, icon: Int ->
+            alertTitle = title
+            alertMessage = message
+            alertIcon = icon
+            isShowingAlert = true
+        }
     }
-
+    
+    // 앱 실행
     Scaffold(
         bottomBar = {
             if (
-                !listOf(Screen.Tutorial, Screen.Loading).map { it.name }.contains(currentScreen) &&
+                currentScreen != Screen.Tutorial.name &&
+                currentScreen != Screen.Loading.name &&
                 viewModel.healthState != null
             ) CustomNavigationBar(
                 navController = navController,
@@ -150,9 +172,18 @@ fun MainApp(viewModel: BabbogiViewModel) {
         ) {
             Screen.entries.forEach { screen ->
                 composable(screen.name) {
-                    screen.screenComposable(viewModel, navController, showSnackBar)
+                    screen.screenComposable(viewModel, navController, showSnackBar, showAlertPopup)
                 }
             }
         }
     }
+
+    if (isShowingAlert) CustomPopup(
+        callbacks = listOf { isShowingAlert = false },
+        labels = listOf("확인"),
+        onDismiss = { isShowingAlert = false },
+        title = alertTitle,
+        icon = alertIcon,
+        content = { Text(text = alertMessage) }
+    )
 }
