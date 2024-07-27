@@ -224,10 +224,11 @@ class BabbogiViewModel: ViewModel() {
         onEnded: (success: Boolean) -> Unit
     ) {
         viewModelScope.launch {
-            val success = false
+            var success = false
             try {
                 ServerApi.putNutritionRecommendation(BabbogiModel.id!!, recommendation)
                 nutritionRecommendation = recommendation
+                success = true
             }
             catch (e: Exception) {
                 e.printStackTrace()
