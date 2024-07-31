@@ -20,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -56,9 +55,9 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.min
 
 private fun getColorListByRatio(ratio: Float): List<Color> {
-    return if (ratio > 1)
+    return if (ratio > 1.2)
         listOf(Color(0xFFFF0000), Color(0xFFFFA07A))
-    else if (ratio > 0.5)
+    else if (ratio > 0.7)
         listOf(Color(0xff63C6C4), Color(0xff97CA49))
     else
         listOf(Color(0xFFFFFF00), Color(0xFFFFD700))
@@ -67,10 +66,7 @@ private fun getColorListByRatio(ratio: Float): List<Color> {
 @Composable
 fun NutritionCircularGraph(nutrition: Nutrition, recommendation: Float, intake: Float) {
     val animatedValue = remember { Animatable(0f) }
-    var preIntake by remember { mutableFloatStateOf(intake) }
-
-    if (preIntake != intake)
-        preIntake = intake
+    val preIntake by remember(intake) { mutableFloatStateOf(intake) }
 
     LaunchedEffect(preIntake) {
         animatedValue.animateTo(
@@ -106,17 +102,14 @@ fun NutritionCircularGraph(nutrition: Nutrition, recommendation: Float, intake: 
                 style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
             )
         }
-        Text(text = "${"%.1f".format(intake)}${nutrition.unit}")
+        Text(text = "%.0f%%".format(intake / recommendation * 100))
     }
 }
 
 @Composable
 fun NutritionBarGraph(nutrition: Nutrition, recommendation: Float, intake: Float) {
     val animatedValue = remember { Animatable(0f) }
-    var preIntake by remember { mutableFloatStateOf(intake) }
-
-    if (preIntake != intake)
-        preIntake = intake
+    val preIntake by remember(intake) { mutableFloatStateOf(intake) }
 
     LaunchedEffect(preIntake) {
         animatedValue.animateTo(
@@ -130,27 +123,29 @@ fun NutritionBarGraph(nutrition: Nutrition, recommendation: Float, intake: Float
         verticalArrangement = Arrangement.spacedBy(5.dp),
         modifier = Modifier.padding(16.dp)
     ) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp)
-        ) {
-            drawRoundRect(
-                color =  Color(0x504DED5D),
-                size = Size(size.width, 8.dp.toPx()),
-                cornerRadius = CornerRadius(100f, 100f)
-            )
-            drawRoundRect(
-                brush = Brush.linearGradient(
-                    colors = getColorListByRatio(intake / recommendation),
-                    start = Offset.Zero,
-                    end = Offset.Infinite,
-                ),
-                size = Size(min(animatedValue.value * size.width, size.width), 8.dp.toPx()),
-                cornerRadius = CornerRadius(100f, 100f)
-            )
+        Box(contentAlignment = Alignment.Center) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(32.dp)
+            ) {
+                drawRoundRect(
+                    color = Color(0x504DED5D),
+                    size = Size(size.width, 32.dp.toPx()),
+                    cornerRadius = CornerRadius(100f, 100f)
+                )
+                drawRoundRect(
+                    brush = Brush.linearGradient(
+                        colors = getColorListByRatio(intake / recommendation),
+                        start = Offset.Zero,
+                        end = Offset.Infinite,
+                    ),
+                    size = Size(min(animatedValue.value * size.width, size.width), 32.dp.toPx()),
+                    cornerRadius = CornerRadius(100f, 100f)
+                )
+            }
+            Text(text = "%.0f%%".format(intake / recommendation * 100), color = Color.Black)
         }
-        Text(text = "${"%.1f".format(intake)}${nutrition.unit}")
     }
 }
 
@@ -212,7 +207,10 @@ fun NutritionPeriodBarGraph(
                             fitStrategy = DashedShape.FitStrategy.Fixed,
                         )
                     ),
-                    labelComponent = rememberTextComponent(),
+                    label = { "권장 섭취량: %.1f${nutrition.unit}".format(recommend) },
+                    labelComponent = rememberTextComponent(
+                        color = Color.Gray
+                    ),
                 )
             )
         ),

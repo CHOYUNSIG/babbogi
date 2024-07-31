@@ -1,5 +1,6 @@
 package com.example.babbogi.ui.view
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,21 +53,31 @@ fun TextInputHolder(
     value: String,
     onValueChange: (String) -> Unit,
     labeling: String,
-    keyboardType: KeyboardType
+    keyboardType: KeyboardType,
+    unit: String? = null,
+    isError: Boolean = false,
 ) {
     InputHolder(content = content) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Text(text = labeling) },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = keyboardType,
-                imeAction = ImeAction.Done
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            enabled = true,
-            textStyle = TextStyle(fontSize = 20.sp)
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                label = { Text(text = labeling, overflow = TextOverflow.Ellipsis, maxLines = 1) },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = keyboardType,
+                    imeAction = ImeAction.Done
+                ),
+                modifier = Modifier.weight(1f),
+                enabled = true,
+                textStyle = TextStyle(fontSize = 20.sp),
+                suffix = { if (unit != null) Text(text = unit) },
+                isError = isError
+            )
+        }
     }
 }
 
@@ -76,7 +88,8 @@ fun PreviewTextInputHolder() {
         content = "입력항목",
         value = "입력",
         onValueChange = {},
-        labeling = "입력하세요",
+        labeling = "입력하세요".repeat(10),
         keyboardType = KeyboardType.Text,
+        unit = "cm",
     )
 }

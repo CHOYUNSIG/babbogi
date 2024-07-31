@@ -18,8 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +37,7 @@ import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.testProduct1
 import com.example.babbogi.util.testProduct2
 import com.example.babbogi.util.testProduct3
+import kotlin.random.Random
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -74,6 +76,7 @@ fun NutritionAbstraction(
 fun Abstraction(
     data: List<Pair<String, Pair<String, String>>>,
     onClick: () -> Unit = {},
+    bottom: (@Composable () -> Unit)? = null,
     title: @Composable () -> Unit,
 ) {
     ElevatedCardWithDefault(onClick = onClick) {
@@ -99,6 +102,7 @@ fun Abstraction(
                     }
                 }
             }
+            if (bottom != null) Box(modifier = Modifier.fillMaxWidth()) { bottom() }
         }
     }
 }
@@ -167,10 +171,12 @@ fun NutritionRecommendationAbstraction(
 @Composable
 fun ProductAbstraction(
     product: Product,
-    amount: Int? = null,
+    intakeRatio: Float? = null,
     nullMessage: String = "",
     onClick: () -> Unit = {},
-    icon: @Composable () -> Unit = {},
+    bottom: (@Composable () -> Unit)? = null,
+    prefix: (@Composable () -> Unit)? = null,
+    suffix: (@Composable () -> Unit)? = null,
 ) {
     Abstraction(
         data = if (product.nutrition != null) Nutrition.entries.map { nutrition ->
@@ -179,7 +185,8 @@ fun ProductAbstraction(
                 nutrition.unit,
             )
         } else listOf(nullMessage to Pair("", "")),
-        onClick = onClick
+        onClick = onClick,
+        bottom = bottom,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
             Row(
@@ -187,25 +194,32 @@ fun ProductAbstraction(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                if (prefix != null) {
+                    prefix()
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    verticalAlignment = Alignment.Bottom,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         text = product.name.ifEmpty { "(이름 없음)" },
-                        color = if (product.name.isEmpty()) Color.Gray else Color.Unspecified,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1,
+                        style = TextStyle(
+                            color = if (product.name.isEmpty()) Color.Gray else Color.Unspecified,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            lineBreak = LineBreak.Heading,
+                        ),
                         modifier = Modifier.weight(1f, fill = false)
                     )
-                    if (amount != null)
-                        Text(text = "×$amount", fontSize = 16.sp)
+                    if (intakeRatio != null)
+                        Text(text = "%.1fg".format(intakeRatio * product.servingSize), fontSize = 16.sp)
                 }
-                Spacer(modifier = Modifier.width(5.dp))
-                icon()
+                if (suffix != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    suffix()
+                }
             }
             HorizontalDivider(thickness = 2.dp, color = BabbogiGreen)
         }
@@ -244,7 +258,7 @@ fun PreviewNutritionRecommendationAbstraction() {
 fun PreviewProductAbstraction() {
     ProductAbstraction(
         product = listOf(testProduct1, testProduct2, testProduct3).random(),
-        amount = listOf(1, 2, 3).random()
+        intakeRatio = Random.nextFloat() * 2
     ) {
         Icon(painter = painterResource(id = R.drawable.baseline_edit_24), contentDescription = "")
     }
