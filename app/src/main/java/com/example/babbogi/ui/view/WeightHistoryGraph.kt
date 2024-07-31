@@ -102,9 +102,9 @@ fun WeightHistoryGraph(history: Map<LocalDateTime, Float>) {
     )
 }
 
-private val bottomAxisHeight = 70
-private val sidePadding = 50
-private val guideLineDivision = 4
+private const val bottomAxisHeight = 70
+private const val sidePadding = 50
+private const val guideLineDivision = 4
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
