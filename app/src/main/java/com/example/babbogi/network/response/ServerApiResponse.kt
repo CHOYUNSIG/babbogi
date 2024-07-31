@@ -11,7 +11,6 @@ import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.SearchResult
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
