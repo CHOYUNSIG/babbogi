@@ -1,8 +1,18 @@
 package com.example.babbogi.ui.view
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -11,9 +21,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.babbogi.R
 import com.example.babbogi.ui.theme.BabbogiGreen
 
 @Composable
@@ -51,6 +64,43 @@ fun FixedColorSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     )
 }
 
+@Composable
+fun FixedColorFloatingIconButton(
+    onClick: () -> Unit,
+    icon: Int
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        shape = CircleShape,
+        modifier = Modifier.size(80.dp),
+        containerColor = BabbogiGreen,
+        contentColor = Color.White,
+        elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 5.dp)
+    ) {
+        Icon(
+            painter = painterResource(icon),
+            modifier = Modifier.fillMaxSize(0.5f),
+            contentDescription = "Send"
+        )
+    }
+}
+
+@Composable
+fun FixedColorCheckBox(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Checkbox(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        colors = CheckboxDefaults.colors(
+            checkedColor = BabbogiGreen,
+            checkmarkColor = Color.White,
+            uncheckedColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+    )
+}
+
 @Preview
 @Composable
 fun PreviewFixedColorButton() {
@@ -62,4 +112,16 @@ fun PreviewFixedColorButton() {
 fun PreviewFixedColorSwitch() {
     var check by remember { mutableStateOf(false) }
     FixedColorSwitch(checked = check) { check = it }
+}
+
+@Preview
+@Composable
+fun PreviewFixedColorFloatingIconButton() {
+    FixedColorFloatingIconButton(onClick = {}, icon = R.drawable.baseline_send_24)
+}
+
+@Preview
+@Composable
+fun PreviewFixedColorCheckBox() {
+    FixedColorCheckBox(checked = true) {}
 }

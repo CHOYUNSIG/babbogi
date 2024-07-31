@@ -2,7 +2,6 @@ package com.example.babbogi.util
 
 import kotlinx.serialization.Serializable
 
-
 enum class AdultDisease {
     Diabetes { override fun toString() = "당뇨" },
     HighBloodPressure { override fun toString() = "고혈압" },
