@@ -6,7 +6,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +20,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -43,7 +41,6 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DateSelector
@@ -51,9 +48,8 @@ import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.GptAnalyzeReport
 import com.example.babbogi.ui.view.NutritionAbstraction
-import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
-import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.ui.view.ScreenPreviewer
 import com.example.babbogi.ui.view.WeightHistoryPopup
 import com.example.babbogi.util.Consumption
 import com.example.babbogi.util.NutritionIntake
@@ -115,7 +111,6 @@ fun NutritionDailyAnalyzeScreen(
         onDeleteFoodClicked = { id, onEnded ->
             viewModel.deleteConsumption(id) { onEnded(it) }
         },
-        onSettingClicked = { navController.navigate(Screen.Setting.name) },
         onRefresh = { endRefresh ->
             viewModel.getFoodLists(viewModel.today, refresh = true) {
                 if (it != null) foodList = it[viewModel.today]
@@ -146,7 +141,6 @@ private fun NutritionDailyAnalyze(
     onWeightClicked: (onLoaded: (Map<LocalDateTime, Float>?, Float?) -> Unit) -> Unit,
     onChangeWeightClicked: () -> Unit,
     onDeleteFoodClicked: (id: Long, onEnded: (success: Boolean) -> Unit) -> Unit,
-    onSettingClicked: () -> Unit,
     onRefresh: (endRefresh: () -> Unit) -> Unit,
 ) {
     var showWeightHistoryPopup by remember { mutableStateOf(false) }
@@ -159,48 +153,30 @@ private fun NutritionDailyAnalyze(
     }
 
     Box(modifier = Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
-        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            TitleBar(title = "일일 분석") {
-                Row(horizontalArrangement = Arrangement.End) {
-                    IconButton(onClick = { showWeightHistoryPopup = true }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_accessibility_24),
-                            contentDescription = "몸무게 변화 보기",
-                        )
-                    }
-                    IconButton(onClick = onSettingClicked) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_settings_24),
-                            contentDescription = "설정",
-                        )
-                    }
+        ColumnWithDefault(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            ElevatedCardWithDefault {
+                ColumnWithDefault {
+                    DateSelector(
+                        initDate = today,
+                        onDateChanged = onDateChanged,
+                    )
                 }
             }
-            ColumnWithDefault {
-                ElevatedCardWithDefault {
-                    ColumnWithDefault {
-                        DateSelector(
-                            initDate = today,
-                            onDateChanged = onDateChanged,
-                        )
-                    }
-                }
-                if (intake != null) NutritionAbstraction(
-                    recommendation = recommendation,
-                    intake = intake,
-                    onClick = onNutritionCardClicked,
-                )
-                GptAnalyzeReport(
-                    title = "일일 레포트",
-                    date = today,
-                    report = report,
-                    onNewReportRequested = onNewReportRequested,
-                )
-                MealList(
-                    foodList = foodList,
-                    onDeleteClicked = { deletionConsumption = it },
-                )
-            }
+            if (intake != null) NutritionAbstraction(
+                recommendation = recommendation,
+                intake = intake,
+                onClick = onNutritionCardClicked,
+            )
+            GptAnalyzeReport(
+                title = "일일 레포트",
+                date = today,
+                report = report,
+                onNewReportRequested = onNewReportRequested,
+            )
+            MealList(
+                foodList = foodList,
+                onDeleteClicked = { deletionConsumption = it },
+            )
         }
 
         PullToRefreshContainer(
@@ -288,15 +264,14 @@ private fun MealList(
                     val food = foodList[index]
                     ProductAbstraction(
                         product = food.product,
-                        amount = food.amount,
+                        intakeRatio = food.intakeRatio,
                         onClick = { showingConsumption = food }
                     ) {
                         DescriptionText(
-                            text = "${if (food.time.hour < 12) "오전" else "오후"} %02d:%02d"
-                                .format(
-                                    (food.time.hour + 11) % 12 + 1,
-                                    food.time.minute
-                                )
+                            text = food.time?.let { time ->
+                                "${if (time.hour < 12) "오전" else "오후"} %02d:%02d"
+                                    .format((time.hour + 11) % 12 + 1, time.minute)
+                            } ?: "나중에 추가됨"
                         )
                         IconButton(onClick = { onDeleteClicked(food) }) {
                             Icon(
@@ -325,7 +300,7 @@ private fun MealList(
         ) {
             ProductAbstraction(
                 product = consumption.product,
-                amount = consumption.amount,
+                intakeRatio = consumption.intakeRatio,
             )
         }
     }
@@ -336,25 +311,20 @@ private fun MealList(
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewNutritionDailyAnalyze() {
-    BabbogiTheme {
-        Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
-            Box(modifier = Modifier.padding(it)) {
-                NutritionDailyAnalyze(
-                    today = LocalDate.now(),
-                    recommendation = testNutritionRecommendation,
-                    intake = getRandomNutritionIntake(),
-                    foodList = testConsumptionList,
-                    report = null,
-                    onWeightClicked = {},
-                    onChangeWeightClicked = {},
-                    onDateChanged = {},
-                    onNutritionCardClicked = {},
-                    onDeleteFoodClicked = { _, _ -> },
-                    onNewReportRequested = {},
-                    onSettingClicked = {},
-                    onRefresh = {},
-                )
-            }
-        }
+    ScreenPreviewer(screen = Screen.NutritionDailyAnalyze) {
+        NutritionDailyAnalyze(
+            today = LocalDate.now(),
+            recommendation = testNutritionRecommendation,
+            intake = getRandomNutritionIntake(),
+            foodList = testConsumptionList,
+            report = null,
+            onNutritionCardClicked = {},
+            onDateChanged = {},
+            onNewReportRequested = {},
+            onWeightClicked = {},
+            onChangeWeightClicked = {},
+            onDeleteFoodClicked = { _, _ -> },
+            onRefresh = {},
+        )
     }
 }

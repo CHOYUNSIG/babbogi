@@ -5,17 +5,16 @@ import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,7 +34,6 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
@@ -44,8 +42,7 @@ import com.example.babbogi.ui.view.HealthAbstraction
 import com.example.babbogi.ui.view.InputHolder
 import com.example.babbogi.ui.view.ListModificationPopup
 import com.example.babbogi.ui.view.NutritionRecommendationAbstraction
-import com.example.babbogi.ui.view.PreviewCustomNavigationBar
-import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.ui.view.ScreenPreviewer
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionRecommendation
@@ -97,70 +94,71 @@ private fun Setting(
 ) {
     var showRecommendationDialog by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        TitleBar(title = "설정")
-        ColumnWithDefault {
-            if (healthState != null) HealthAbstraction(
-                healthState = healthState,
-                onClick = onHealthCardClicked,
+    ColumnWithDefault(
+        modifier = Modifier
+            .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
+    ) {
+        if (healthState != null) HealthAbstraction(
+            healthState = healthState,
+            onClick = onHealthCardClicked,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_edit_24),
+                contentDescription = "건강 정보 수정",
+            )
+        }
+        else ElevatedCardWithDefault(onClick = onHealthCardClicked) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
             ) {
+                Text(text = "건강 정보 입력", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_edit_24),
-                    contentDescription = "건강 정보 수정",
+                    contentDescription = "건강 정보 입력",
                 )
             }
-            else ElevatedCardWithDefault(onClick = onHealthCardClicked) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(text = "건강 정보 입력", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_edit_24),
-                        contentDescription = "건강 정보 입력",
-                    )
-                }
-            }
-            NutritionRecommendationAbstraction(
-                recommendation = recommendation,
-                onClick = { showRecommendationDialog = true }
+        }
+        NutritionRecommendationAbstraction(
+            recommendation = recommendation,
+            onClick = { showRecommendationDialog = true }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_edit_24),
+                contentDescription = "권장 섭취량 조정",
+            )
+        }
+        InputHolder(content = "알림") {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.baseline_edit_24),
-                    contentDescription = "권장 섭취량 조정",
+                Column(modifier = Modifier.weight(1f)) {
+                    DescriptionText(text = "알림을 받으려면 알림 권한을 활성화해야 해요.")
+                }
+                Spacer(modifier = Modifier.requiredWidth(20.dp))
+                FixedColorSwitch(
+                    checked = notificationState,
+                    onCheckedChange = onNotificationStateChanged
                 )
             }
-            InputHolder(content = "알림") {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        DescriptionText(text = "알림을 받으려면 알림 권한을 활성화해야 해요.")
-                    }
-                    Spacer(modifier = Modifier.requiredWidth(20.dp))
-                    FixedColorSwitch(
-                        checked = notificationState,
-                        onCheckedChange = onNotificationStateChanged
-                    )
-                }
-            }
-            ElevatedCardWithDefault(onClick = onTutorialRestartClicked) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(text = "메뉴얼 다시 보기", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_menu_book_24),
-                        contentDescription = "메뉴얼 다시 보기",
-                    )
-                }
+        }
+        ElevatedCardWithDefault(onClick = onTutorialRestartClicked) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(text = "메뉴얼 다시 보기", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_menu_book_24),
+                    contentDescription = "메뉴얼 다시 보기",
+                )
             }
         }
     }
@@ -195,7 +193,8 @@ private fun NutritionRecommendationPopup(
                     )
                 }.toMap()
             )
-        }
+        },
+        countsOfEachRow = listOf(1, 2, 2, 2, 2)
     )
 }
 
@@ -204,19 +203,15 @@ private fun NutritionRecommendationPopup(
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewSetting() {
-    BabbogiTheme {
-        Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
-            Box(modifier = Modifier.padding(it)) {
-                Setting(
-                    healthState = testHealthState,
-                    recommendation = testNutritionRecommendation,
-                    notificationState = true,
-                    onHealthCardClicked = {},
-                    onRecommendationChanged = {},
-                    onNotificationStateChanged = {},
-                    onTutorialRestartClicked = {},
-                )
-            }
-        }
+    ScreenPreviewer(screen = Screen.Setting) {
+        Setting(
+            healthState = testHealthState,
+            recommendation = testNutritionRecommendation,
+            notificationState = true,
+            onHealthCardClicked = {},
+            onRecommendationChanged = {},
+            onNotificationStateChanged = {},
+            onTutorialRestartClicked = {},
+        )
     }
 }

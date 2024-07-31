@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,15 +39,14 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.babbogi.R
+import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
-import com.example.babbogi.ui.view.PreviewCustomNavigationBar
 import com.example.babbogi.ui.view.ProductAbstraction
-import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.ui.view.ScreenPreviewer
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.getRandomTestProduct
@@ -143,10 +141,7 @@ fun CameraViewScreen(
             onAddClicked = {
                 product?.let {
                     viewModel.addProduct(
-                        Product(
-                            name = it.name,
-                            nutrition = it.nutrition ?: Nutrition.entries.associateWith { 0f },
-                        )
+                        it.copy(nutrition = it.nutrition ?: Nutrition.entries.associateWith { 0f })
                     )
                 }
                 product = null
@@ -167,7 +162,9 @@ fun CameraViewScreen(
 private fun CameraPermissionDenied() {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize().padding(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -197,19 +194,15 @@ private fun CameraView(
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit,
 ) {
-    Column {
-        TitleBar("바코드 입력")
-        ColumnWithDefault(modifier = Modifier.fillMaxHeight()) {
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f)
-            ) {
-                cameraView()
-            }
-            DescriptionText("카메라로 바코드를 인식하세요")
-        }
+    ColumnWithDefault(modifier = Modifier.fillMaxHeight()) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f),
+            content = { cameraView() }
+        )
+        DescriptionText("카메라로 바코드를 인식하세요")
     }
 
     if (showDialog) {
@@ -252,18 +245,14 @@ private fun CameraView(
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewCameraView() {
-    BabbogiTheme {
-        Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
-            Box(modifier = Modifier.padding(it)) {
-                CameraView(
-                    cameraView = {},
-                    showDialog = true,
-                    isFetching = false,
-                    product = getRandomTestProduct(true),
-                    onAddClicked = {},
-                    onCancelClicked = {},
-                )
-            }
-        }
+    ScreenPreviewer(screen = Screen.Camera) {
+        CameraView(
+            cameraView = {},
+            showDialog = true,
+            isFetching = false,
+            product = getRandomTestProduct(true),
+            onAddClicked = {},
+            onCancelClicked = {},
+        )
     }
 }

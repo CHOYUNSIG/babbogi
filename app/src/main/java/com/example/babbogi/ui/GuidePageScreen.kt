@@ -23,8 +23,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,8 +41,8 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.ScreenPreviewer
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
@@ -111,7 +111,9 @@ private fun CustomSlider(
             }
         }
         Row(
-            modifier = modifier.height(50.dp).fillMaxWidth(),
+            modifier = modifier
+                .height(50.dp)
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
             repeat(sliderList.size) {
@@ -159,21 +161,21 @@ private fun GuidePage(
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewGuidePage() {
-    BabbogiTheme {
-        Scaffold {
-            Box(modifier = Modifier.padding(it)) {
-                GuidePage(
-                    list = listOf(
-                        R.drawable.guide_page1,
-                        R.drawable.guide_page2,
-                        R.drawable.guide_page3,
-                        R.drawable.guide_page4,
-                        R.drawable.guide_page5,
-                        R.drawable.guide_page6,
-                    ),
-                    onComplete = {},
-                )
-            }
-        }
+    val list = remember {
+        listOf(
+            R.drawable.guide_page1,
+            R.drawable.guide_page2,
+            R.drawable.guide_page3,
+            R.drawable.guide_page4,
+            R.drawable.guide_page5,
+            R.drawable.guide_page6,
+        )
+    }
+
+    ScreenPreviewer(screen = Screen.Tutorial, showTitleBar = false, showNavBar = false) {
+        GuidePage(
+            list = list,
+            onComplete = {},
+        )
     }
 }

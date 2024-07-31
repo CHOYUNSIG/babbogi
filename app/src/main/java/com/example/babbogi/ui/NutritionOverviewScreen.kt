@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,13 +33,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.NutritionCircularGraph
-import com.example.babbogi.ui.view.PreviewCustomNavigationBar
-import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.ui.view.ScreenPreviewer
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
@@ -134,16 +132,13 @@ private fun NutritionOverview(
     recommendation: NutritionRecommendation,
     intake: NutritionIntake?,
 ) {
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        TitleBar("전체 영양 정보")
-        ColumnWithDefault {
-            if (intake != null) Nutrition.entries.forEach { nutrition ->
-                CircularGraphCard(
-                    nutrition = nutrition,
-                    recommendation = recommendation[nutrition]!!,
-                    intake = intake[nutrition]!!,
-                )
-            }
+    ColumnWithDefault(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        if (intake != null) Nutrition.entries.forEach { nutrition ->
+            CircularGraphCard(
+                nutrition = nutrition,
+                recommendation = recommendation[nutrition]!!,
+                intake = intake[nutrition]!!,
+            )
         }
     }
 }
@@ -153,14 +148,10 @@ private fun NutritionOverview(
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewNutritionOverview() {
-    BabbogiTheme {
-        Scaffold(bottomBar = { PreviewCustomNavigationBar() }) {
-            Box(modifier = Modifier.padding(it)) {
-                NutritionOverview(
-                    recommendation = testNutritionRecommendation,
-                    intake = getRandomNutritionIntake(),
-                )
-            }
-        }
+    ScreenPreviewer(screen = Screen.NutritionOverview) {
+        NutritionOverview(
+            recommendation = testNutritionRecommendation,
+            intake = getRandomNutritionIntake(),
+        )
     }
 }
