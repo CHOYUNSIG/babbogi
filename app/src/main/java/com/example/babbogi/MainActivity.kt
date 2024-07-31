@@ -5,8 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -22,6 +26,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -41,9 +46,11 @@ import com.example.babbogi.ui.SettingScreen
 import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.CustomNavigationBar
 import com.example.babbogi.ui.view.CustomPopup
+import com.example.babbogi.ui.view.TitleBar
 import kotlinx.coroutines.launch
 
 enum class Screen(
+    val title: String? = null,
     val screenComposable: @Composable (
         BabbogiViewModel,
         NavHostController,
@@ -52,22 +59,50 @@ enum class Screen(
     ) -> Unit,
 ) {
     @RequiresApi(Build.VERSION_CODES.O)
-    Tutorial(screenComposable = { v, n, s, a -> GuidePageScreen(v, n, s, a) }),
-    Loading(screenComposable = { v, n, s, a -> LoadingScreen(v, n, s, a) }),
+    Tutorial(
+        screenComposable = { v, n, s, a -> GuidePageScreen(v, n, s, a) }
+    ),
+    Loading(
+        screenComposable = { v, n, s, a -> LoadingScreen(v, n, s, a) }
+    ),
     @RequiresApi(Build.VERSION_CODES.O)
-    NutritionDailyAnalyze(screenComposable = { v, n, s, a -> NutritionDailyAnalyzeScreen(v, n, s, a) }),
+    NutritionDailyAnalyze(
+        title = "일일 분석",
+        screenComposable = { v, n, s, a -> NutritionDailyAnalyzeScreen(v, n, s, a) }
+    ),
     @RequiresApi(Build.VERSION_CODES.O)
-    NutritionPeriodAnalyze(screenComposable = { v, n, s, a -> NutritionPeriodAnalyzeScreen(v, n, s, a) }),
+    NutritionPeriodAnalyze(
+        title = "기간 분석",
+        screenComposable = { v, n, s, a -> NutritionPeriodAnalyzeScreen(v, n, s, a) }
+    ),
     @RequiresApi(Build.VERSION_CODES.O)
-    NutritionOverview(screenComposable = { v, n, s, a -> NutritionOverviewScreen(v, n, s, a) }),
+    NutritionOverview(
+        title = "전체 영양 정보",
+        screenComposable = { v, n, s, a -> NutritionOverviewScreen(v, n, s, a) }
+    ),
     @RequiresApi(Build.VERSION_CODES.O)
-    FoodList(screenComposable = { v, n, s, a -> FoodListScreen(v, n, s, a) }),
-    Camera(screenComposable = { v, n, s, a -> CameraViewScreen(v, n, s, a) }),
-    FoodSearch(screenComposable = { v, n, s, a -> FoodSearchScreen(v, n, s, a) }),
+    FoodList(
+        title = "음식 추가",
+        screenComposable = { v, n, s, a -> FoodListScreen(v, n, s, a) }
+    ),
+    Camera(
+        title = "바코드 입력",
+        screenComposable = { v, n, s, a -> CameraViewScreen(v, n, s, a) }
+    ),
+    FoodSearch(
+        title = "음식 검색",
+        screenComposable = { v, n, s, a -> FoodSearchScreen(v, n, s, a) }
+    ),
     @RequiresApi(Build.VERSION_CODES.O)
-    Setting(screenComposable = { v, n, s, a -> SettingScreen(v, n, s, a) }),
+    Setting(
+        title = "설정",
+        screenComposable = { v, n, s, a -> SettingScreen(v, n, s, a) }
+    ),
     @RequiresApi(Build.VERSION_CODES.O)
-    HealthProfile(screenComposable = { v, n, s, a -> HealthProfileScreen(v, n, s, a) }),
+    HealthProfile(
+        title = "건강 정보",
+        screenComposable = { v, n, s, a -> HealthProfileScreen(v, n, s, a) }
+    ),
 }
 
 class MainActivity : ComponentActivity() {
@@ -134,6 +169,21 @@ fun MainApp(viewModel: BabbogiViewModel) {
     
     // 앱 실행
     Scaffold(
+        topBar = {
+            val title = currentScreen?.let { Screen.valueOf(it).title }
+            if (title != null) TitleBar(title = title) {
+                if (currentScreen != Screen.Setting.name && currentScreen != Screen.HealthProfile.name) Row(horizontalArrangement = Arrangement.End) {
+                    IconButton(
+                        onClick = { navController.navigate(Screen.Setting.name) }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_settings_24),
+                            contentDescription = "설정",
+                        )
+                    }
+                }
+            }
+        },
         bottomBar = {
             if (
                 currentScreen != Screen.Tutorial.name &&
