@@ -25,9 +25,9 @@ object NutritionApi {
         retrofit.create(NutritionApiService::class.java)
     }
 
-    suspend fun getNutrition(prodName: String): List<NutritionMap<Float>> {
+    suspend fun getNutrition(prodName: String): List<Pair<NutritionMap<Float>, Float>> {
         val response = retrofitService.getNutrition(prodName.replace(" ", "_")).I2790.row
         Log.d("NutritionApi", "$response")
-        return response?.map { row -> row.toMap() } ?: emptyList()
+        return response?.map { row -> row.toMap() to row.SERVING_SIZE.toFloat() } ?: emptyList()
     }
 }

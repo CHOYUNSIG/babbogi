@@ -11,29 +11,28 @@ import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.SearchResult
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Serializable
-data class ServerUserStateFormat (
-    val key: Long? = null,
-    val id: Long? = null,
-    val name: String,
-    val height: Double,
-    val weight: Double,
-    val age: Int,
-    val gender: String,
-    val disease: String,
-    val date: String? = null,
-) {
+sealed class ServerUserFormat {
+    abstract val name: String?
+    abstract val height: Double?
+    abstract val weight: Double?
+    abstract val age: Int?
+    abstract val gender: String?
+    abstract val disease: String?
+
     fun toHealthState(): HealthState = HealthState(
-        height = this.height.toFloat(),
-        weight = this.weight.toFloat(),
+        height = this.height!!.toFloat(),
+        weight = this.weight!!.toFloat(),
         gender = when (this.gender) {
             "M" -> Gender.Male
             "F" -> Gender.Female
             else -> Gender.entries.random()
         },
-        age = this.age,
+        age = this.age!!,
         adultDisease = AdultDisease.entries.map {
             it.name.lowercase()
         }.mapIndexed { index, s ->
@@ -43,182 +42,218 @@ data class ServerUserStateFormat (
 }
 
 @Serializable
-data class ServerNutritionFormat(
-    val id: Long? = null,
-    val foodName: String? = null,
-    val foodCount: Int? = null,
-    val kcal: Double,
-    val carbohydrate: Double,
-    val sugar: Double,
-    val protein: Double,
-    val fat: Double,
-    val saturatedfat: Double,
-    val transfat: Double,
-    val natrium: Double,
-    val cholesterol: Double,
-) {
+sealed class ServerNutritionFormat {
+    abstract val kcal: Double?
+    abstract val carbohydrate: Double?
+    abstract val sugar: Double?
+    abstract val protein: Double?
+    abstract val fat: Double?
+    abstract val transfat: Double?
+    abstract val saturatedfat: Double?
+    abstract val cholesterol: Double?
+    abstract val natrium: Double?
+
     fun toNutritionMap(): NutritionMap<Float> = mapOf(
-        Nutrition.Fat to this.fat.toFloat(),
-        Nutrition.Salt to this.natrium.toFloat(),
-        Nutrition.Sugar to this.sugar.toFloat(),
-        Nutrition.Calorie to this.kcal.toFloat(),
-        Nutrition.Protein to this.protein.toFloat(),
-        Nutrition.TransFat to this.transfat.toFloat(),
-        Nutrition.Cholesterol to this.cholesterol.toFloat(),
-        Nutrition.Carbohydrate to this.carbohydrate.toFloat(),
-        Nutrition.SaturatedFat to this.saturatedfat.toFloat(),
+        Nutrition.Fat to fat!!.toFloat(),
+        Nutrition.Salt to natrium!!.toFloat(),
+        Nutrition.Sugar to sugar!!.toFloat(),
+        Nutrition.Calorie to kcal!!.toFloat(),
+        Nutrition.Protein to protein!!.toFloat(),
+        Nutrition.TransFat to transfat!!.toFloat(),
+        Nutrition.Cholesterol to cholesterol!!.toFloat(),
+        Nutrition.Carbohydrate to carbohydrate!!.toFloat(),
+        Nutrition.SaturatedFat to saturatedfat!!.toFloat(),
     )
 }
 
 @Serializable
-data class ServerConsumeFormat(
-    val id: Long,
-    val userId: Long,
-    val foodName: String?,
-    val foodCount: Int,
-    val kcal: Double?,
-    val carbohydrate: Double?,
-    val sugar: Double?,
-    val protein: Double?,
-    val fat: Double?,
-    val transfat: Double?,
-    val saturatedfat: Double?,
-    val cholesterol: Double?,
-    val natrium: Double?,
-    val remainingkcal: Double,
-    val remainingCarbohydrate: Double,
-    val remainingSugar: Double,
-    val remainingProtein: Double,
-    val remainingFat: Double,
-    val remainingTransfat: Double,
-    val remainingSaturatedfat: Double,
-    val remainingCholesterol: Double,
-    val remainingNatrium: Double,
-    val date: String,
-) {
+data class ServerHealthPostFormat(
+    val id: Long? = null,
+    override val name: String,
+    override val height: Double,
+    override val weight: Double,
+    override val age: Int,
+    override val gender: String,
+    override val disease: String,
+): ServerUserFormat() {
+    companion object {
+        fun fromHealthState(id: Long?, healthState: HealthState): ServerHealthPostFormat {
+            return ServerHealthPostFormat(
+                id = id,
+                name = "babbogi_session",
+                height = healthState.height.toDouble(),
+                weight = healthState.weight.toDouble(),
+                age = healthState.age,
+                gender = healthState.gender.name.substring(0, 1),
+                disease = healthState.adultDisease.toString()
+            )
+        }
+    }
+}
+
+@Serializable
+data class ServerHealthGetFormat(
+    val id: Long? = null,
+    val date: String? = null,
+    override val name: String? = null,
+    override val height: Double? = null,
+    override val weight: Double? = null,
+    override val age: Int? = null,
+    override val gender: String? = null,
+    override val disease: String? = null,
+): ServerUserFormat()
+
+@Serializable
+data class ServerConsumptionPostFormat(
+    val foodCount: Double,
+    val foodName: String,
+    val weight: Double,
+    override val kcal: Double,
+    override val carbohydrate: Double,
+    override val sugar: Double,
+    override val protein: Double,
+    override val fat: Double,
+    override val transfat: Double,
+    override val saturatedfat: Double,
+    override val cholesterol: Double,
+    override val natrium: Double,
+): ServerNutritionFormat() {
+    companion object {
+        fun fromProduct(product: Product, intakeRatio: Float): ServerConsumptionPostFormat {
+            val nutrition = product.nutrition!!
+            return ServerConsumptionPostFormat(
+                foodCount =intakeRatio.toDouble(),
+                foodName = product.name,
+                weight = product.servingSize.toDouble(),
+                kcal = nutrition[Nutrition.Calorie]!!.toDouble(),
+                carbohydrate = nutrition[Nutrition.Carbohydrate]!!.toDouble(),
+                sugar = nutrition[Nutrition.Sugar]!!.toDouble(),
+                protein = nutrition[Nutrition.Protein]!!.toDouble(),
+                fat = nutrition[Nutrition.Fat]!!.toDouble(),
+                transfat = nutrition[Nutrition.TransFat]!!.toDouble(),
+                saturatedfat = nutrition[Nutrition.SaturatedFat]!!.toDouble(),
+                cholesterol = nutrition[Nutrition.Cholesterol]!!.toDouble(),
+                natrium = nutrition[Nutrition.Salt]!!.toDouble(),
+            )
+        }
+    }
+}
+
+@Serializable
+data class ServerConsumptionGetFormat(
+    val id: Long? = null,
+    val foodCount: Double? = null,
+    val foodName: String? = null,
+    val weight: Double? = null,
+    val date: String? = null,
+    override val kcal: Double? = null,
+    override val carbohydrate: Double? = null,
+    override val sugar: Double? = null,
+    override val protein: Double? = null,
+    override val fat: Double? = null,
+    override val transfat: Double? = null,
+    override val saturatedfat: Double? = null,
+    override val cholesterol: Double? = null,
+    override val natrium: Double? = null,
+): ServerNutritionFormat() {
     @RequiresApi(Build.VERSION_CODES.O)
     fun toConsumption(): Consumption = Consumption(
-        id = this.id,
-        product = Product(
-            name = this.foodName!!,
-            nutrition = this.toNutritionMap(),
-        ),
-        amount = this.foodCount,
-        time = LocalDateTime.parse(this.date)
-    )
-
-    fun toNutritionMap(): NutritionMap<Float> = mapOf(
-        Nutrition.Fat to this.fat!!.toFloat(),
-        Nutrition.Salt to this.natrium!!.toFloat(),
-        Nutrition.Sugar to this.sugar!!.toFloat(),
-        Nutrition.Calorie to this.kcal!!.toFloat(),
-        Nutrition.Protein to this.protein!!.toFloat(),
-        Nutrition.TransFat to this.transfat!!.toFloat(),
-        Nutrition.Cholesterol to this.cholesterol!!.toFloat(),
-        Nutrition.Carbohydrate to this.carbohydrate!!.toFloat(),
-        Nutrition.SaturatedFat to this.saturatedfat!!.toFloat(),
-    )
-}
-
-@Serializable
-data class ServerSearchResultFormat(
-    val foodcode: String,
-    val foodname: String,
-    val foodgroup: String,
-    val food: String,
-    val company: String,
-) {
-    fun toSearchResult(): SearchResult = SearchResult(
-        id = foodcode,
-        name = foodname,
-        mainCategory = foodgroup,
-        subCategory = food,
-        company = if (company.startsWith("해당 없음")) null else company,
-    )
-}
-
-@Serializable
-data class ServerFoodFormat(
-    val foodnum: Int,
-    val foodcode: String,
-    val foodname: String,
-    val foodgroup: String,
-    val food: String,
-    val nutrientcontentper100: String,
-    val kcal: Double,
-    val protein: Double,
-    val fat: Double,
-    val carbohydrate: Double,
-    val sugar: Double,
-    val natrium: Double,
-    val cholesterol: Double,
-    val saturatedfat: Double,
-    val transfat: Double,
-) {
-    fun toNutritionMap(): NutritionMap<Float> = mapOf(
-        Nutrition.Fat to this.fat.toFloat(),
-        Nutrition.Salt to this.natrium.toFloat(),
-        Nutrition.Sugar to this.sugar.toFloat(),
-        Nutrition.Calorie to this.kcal.toFloat(),
-        Nutrition.Protein to this.protein.toFloat(),
-        Nutrition.TransFat to this.transfat.toFloat(),
-        Nutrition.Cholesterol to this.cholesterol.toFloat(),
-        Nutrition.Carbohydrate to this.carbohydrate.toFloat(),
-        Nutrition.SaturatedFat to this.saturatedfat.toFloat(),
+        id = id!!,
+        product = toProduct(),
+        intakeRatio = foodCount!!.toFloat(),
+        time = if (date!!.endsWith("00:00:00")) null
+        else LocalDateTime.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     )
 
     fun toProduct(): Product = Product(
-        name = this.foodname,
-        nutrition = this.toNutritionMap()
+        name = foodName!!,
+        nutrition = toNutritionMap(),
+        servingSize = weight!!.toFloat(),
     )
 }
 
-fun HealthState.toServerUserStateFormat(id: Long?): ServerUserStateFormat {
-    return ServerUserStateFormat(
-        id = id,
-        name = "babbogi_app",
-        height = this.height.toDouble(),
-        weight = this.weight.toDouble(),
-        age = this.age,
-        gender = when (this.gender) {
-            Gender.Male -> "M"
-            Gender.Female -> "F"
-        },
-        disease = this.adultDisease?.name?.lowercase() ?: "null"
+@Serializable
+data class ServerNutritionRecommendationGetFormat(
+    override val kcal: Double? = null,
+    override val carbohydrate: Double? = null,
+    override val sugar: Double? = null,
+    override val protein: Double? = null,
+    override val fat: Double? = null,
+    override val transfat: Double? = null,
+    override val saturatedfat: Double? = null,
+    override val cholesterol: Double? = null,
+    override val natrium: Double? = null,
+): ServerNutritionFormat()
+
+@Serializable
+data class ServerNutritionRecommendationPutFormat(
+    override val kcal: Double,
+    override val carbohydrate: Double,
+    override val sugar: Double,
+    override val protein: Double,
+    override val fat: Double,
+    override val transfat: Double,
+    override val saturatedfat: Double,
+    override val cholesterol: Double,
+    override val natrium: Double,
+): ServerNutritionFormat() {
+    companion object {
+        fun fromNutritionMap(nutrition: NutritionMap<Float>): ServerNutritionRecommendationPutFormat {
+            return ServerNutritionRecommendationPutFormat(
+                kcal = nutrition[Nutrition.Calorie]!!.toDouble(),
+                carbohydrate = nutrition[Nutrition.Carbohydrate]!!.toDouble(),
+                sugar = nutrition[Nutrition.Sugar]!!.toDouble(),
+                protein = nutrition[Nutrition.Protein]!!.toDouble(),
+                fat = nutrition[Nutrition.Fat]!!.toDouble(),
+                transfat = nutrition[Nutrition.TransFat]!!.toDouble(),
+                saturatedfat = nutrition[Nutrition.SaturatedFat]!!.toDouble(),
+                cholesterol = nutrition[Nutrition.Cholesterol]!!.toDouble(),
+                natrium = nutrition[Nutrition.Salt]!!.toDouble(),
+            )
+        }
+    }
+}
+
+@Serializable
+data class ServerSearchResultGetFormat(
+    val foodcode: String? = null,
+    val foodname: String? = null,
+    val foodgroup: String? = null,
+    val food: String? = null,
+    val company: String? = null,
+) {
+    fun toSearchResult(): SearchResult = SearchResult(
+        id = foodcode!!,
+        name = foodname!!,
+        mainCategory = foodgroup!!,
+        subCategory = food!!,
+        company = if (company!!.startsWith("해당 없음")) null else company,
     )
 }
 
-fun NutritionMap<Float>.toServerNutritionFormat(
-    id: Long? = null,
-): ServerNutritionFormat {
-    return ServerNutritionFormat(
-        id = id,
-        foodName = null,
-        foodCount = null,
-        kcal = this[Nutrition.Calorie]!!.toDouble(),
-        carbohydrate = this[Nutrition.Carbohydrate]!!.toDouble(),
-        sugar = this[Nutrition.Sugar]!!.toDouble(),
-        protein = this[Nutrition.Protein]!!.toDouble(),
-        fat = this[Nutrition.Fat]!!.toDouble(),
-        saturatedfat = this[Nutrition.SaturatedFat]!!.toDouble(),
-        transfat = this[Nutrition.TransFat]!!.toDouble(),
-        natrium = this[Nutrition.Salt]!!.toDouble(),
-        cholesterol = this[Nutrition.Cholesterol]!!.toDouble(),
-    )
-}
-
-fun Product.toServerNutritionFormat(amount: Int): ServerNutritionFormat {
-    return ServerNutritionFormat(
-        foodName = this.name,
-        foodCount = amount,
-        fat = this.nutrition?.get(Nutrition.Fat)?.toDouble() ?: 0.0,
-        kcal = this.nutrition?.get(Nutrition.Calorie)?.toDouble() ?: 0.0,
-        sugar = this.nutrition?.get(Nutrition.Sugar)?.toDouble() ?: 0.0,
-        natrium = this.nutrition?.get(Nutrition.Salt)?.toDouble() ?: 0.0,
-        protein = this.nutrition?.get(Nutrition.Protein)?.toDouble() ?: 0.0,
-        transfat = this.nutrition?.get(Nutrition.TransFat)?.toDouble() ?: 0.0,
-        cholesterol = this.nutrition?.get(Nutrition.Cholesterol)?.toDouble() ?: 0.0,
-        carbohydrate = this.nutrition?.get(Nutrition.Carbohydrate)?.toDouble() ?: 0.0,
-        saturatedfat = this.nutrition?.get(Nutrition.SaturatedFat)?.toDouble() ?: 0.0,
+@Serializable
+data class ServerMatchedFoodGetFormat(
+    val foodcode: String? = null,
+    val foodname: String? = null,
+    val foodgroup: String? = null,
+    val food: String? = null,
+    val foodnum: Int? = null,
+    val company: String? = null,
+    val foodweight: Double? = null,
+    val nutrientcontentper100: Double? = null,
+    override val kcal: Double? = null,
+    override val protein: Double? = null,
+    override val fat: Double? = null,
+    override val carbohydrate: Double? = null,
+    override val sugar: Double? = null,
+    override val natrium: Double? = null,
+    override val cholesterol: Double? = null,
+    override val saturatedfat: Double? = null,
+    override val transfat: Double? = null,
+): ServerNutritionFormat() {
+    fun toProduct(): Product = Product(
+        name = foodname!!,
+        nutrition = toNutritionMap(),
+        servingSize = foodweight!!.toFloat(),
     )
 }
