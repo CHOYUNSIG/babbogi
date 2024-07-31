@@ -27,9 +27,4 @@ data class C005_row(
     val SITE_ADDR: String,
     val CLSBIZ_DT: String,
     val BAR_CD: String
-) {
-    fun toProduct(): Product = Product(
-        name = PRDLST_NM,
-        null
-    )
-}
+)

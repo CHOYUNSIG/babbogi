@@ -8,13 +8,16 @@ import kotlin.random.Random
 data class Consumption (
     val id: Long,
     val product: Product,
-    val amount: Int,
-    val time: LocalDateTime,
-)
+    val intakeRatio: Float,
+    val time: LocalDateTime?,
+) {
+    val weight: Float = product.servingSize * intakeRatio
+    val nutritionIntake: NutritionIntake = product.nutrition!!.mapValues { it.value * intakeRatio }
+}
 
 fun List<Consumption>.toNutritionIntake(): NutritionIntake = Nutrition.entries.associateWith { nutrition ->
     this.sumOf {
-        ((it.product.nutrition?.get(nutrition) ?: 0f) * it.amount).toDouble()
+        it.product.nutrition?.get(nutrition)?.toDouble() ?: 0.0
     }.toFloat()
 }
 
@@ -24,7 +27,7 @@ fun List<Consumption>.toNutritionIntake(): NutritionIntake = Nutrition.entries.a
 fun getRandomTestConsumption() = Consumption(
     id = Random.nextLong(),
     product = getRandomTestProduct(),
-    amount = Random.nextInt(1, 10),
+    intakeRatio = Random.nextFloat() * 2,
     time = LocalDateTime.now(),
 )
 

@@ -2,7 +2,6 @@ package com.example.babbogi.util
 
 import com.example.babbogi.R
 
-
 enum class Nutrition(
     val res: Int,
     val unit: String,

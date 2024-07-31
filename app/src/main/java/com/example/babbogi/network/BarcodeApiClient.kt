@@ -25,9 +25,9 @@ object BarcodeApi {
         retrofit.create(BarcodeApiService::class.java)
     }
 
-    suspend fun getProducts(barcode: String): List<Product> {
+    suspend fun getProducts(barcode: String): List<String> {
         val response = retrofitService.getProducts(barcode).C005.row
         Log.d("BarcodeApi", "$response")
-        return response?.map { row -> row.toProduct() } ?: emptyList()
+        return response?.map { row -> row.PRDLST_NM } ?: emptyList()
     }
 }

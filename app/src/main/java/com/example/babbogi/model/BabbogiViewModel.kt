@@ -25,19 +25,20 @@ class BabbogiViewModel: ViewModel() {
     private val _healthState = mutableStateOf(BabbogiModel.healthState)
     private val _isTutorialDone = mutableStateOf(BabbogiModel.isTutorialDone)
     private val _notificationActivation = mutableStateOf(BabbogiModel.notificationActivation)
-    private val _productList = mutableStateOf(BabbogiModel.productList)
     @RequiresApi(Build.VERSION_CODES.O)
     private val _today = mutableStateOf(LocalDate.now())
+    private val _productList = mutableStateOf(BabbogiModel.productList.map { Triple(it.first, it.second, true) })
     private val _periodReport = mutableStateOf<Pair<List<LocalDate>, String?>?>(null)
     private val _weightHistory = mutableStateOf<Map<LocalDateTime, Float>?>(null)
+
     private val foodLists = mutableStateMapOf<LocalDate, List<Consumption>>()
     private val dailyReport = mutableStateMapOf<LocalDate, String>()
 
-    var productList: List<Pair<Product, Int>>
+    var productList: List<Triple<Product, Float, Boolean>>
         get() = _productList.value
         private set(productList) {
             _productList.value = productList
-            BabbogiModel.productList = productList
+            BabbogiModel.productList = productList.map { it.first to it.second }
         }
 
     var nutritionRecommendation: NutritionRecommendation
@@ -83,22 +84,23 @@ class BabbogiViewModel: ViewModel() {
         private set(periodReport) { _periodReport.value = periodReport }
 
     // 제품을 리스트에 추가
-    fun addProduct(product: Product = Product(name = "", Nutrition.entries.associateWith { 0f })) {
-        productList = productList.plus(product to 1)
+    fun addProduct(product: Product, intakeRatio: Float = 1f) {
+        productList = productList.plus(Triple(product, intakeRatio, true))
     }
 
     // 리스트에서 제품 정보 변경
     fun modifyProduct(
         index: Int,
         product: Product = productList[index].first,
-        amount: Int = productList[index].second,
+        intakeRatio: Float = productList[index].second,
+        checked: Boolean = productList[index].third,
     ) {
-        productList = productList.mapIndexed { i, p -> if (i == index) product to amount else p }
+        productList = productList.mapIndexed { i, triple -> if (i == index) Triple(product, intakeRatio, checked) else triple }
     }
 
     // 리스트에서 제품 삭제
-    fun deleteProduct(index: Int) {
-        productList = productList.filterIndexed { i, _ -> i != index }
+    fun deleteProduct() {
+        productList = productList.filter { !it.third }
     }
 
     // 공공데이터 API로 상품 검색
@@ -106,10 +108,12 @@ class BabbogiViewModel: ViewModel() {
         viewModelScope.launch {
             var product: Product? = null
             try {
-                val productName = BarcodeApi.getProducts(barcode).firstOrNull()?.name ?: return@launch
+                val productName = BarcodeApi.getProducts(barcode).firstOrNull() ?: return@launch
+                val (nutrition, servingSize) = NutritionApi.getNutrition(productName).firstOrNull() ?: (null to 100f)
                 product = Product(
-                    productName,
-                    NutritionApi.getNutrition(productName).firstOrNull(),
+                    name = productName,
+                    nutrition = nutrition,
+                    servingSize = servingSize,
                 )
             }
             catch (e: Exception) {
@@ -124,16 +128,15 @@ class BabbogiViewModel: ViewModel() {
 
     // 섭취 리스트 서버 전송
     @RequiresApi(Build.VERSION_CODES.O)
-    fun sendList(onEnded: (success: Boolean) -> Unit) {
+    fun sendList(date: LocalDate? = null, onEnded: (success: Boolean) -> Unit) {
         viewModelScope.launch {
             var success = false
             try {
-                val today = LocalDate.now()
+                val today = date ?: LocalDate.now()
                 val id = BabbogiModel.id!!
-                ServerApi.postProductList(id, productList)
-                val products = ServerApi.getProductList(id, today)
-                foodLists[today] = products
-                productList = emptyList()
+                ServerApi.postProductList(id, productList.filter { it.third }.map { it.first to it.second }, date)
+                foodLists[today] = ServerApi.getProductList(BabbogiModel.id!!, today)
+                deleteProduct()
                 success = true
             }
             catch (e: Exception) {
@@ -292,7 +295,7 @@ class BabbogiViewModel: ViewModel() {
             var report: String? = null
             try {
                 if (generate && (!dailyReport.containsKey(date) || refresh))
-                    dailyReport[date] = ServerApi.getDailyReport(BabbogiModel.id!!, date)
+                    dailyReport[date] = ServerApi.getReport(BabbogiModel.id!!, date)
                 report = dailyReport[date]
             }
             catch (e: Exception) {
@@ -318,7 +321,7 @@ class BabbogiViewModel: ViewModel() {
             try {
                 periodReport?.let { (period, preReport) ->
                     report = if (generate && (preReport == null || period.first() != startDate || period.last() != endDate || refresh))
-                        ServerApi.getPeriodReport(BabbogiModel.id!!, startDate, endDate)
+                        ServerApi.getReport(BabbogiModel.id!!, startDate, endDate)
                     else preReport
                 }
                 periodReport = listOf(startDate, endDate) to report

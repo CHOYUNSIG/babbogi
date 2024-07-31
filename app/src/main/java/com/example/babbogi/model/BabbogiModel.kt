@@ -59,8 +59,8 @@ object BabbogiModel {
             Log.d("DataPreference", "Nutrition Recommendation is saved.")
         }
 
-    var productList: List<Pair<Product, Int>>
-        get() = sharedPreferences.getString("food_list", null).let { if (it != null) Json.decodeFromString<List<Pair<Product, Int>>>(it) else emptyList() }
+    var productList: List<Pair<Product, Float>>
+        get() = sharedPreferences.getString("food_list", null).let { if (it != null) Json.decodeFromString(it) else emptyList() }
         set(productList) {
             sharedPreferences.edit().putString("food_list", Json.encodeToString(productList)).apply()
             Log.d("DataPreference", "Food List is saved.")

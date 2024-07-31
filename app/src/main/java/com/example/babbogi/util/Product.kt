@@ -1,9 +1,6 @@
 package com.example.babbogi.util
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import kotlinx.serialization.Serializable
-import java.time.LocalDateTime
 import kotlin.random.Random
 import kotlin.random.nextUInt
 
@@ -12,20 +9,14 @@ import kotlin.random.nextUInt
 @Serializable
 data class Product(
     val name: String,
-    val nutrition: NutritionMap<Float>?
+    val nutrition: NutritionMap<Float>?,
+    val servingSize: Float,
 )
-
-
-fun List<Triple<Product, LocalDateTime, Int>>.toNutritionIntake(): NutritionIntake = Nutrition.entries.associateWith { nutrition ->
-    this.sumOf {
-        ((it.first.nutrition?.get(nutrition) ?: 0f) * it.third).toDouble()
-    }.toFloat()
-}
 
 
 // 테스트용 제품 데이터
 val testProduct1 = Product(
-    "아카페라카라멜마끼아또",
+    "아카페라카라멜마끼아또 2024 리뉴얼에디션",
     mapOf(
         Nutrition.Calorie to 140f,
         Nutrition.Carbohydrate to 23f,
@@ -36,7 +27,8 @@ val testProduct1 = Product(
         Nutrition.Cholesterol to 15f,
         Nutrition.SaturatedFat to 3f,
         Nutrition.TransFat to 0f,
-    )
+    ),
+    100f,
 )
 
 val testProduct2 = Product(
@@ -51,7 +43,8 @@ val testProduct2 = Product(
         Nutrition.Cholesterol to 15f,
         Nutrition.SaturatedFat to 3f,
         Nutrition.TransFat to 0f,
-    )
+    ),
+    100f,
 )
 
 val testProduct3 = Product(
@@ -66,18 +59,24 @@ val testProduct3 = Product(
         Nutrition.Cholesterol to 0f,
         Nutrition.SaturatedFat to 8f,
         Nutrition.TransFat to 0f,
-    )
+    ),
+    100f,
 )
 
 val testProductNull = Product(
     "코카콜라 제로",
-    null
+    null,
+    10f,
 )
 
 fun getRandomTestProduct(includeNull: Boolean = false) = listOf(testProduct1, testProduct2, testProduct3)
     .plus(if (includeNull) listOf(testProductNull) else emptyList())
     .random()
 
-val testProductPairList: List<Pair<Product, Int>> = List(10) {
-    getRandomTestProduct() to Random.nextUInt().mod(5u).toInt() + 1
+val testProductPairList = List(10) {
+    getRandomTestProduct() to Random.nextFloat() * 2
+}
+
+val testProductTripleList = List(10) {
+    Triple(getRandomTestProduct(), Random.nextFloat() * 2, Random.nextBoolean())
 }
