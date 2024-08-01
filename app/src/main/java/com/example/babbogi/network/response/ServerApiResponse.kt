@@ -84,7 +84,7 @@ data class ServerHealthPostFormat(
                 weight = healthState.weight.toDouble(),
                 age = healthState.age,
                 gender = healthState.gender.name.substring(0, 1),
-                disease = healthState.adultDisease.toString()
+                disease = healthState.adultDisease?.name?.lowercase() ?: "null"
             )
         }
     }

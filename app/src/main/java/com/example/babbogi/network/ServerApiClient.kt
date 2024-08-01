@@ -167,11 +167,12 @@ object ServerApi {
         else retrofitService.getPeriodReport(id, startDate.toString(), endDate.toString())
     }
 
-    suspend fun postProductList(id: Long, productList: List<Pair<Product, Float>>, date: LocalDate? = null) {
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun postProductList(id: Long, productList: List<Pair<Product, Float>>, date: LocalDate) {
         Log.d("ServerApi", "postProductList($id, $productList, $date)")
         val body = productList.map { (product, intakeRatio) -> ServerConsumptionPostFormat.fromProduct(product, intakeRatio) }
         Log.d("ServerApi", "body: ${Json.encodeToJsonElement(body)}")
-        if (date == null) retrofitService.postProductList(id, body)
+        if (date == LocalDate.now()) retrofitService.postProductList(id, body)
         else retrofitService.postProductListOnPast(id, date.toString(), body)
     }
 
