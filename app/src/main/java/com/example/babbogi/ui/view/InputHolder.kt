@@ -27,7 +27,7 @@ fun InputHolder(
     content: String,
     holder: @Composable () -> Unit
 ) {
-    ElevatedCardWithDefault {
+    FloatingContainer(innerPadding = 0.dp) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier

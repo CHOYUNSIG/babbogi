@@ -34,7 +34,7 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.ColumnScreen
 import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.DropDown
@@ -99,23 +99,23 @@ private fun FoodSearch(
     // 필터링된 검색 결과 리스트
     var filteredSearchResult by remember { mutableStateOf(searchResult) }
 
-    Box {
-        ColumnWithDefault {
-            SearchBar(
-                value = word,
-                onSubmit = {
-                    isLoading = true
-                    onSearchWordSubmitted(word) {
-                        isLoading = false
-                        if (it != null) searchResult = it
-                    }
-                },
-                onValueChange = { word = it }
-            )
-            if (searchResult.isNotEmpty()) FoodFilter(
-                searchResult = searchResult,
-                onFiltered = { filteredSearchResult = it }
-            )
+    ColumnScreen(isFlexibleHeight = true) {
+        SearchBar(
+            value = word,
+            onSubmit = {
+                isLoading = true
+                onSearchWordSubmitted(word) {
+                    isLoading = false
+                    if (it != null) searchResult = it
+                }
+            },
+            onValueChange = { word = it }
+        )
+        if (searchResult.isNotEmpty()) FoodFilter(
+            searchResult = searchResult,
+            onFiltered = { filteredSearchResult = it }
+        )
+        Box {
             LazyColumn {
                 items(count = filteredSearchResult.size) { index ->
                     val result = filteredSearchResult[index]
@@ -144,27 +144,25 @@ private fun FoodSearch(
                     }
                     HorizontalDivider()
                 }
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        DescriptionText(
+                            text = "Tip!\n" +
+                                    "두 글자 이상 검색하세요.\n" +
+                                    "음식 이름을 입력하여 검색해보세요.\n" +
+                                    "예) '김치', '된장찌개'",
+                        )
+                    }
+                }
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                DescriptionText(
-                    text = "Tip!\n" +
-                            "두 글자 이상 검색하세요.\n" +
-                            "음식 이름을 입력하여 검색해보세요.\n" +
-                            "예) '김치', '된장찌개'",
-                )
+            if (isLoading) Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(modifier = Modifier.size(100.dp))
             }
-        }
-
-        if (isLoading) Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            CircularProgressIndicator(modifier = Modifier.size(50.dp))
         }
     }
 

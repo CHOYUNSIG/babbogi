@@ -1,17 +1,23 @@
 package com.example.babbogi.ui.view
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -66,8 +72,8 @@ fun FixedColorSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
 
 @Composable
 fun FixedColorFloatingIconButton(
+    icon: Int,
     onClick: () -> Unit,
-    icon: Int
 ) {
     FloatingActionButton(
         onClick = onClick,
@@ -101,6 +107,30 @@ fun FixedColorCheckBox(
     )
 }
 
+@Composable
+fun FixedColorIconButton(
+    icon: Int,
+    contentDescription: String? = null,
+    onClick: () -> Unit,
+) {
+    ElevatedButton(
+        onClick = onClick,
+        shape = AbsoluteRoundedCornerShape(8.dp),
+        colors = ButtonDefaults.elevatedButtonColors(
+            containerColor = Color.Black,
+            contentColor = Color.White,
+        ),
+        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 5.dp),
+        contentPadding = PaddingValues(0.dp),
+        modifier = Modifier.size(40.dp)
+    ) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = contentDescription,
+        )
+    }
+}
+
 @Preview
 @Composable
 fun PreviewFixedColorButton() {
@@ -117,11 +147,17 @@ fun PreviewFixedColorSwitch() {
 @Preview
 @Composable
 fun PreviewFixedColorFloatingIconButton() {
-    FixedColorFloatingIconButton(onClick = {}, icon = R.drawable.baseline_send_24)
+    FixedColorFloatingIconButton(icon = R.drawable.baseline_send_24) {}
 }
 
 @Preview
 @Composable
 fun PreviewFixedColorCheckBox() {
     FixedColorCheckBox(checked = true) {}
+}
+
+@Preview
+@Composable
+fun PreviewFixedColorIconButton() {
+    FixedColorIconButton(icon = R.drawable.baseline_send_24) {}
 }

@@ -46,86 +46,82 @@ fun Calendar(
 ) {
     var today by remember { mutableStateOf(initDate) }
 
-    ElevatedCardWithDefault {
-        ColumnWithDefault {
+    FloatingContainer {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            IconButton(onClick = { today = today.minusMonths(1) }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_chevron_left_24),
+                    contentDescription = "이전 달"
+                )
+            }
+            Text(
+                text = today.year.toString() + "년 " + today.month.value.toString() + "월",
+                fontSize = 24.sp,
+            )
+            IconButton(onClick = { today = today.plusMonths(1) }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_chevron_right_24),
+                    contentDescription = "다음달"
+                )
+            }
+        }
+        FloatingContainer {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-                IconButton(onClick = { today = today.minusMonths(1) }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_chevron_left_24),
-                        contentDescription = "이전 달"
-                    )
-                }
-                Text(
-                    text = today.year.toString() + "년 " + today.month.value.toString() + "월",
-                    fontSize = 24.sp,
-                )
-                IconButton(onClick = { today = today.plusMonths(1) }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_chevron_right_24),
-                        contentDescription = "다음달"
-                    )
-                }
-            }
-            ElevatedCardWithDefault {
-                ColumnWithDefault {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        repeat(7) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier
-                                    .size(dayWidth)
-                                    .background(
-                                        color = when (it) {
-                                            0 -> Color.Red
-                                            6 -> Color.Blue
-                                            else -> Color.Black
-                                        }.copy(0.1f),
-                                        shape = RoundedCornerShape(10.dp),
-                                    )
-                            ) { Text(text = "일월화수목금토"[it].toString()) }
-                        }
-                    }
-                    var day = today.withDayOfMonth(1).let {
-                        it.minusDays(it.dayOfWeek.value.toLong())
-                    }
-                    repeat(6) {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            repeat(7) {
-                                val now = day.plusDays(0)
-                                CalendarDay(
-                                    day = if (day.month == today.month) day.dayOfMonth else null,
-                                    isSelected = day == today,
-                                    enable = allowFuture || day <= LocalDate.now(),
-                                    onClick = { today = now }
-                                )
-                                day = day.plusDays(1)
-                            }
-                        }
-                    }
-                }
-            }
-            Row(
-                horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                FixedColorButton(
-                    onClick = { onSubmit(today) },
-                    text = "확인",
-                )
+                repeat(7) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .size(dayWidth)
+                            .background(
+                                color = when (it) {
+                                    0 -> Color.Red
+                                    6 -> Color.Blue
+                                    else -> Color.Black
+                                }.copy(0.1f),
+                                shape = RoundedCornerShape(10.dp),
+                            )
+                    ) { Text(text = "일월화수목금토"[it].toString()) }
+                }
             }
+            var day = today.withDayOfMonth(1).let {
+                it.minusDays(it.dayOfWeek.value.toLong())
+            }
+            repeat(6) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    repeat(7) {
+                        val now = day.plusDays(0)
+                        CalendarDay(
+                            day = if (day.month == today.month) day.dayOfMonth else null,
+                            isSelected = day == today,
+                            enable = allowFuture || day <= LocalDate.now(),
+                            onClick = { today = now }
+                        )
+                        day = day.plusDays(1)
+                    }
+                }
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            FixedColorButton(
+                onClick = { onSubmit(today) },
+                text = "확인",
+            )
         }
     }
 }
@@ -186,23 +182,17 @@ fun DateSelector(
                 contentDescription = "하루 전",
             )
         }
-        ElevatedCardWithDefault(
+        FloatingContainer(
             onClick = { showCalendar = true },
-            modifier = Modifier.weight(1f)
+            innerPadding = 8.dp,
+            modifier = Modifier.weight(1f),
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-                Text(
-                    text = today.toString(),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Normal,
-                    textAlign = TextAlign.Center
-                )
-            }
+            Text(
+                text = today.toString(),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Normal,
+                textAlign = TextAlign.Center
+            )
         }
         IconButton(
             onClick = {

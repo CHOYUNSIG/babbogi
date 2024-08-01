@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +35,7 @@ import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiGreen
-import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.ColumnScreen
 import com.example.babbogi.ui.view.DropDown
 import com.example.babbogi.ui.view.FixedColorFloatingIconButton
 import com.example.babbogi.ui.view.InputHolder
@@ -141,7 +139,7 @@ private fun HealthProfile(
     var ageError by remember { mutableStateOf(false) }
     var genderError by remember { mutableStateOf(false) }
 
-    ColumnWithDefault(modifier = Modifier.verticalScroll(rememberScrollState())) {
+    ColumnScreen {
         TextInputHolder(
             content = "키",
             value = heightText,

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -41,10 +40,10 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.ColumnScreen
 import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DescriptionText
-import com.example.babbogi.ui.view.ElevatedCardWithDefault
+import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.ScreenPreviewer
 import com.example.babbogi.util.Nutrition
@@ -194,7 +193,7 @@ private fun CameraView(
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit,
 ) {
-    ColumnWithDefault(modifier = Modifier.fillMaxHeight()) {
+    ColumnScreen {
         Card(
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
@@ -207,16 +206,12 @@ private fun CameraView(
 
     if (showDialog) {
         if (isFetching) Dialog(onDismissRequest = onCancelClicked) {
-            ElevatedCardWithDefault {
+            FloatingContainer {
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .padding(16.dp)
-                    )
+                    CircularProgressIndicator(modifier = Modifier.size(50.dp))
                 }
             }
         }
@@ -249,7 +244,7 @@ fun PreviewCameraView() {
         CameraView(
             cameraView = {},
             showDialog = true,
-            isFetching = false,
+            isFetching = true,
             product = getRandomTestProduct(true),
             onAddClicked = {},
             onCancelClicked = {},

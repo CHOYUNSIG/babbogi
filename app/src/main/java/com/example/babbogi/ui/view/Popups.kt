@@ -47,40 +47,38 @@ fun CustomPopup(
     content: (@Composable () -> Unit)? = null,
 ) {
     Dialog(onDismissRequest = onDismiss) {
-        ElevatedCardWithDefault(
+        FloatingContainer(
             modifier = Modifier
                 .wrapContentHeight()
                 .verticalScroll(rememberScrollState())
         ) {
-            ColumnWithDefault {
-                if (icon != null) Icon(
-                    painter = painterResource(id = icon),
-                    contentDescription = null,
-                    modifier = Modifier.size(50.dp)
+            if (icon != null) Icon(
+                painter = painterResource(id = icon),
+                contentDescription = null,
+                modifier = Modifier.size(50.dp)
+            )
+            if (title != null) Text(
+                text = title,
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineBreak = LineBreak.Heading,
+                    textAlign = TextAlign.Center,
                 )
-                if (title != null) Text(
-                    text = title,
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        lineBreak = LineBreak.Heading,
-                        textAlign = TextAlign.Center,
+            )
+            if (content != null) content()
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp, alignment = Alignment.End),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                repeat(callbacks.size) { index ->
+                    FixedColorButton(
+                        text = labels[index],
+                        onClick = {
+                            callbacks[index]()
+                            if (enableDismissOnCallbackEnded) onDismiss()
+                        }
                     )
-                )
-                if (content != null) content()
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp, alignment = Alignment.End),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    repeat(callbacks.size) { index ->
-                        FixedColorButton(
-                            text = labels[index],
-                            onClick = {
-                                callbacks[index]()
-                                if (enableDismissOnCallbackEnded) onDismiss()
-                            }
-                        )
-                    }
                 }
             }
         }

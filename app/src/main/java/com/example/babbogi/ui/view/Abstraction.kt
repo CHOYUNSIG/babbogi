@@ -46,26 +46,22 @@ fun NutritionAbstraction(
     intake: NutritionIntake,
     onClick: () -> Unit
 ) {
-    ElevatedCardWithDefault(onClick = onClick) {
-        ColumnWithDefault {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = stringResource(id = Nutrition.Calorie.res))
-                NutritionBarGraph(
-                    nutrition = Nutrition.Calorie,
-                    recommendation = recommendation[Nutrition.Calorie]!!,
-                    intake = intake[Nutrition.Calorie]!!,
-                )
-            }
-            Row {
-                listOf(Nutrition.Carbohydrate, Nutrition.Protein, Nutrition.Fat).forEach {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = stringResource(id = it.res))
-                        NutritionCircularGraph(
-                            nutrition = it,
-                            recommendation = recommendation[it]!!,
-                            intake = intake[it]!!,
-                        )
-                    }
+    FloatingContainer(onClick = onClick) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = stringResource(id = Nutrition.Calorie.res))
+            NutritionBarGraph(
+                recommendation = recommendation[Nutrition.Calorie]!!,
+                intake = intake[Nutrition.Calorie]!!,
+            )
+        }
+        Row {
+            listOf(Nutrition.Carbohydrate, Nutrition.Protein, Nutrition.Fat).forEach {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = stringResource(id = it.res))
+                    NutritionCircularGraph(
+                        recommendation = recommendation[it]!!,
+                        intake = intake[it]!!,
+                    )
                 }
             }
         }
@@ -79,31 +75,29 @@ fun Abstraction(
     bottom: (@Composable () -> Unit)? = null,
     title: @Composable () -> Unit,
 ) {
-    ElevatedCardWithDefault(onClick = onClick) {
-        ColumnWithDefault {
-            Box(modifier = Modifier.fillMaxWidth()) { title() }
-            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                data.forEach { row ->
-                    val (key, pair) = row
-                    val (value, unit) = pair
+    FloatingContainer(onClick = onClick) {
+        Box(modifier = Modifier.fillMaxWidth()) { title() }
+        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            data.forEach { row ->
+                val (key, pair) = row
+                val (value, unit) = pair
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = key)
                     Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
-                        Text(text = key)
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(3.dp)
-                        ) {
-                            Text(text = value)
-                            if (unit.isNotEmpty()) Text(text = unit)
-                        }
+                        Text(text = value)
+                        if (unit.isNotEmpty()) Text(text = unit)
                     }
                 }
             }
-            if (bottom != null) Box(modifier = Modifier.fillMaxWidth()) { bottom() }
         }
+        if (bottom != null) Box(modifier = Modifier.fillMaxWidth()) { bottom() }
     }
 }
 

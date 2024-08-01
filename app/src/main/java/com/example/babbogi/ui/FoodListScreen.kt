@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
@@ -45,13 +44,13 @@ import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiGreen
-import com.example.babbogi.ui.view.ColumnWithDefault
 import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DateSelector
 import com.example.babbogi.ui.view.DescriptionText
-import com.example.babbogi.ui.view.ElevatedCardWithDefault
 import com.example.babbogi.ui.view.FixedColorCheckBox
 import com.example.babbogi.ui.view.FixedColorFloatingIconButton
+import com.example.babbogi.ui.view.FloatingContainer
+import com.example.babbogi.ui.view.LazyColumnScreen
 import com.example.babbogi.ui.view.ListModificationPopup
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.ScreenPreviewer
@@ -146,7 +145,7 @@ private fun FoodModificationCard(
                 OutlinedTextField(
                     value = servingSizeText,
                     onValueChange = { servingSizeText = it },
-                    label = { Text(text = "1개당 중량") },
+                    label = { Text(text = "1회 제공량") },
                     suffix = { Text(text = "g") },
                     modifier = Modifier.weight(1f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
@@ -171,13 +170,11 @@ private fun FoodModificationCard(
             }
         }
     )
-    else ElevatedCardWithDefault {
+    else FloatingContainer {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -310,35 +307,36 @@ private fun FoodList(
     var showDeletionConfirmPopup by remember { mutableStateOf(false) }
     var isAddingByHand by remember { mutableStateOf(false) }
 
-    ColumnWithDefault {
-        if (productList.isEmpty()) Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-        ) {
-            DescriptionText(
-                text = "음식을 검색하거나,\n" +
-                        "카메라로 바코드를 찍으세요.\n" +
-                        "이곳에 표시됩니다.",
+    LazyColumnScreen {
+        if (productList.isEmpty()) item {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+            ) {
+                DescriptionText("음식을 검색하거나,\n카메라로 바코드를 찍으세요.\n이곳에 표시됩니다.")
+            }
+        }
+        else items(productList.size) { index ->
+            val (product, ratio, checked) = productList[index]
+            FoodModificationCard(
+                product = product,
+                intakeRatio = ratio,
+                checked = checked,
+                onCheckedChanged = { onProductInfoChanged(index, product, it) },
+                onServingSizeChanged = {
+                    onProductInfoChanged(
+                        index,
+                        product.copy(servingSize = it),
+                        checked
+                    )
+                },
+                onIntakeRatioChanged = { onIntakeRatioChanged(index, it) },
+                onCardClicked = { selectedIndex = index },
             )
         }
-        else LazyColumn {
-            items(productList.size) { index ->
-                val (product, ratio, checked) = productList[index]
-                FoodModificationCard(
-                    product = product,
-                    intakeRatio = ratio,
-                    checked = checked,
-                    onCheckedChanged = { onProductInfoChanged(index, product, it) },
-                    onServingSizeChanged = { onProductInfoChanged(index, product.copy(servingSize = it), checked) },
-                    onIntakeRatioChanged = { onIntakeRatioChanged(index, it) },
-                    onCardClicked = { selectedIndex = index },
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            item { Spacer(modifier = Modifier.height(150.dp)) }
-        }
+        item { Spacer(modifier = Modifier.height(150.dp)) }
     }
 
     Box(

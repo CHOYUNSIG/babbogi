@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,8 +33,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.view.ColumnWithDefault
-import com.example.babbogi.ui.view.ElevatedCardWithDefault
+import com.example.babbogi.ui.view.ColumnScreen
+import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.NutritionCircularGraph
 import com.example.babbogi.ui.view.ScreenPreviewer
 import com.example.babbogi.util.Nutrition
@@ -88,15 +86,11 @@ private fun CircularGraphCard(
         }
     }
 
-    ElevatedCardWithDefault {
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-        ) {
+    FloatingContainer(innerPadding = 8.dp) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             Row(modifier = Modifier.height(100.dp)) {
                 Row(modifier = Modifier.width(180.dp)) {
                     NutritionCircularGraph(
-                        nutrition = nutrition,
                         recommendation = recommendation,
                         intake = intake,
                     )
@@ -132,7 +126,7 @@ private fun NutritionOverview(
     recommendation: NutritionRecommendation,
     intake: NutritionIntake?,
 ) {
-    ColumnWithDefault(modifier = Modifier.verticalScroll(rememberScrollState())) {
+    ColumnScreen {
         if (intake != null) Nutrition.entries.forEach { nutrition ->
             CircularGraphCard(
                 nutrition = nutrition,

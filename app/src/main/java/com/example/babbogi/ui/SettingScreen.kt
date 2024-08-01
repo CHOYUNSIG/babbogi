@@ -8,12 +8,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,9 +31,9 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.ColumnScreen
 import com.example.babbogi.ui.view.DescriptionText
-import com.example.babbogi.ui.view.ElevatedCardWithDefault
+import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.FixedColorSwitch
 import com.example.babbogi.ui.view.HealthAbstraction
 import com.example.babbogi.ui.view.InputHolder
@@ -94,11 +91,7 @@ private fun Setting(
 ) {
     var showRecommendationDialog by remember { mutableStateOf(false) }
 
-    ColumnWithDefault(
-        modifier = Modifier
-            .fillMaxHeight()
-            .verticalScroll(rememberScrollState())
-    ) {
+    ColumnScreen {
         if (healthState != null) HealthAbstraction(
             healthState = healthState,
             onClick = onHealthCardClicked,
@@ -108,7 +101,7 @@ private fun Setting(
                 contentDescription = "건강 정보 수정",
             )
         }
-        else ElevatedCardWithDefault(onClick = onHealthCardClicked) {
+        else FloatingContainer(onClick = onHealthCardClicked) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -147,12 +140,10 @@ private fun Setting(
                 )
             }
         }
-        ElevatedCardWithDefault(onClick = onTutorialRestartClicked) {
+        FloatingContainer(onClick = onTutorialRestartClicked) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "메뉴얼 다시 보기", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 Icon(

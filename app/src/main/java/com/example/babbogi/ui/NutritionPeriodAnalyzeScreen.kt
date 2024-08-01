@@ -6,17 +6,15 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,7 +24,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,10 +34,10 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
-import com.example.babbogi.ui.view.ColumnWithDefault
+import com.example.babbogi.ui.view.ColumnScreen
 import com.example.babbogi.ui.view.DateSelector
 import com.example.babbogi.ui.view.DescriptionText
-import com.example.babbogi.ui.view.ElevatedCardWithDefault
+import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.FixedColorButton
 import com.example.babbogi.ui.view.GptAnalyzeReport
 import com.example.babbogi.ui.view.NutritionPeriodBarGraph
@@ -82,6 +82,7 @@ fun NutritionPeriodAnalyzeScreen(
             }
         }
     }
+    val clipboard = LocalClipboardManager.current
 
     NutritionPeriodAnalyze(
         period = period,
@@ -122,6 +123,10 @@ fun NutritionPeriodAnalyzeScreen(
                 onLoadingEnded()
             }
         },
+        onCopyReportToClipboard = {
+            clipboard.setText(AnnotatedString(it))
+            showSnackBar("레포트가 클립보드에 복사되었습니다.")
+        },
         onWeightClicked = { onLoaded ->
             viewModel.getWeightHistory(true) {
                 onLoaded(it, viewModel.healthState?.height)
@@ -141,6 +146,7 @@ private fun NutritionPeriodAnalyze(
     report: String?,
     onPeriodChanged: (List<LocalDate>, onEnded: () -> Unit) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
+    onCopyReportToClipboard: (report: String) -> Unit,
     onWeightClicked: (onLoaded: (Map<LocalDateTime, Float>?, Float?) -> Unit) -> Unit,
     onChangeWeightClicked: () -> Unit,
 ) {
@@ -149,90 +155,83 @@ private fun NutritionPeriodAnalyze(
     var showWeightHistoryPopup by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
 
-    ColumnWithDefault(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        ElevatedCardWithDefault {
-            ColumnWithDefault {
-                Column {
-                    repeat(2) { index ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = listOf("시작일", "종료일")[index])
-                            DateSelector(
-                                initDate = selectedPeriod[index],
-                                onDateChanged = {
-                                    selectedPeriod = selectedPeriod.mapIndexed { i, date ->
-                                        if (i == index) it else date
-                                    }
-                                },
-                            )
-                        }
-                    }
-                }
+    ColumnScreen {
+        FloatingContainer(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            repeat(2) { index ->
                 Row(
-                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    FixedColorButton(
-                        onClick = {
-                            isLoading = true
-                            onPeriodChanged(selectedPeriod) { isLoading = false }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(text = listOf("시작일", "종료일")[index])
+                    DateSelector(
+                        initDate = selectedPeriod[index],
+                        onDateChanged = {
+                            selectedPeriod = selectedPeriod.mapIndexed { i, date ->
+                                if (i == index) it else date
+                            }
                         },
-                        text = "조회"
                     )
                 }
             }
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                FixedColorButton(
+                    onClick = {
+                        isLoading = true
+                        onPeriodChanged(selectedPeriod) { isLoading = false }
+                    },
+                    text = "조회"
+                )
+            }
         }
-        ElevatedCardWithDefault {
-            Box {
-                ColumnWithDefault {
-                    Text(
-                        text = stringResource(id = selectedNutrition.res),
-                        fontSize = 20.sp
+        FloatingContainer {
+            Text(
+                text = stringResource(id = selectedNutrition.res),
+                fontSize = 20.sp
+            )
+            if (isLoading) Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(50.dp))
+            }
+            else if (intakes != null) NutritionPeriodBarGraph(
+                nutrition = selectedNutrition,
+                recommend = recommendation[selectedNutrition]!!,
+                intakes = intakes.mapValues { (_, intake) -> intake[selectedNutrition]!! }
+            )
+            else Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ) {
+                DescriptionText(text = "기간을 설정하고\n조회 버튼을 클릭하세요.\n이곳에 그래프가 표시됩니다.")
+            }
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(
+                    8.dp,
+                    Alignment.CenterHorizontally
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Nutrition.entries.forEach { nutrition ->
+                    FixedColorButton(
+                        onClick = { selectedNutrition = nutrition },
+                        text = stringResource(id = nutrition.res)
                     )
-                    if (intakes != null) NutritionPeriodBarGraph(
-                        nutrition = selectedNutrition,
-                        recommend = recommendation[selectedNutrition]!!,
-                        intakes = intakes.mapValues { (_, intake) -> intake[selectedNutrition]!! }
-                    )
-                    else Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                    ) {
-                        DescriptionText(text = "기간을 설정하고\n조회 버튼을 클릭하세요.\n이곳에 그래프가 표시됩니다.")
-                    }
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(
-                            8.dp,
-                            Alignment.CenterHorizontally
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Nutrition.entries.forEach { nutrition ->
-                            FixedColorButton(
-                                onClick = { selectedNutrition = nutrition },
-                                text = stringResource(id = nutrition.res)
-                            )
-                        }
-                    }
-                }
-                if (isLoading) Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.matchParentSize(),
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.size(100.dp))
                 }
             }
         }
         GptAnalyzeReport(
             title = "기간 레포트",
-            date = selectedPeriod.last(),
+            isDateIncludesToday = selectedPeriod.last() == LocalDate.now(),
             report = report,
             onNewReportRequested = onNewReportRequested,
+            onCopyReportToClipboard = onCopyReportToClipboard,
         )
     }
 
@@ -274,6 +273,7 @@ fun PreviewNutritionPeriodAnalyze() {
             report = "이것은 챗지피티가 제작한 일일 영양소 레포트입니다. ".repeat(100),
             onPeriodChanged = { _, _ -> },
             onNewReportRequested = {},
+            onCopyReportToClipboard = {},
             onWeightClicked = {},
             onChangeWeightClicked = {},
         )

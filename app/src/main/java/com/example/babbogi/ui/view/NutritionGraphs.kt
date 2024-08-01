@@ -64,7 +64,7 @@ private fun getColorListByRatio(ratio: Float): List<Color> {
 }
 
 @Composable
-fun NutritionCircularGraph(nutrition: Nutrition, recommendation: Float, intake: Float) {
+fun NutritionCircularGraph(recommendation: Float, intake: Float) {
     val animatedValue = remember { Animatable(0f) }
     val preIntake by remember(intake) { mutableFloatStateOf(intake) }
 
@@ -107,7 +107,7 @@ fun NutritionCircularGraph(nutrition: Nutrition, recommendation: Float, intake: 
 }
 
 @Composable
-fun NutritionBarGraph(nutrition: Nutrition, recommendation: Float, intake: Float) {
+fun NutritionBarGraph(recommendation: Float, intake: Float) {
     val animatedValue = remember { Animatable(0f) }
     val preIntake by remember(intake) { mutableFloatStateOf(intake) }
 
@@ -222,7 +222,6 @@ fun NutritionPeriodBarGraph(
 @Composable
 fun PreviewNutritionCircularGraph() {
     NutritionCircularGraph(
-        nutrition = Nutrition.Calorie,
         recommendation = 2200f,
         intake = 2000f,
     )
@@ -232,7 +231,6 @@ fun PreviewNutritionCircularGraph() {
 @Composable
 fun PreviewNutritionBarGraph() {
     NutritionBarGraph(
-        nutrition = Nutrition.Calorie,
         recommendation = 2200f,
         intake = 2000f,
     )

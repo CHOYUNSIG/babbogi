@@ -39,10 +39,8 @@ fun CustomNavigationBar(
     val currentDestination by navController.currentBackStackEntryAsState()
     val currentScreen = screens.find { it.name == currentDestination?.destination?.route }
 
-    ElevatedCardWithDefault {
-        Row(
-            horizontalArrangement = Arrangement.SpaceAround,
-        ) {
+    FloatingContainer(innerPadding = 0.dp) {
+        Row(horizontalArrangement = Arrangement.SpaceAround) {
             screens.forEachIndexed { index, screen ->
                 val isSelected = currentScreen == screen
                 Box(modifier = Modifier.weight(1f)) {
