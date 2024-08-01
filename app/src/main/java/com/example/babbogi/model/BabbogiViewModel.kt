@@ -134,8 +134,8 @@ class BabbogiViewModel: ViewModel() {
             try {
                 val today = date ?: LocalDate.now()
                 val id = BabbogiModel.id!!
-                ServerApi.postProductList(id, productList.filter { it.third }.map { it.first to it.second }, date)
-                foodLists[today] = ServerApi.getProductList(BabbogiModel.id!!, today)
+                ServerApi.postProductList(id, productList.filter { it.third }.map { it.first to it.second }, today)
+                foodLists[today] = ServerApi.getProductList(id, today)
                 deleteProduct()
                 success = true
             }
