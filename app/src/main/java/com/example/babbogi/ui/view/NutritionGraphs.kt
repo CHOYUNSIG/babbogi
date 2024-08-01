@@ -75,19 +75,15 @@ fun NutritionCircularGraph(recommendation: Float, intake: Float) {
         )
     }
 
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(100.dp)) {
-        Canvas(
-            modifier = Modifier
-                .size(100.dp)
-                .padding(16.dp)
-        ) {
+    Box(contentAlignment = Alignment.Center) {
+        Canvas(modifier = Modifier.size(80.dp).padding(5.dp)) {
             drawArc(
                 color = Color(0x504DED5D),
                 startAngle = 0f,
                 sweepAngle = 360f,
                 useCenter = false,
                 size = Size(width = size.width, height = size.width),
-                style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
+                style = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
             )
             drawArc(
                 brush = Brush.linearGradient(
@@ -99,7 +95,7 @@ fun NutritionCircularGraph(recommendation: Float, intake: Float) {
                 sweepAngle = animatedValue.value,
                 useCenter = false,
                 size = Size(width = size.width, height = size.width),
-                style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
+                style = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
             )
         }
         Text(text = "%.0f%%".format(intake / recommendation * 100))
@@ -121,18 +117,17 @@ fun NutritionBarGraph(recommendation: Float, intake: Float) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(5.dp),
-        modifier = Modifier.padding(16.dp)
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Canvas(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(32.dp)
-            ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // Text(text = "%.0f%%".format(intake / recommendation * 100))
+            Canvas(modifier = Modifier.fillMaxWidth().height(10.dp)) {
+                val barLength = size.width
+                val barHeight = 10.dp.toPx()
                 drawRoundRect(
                     color = Color(0x504DED5D),
-                    size = Size(size.width, 32.dp.toPx()),
-                    cornerRadius = CornerRadius(100f, 100f)
+                    cornerRadius = CornerRadius(100f, 100f),
+                    topLeft = Offset(0f, size.height - barHeight),
+                    size = Size(barLength, barHeight),
                 )
                 drawRoundRect(
                     brush = Brush.linearGradient(
@@ -140,11 +135,11 @@ fun NutritionBarGraph(recommendation: Float, intake: Float) {
                         start = Offset.Zero,
                         end = Offset.Infinite,
                     ),
-                    size = Size(min(animatedValue.value * size.width, size.width), 32.dp.toPx()),
-                    cornerRadius = CornerRadius(100f, 100f)
+                    cornerRadius = CornerRadius(100f, 100f),
+                    topLeft = Offset(0f, size.height - barHeight),
+                    size = Size(min(animatedValue.value,1f) * barLength, barHeight),
                 )
             }
-            Text(text = "%.0f%%".format(intake / recommendation * 100), color = Color.Black)
         }
     }
 }

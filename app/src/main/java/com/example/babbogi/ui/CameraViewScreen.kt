@@ -40,9 +40,9 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTypography
 import com.example.babbogi.ui.view.ColumnScreen
 import com.example.babbogi.ui.view.CustomPopup
-import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.ScreenPreviewer
@@ -176,9 +176,9 @@ private fun CameraPermissionDenied() {
                     .size(50.dp)
                     .padding(end = 8.dp)
             )
-            DescriptionText(
-                text = "이 기능은 카메라 권한이 필요합니다.\n" +
-                        "사용하려면 카메라 권한을 부여하세요."
+            Text(
+                text = "이 기능은 카메라 권한이 필요합니다.\n사용하려면 카메라 권한을 부여하세요.",
+                style = BabbogiTypography.bodySmall,
             )
         }
     }
@@ -193,15 +193,13 @@ private fun CameraView(
     onAddClicked: () -> Unit,
     onCancelClicked: () -> Unit,
 ) {
-    ColumnScreen {
+    ColumnScreen(prohibitScroll = true) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             content = { cameraView() }
         )
-        DescriptionText("카메라로 바코드를 인식하세요")
+        Text("카메라로 바코드를 인식하세요", style = BabbogiTypography.bodySmall)
     }
 
     if (showDialog) {
@@ -242,9 +240,9 @@ private fun CameraView(
 fun PreviewCameraView() {
     ScreenPreviewer(screen = Screen.Camera) {
         CameraView(
-            cameraView = {},
-            showDialog = true,
-            isFetching = true,
+            cameraView = { Box(modifier = Modifier.fillMaxSize()) },
+            showDialog = false,
+            isFetching = false,
             product = getRandomTestProduct(true),
             onAddClicked = {},
             onCancelClicked = {},

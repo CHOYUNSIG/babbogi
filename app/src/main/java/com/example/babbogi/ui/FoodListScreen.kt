@@ -44,9 +44,9 @@ import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiGreen
+import com.example.babbogi.ui.theme.BabbogiTypography
 import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DateSelector
-import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.FixedColorCheckBox
 import com.example.babbogi.ui.view.FixedColorFloatingIconButton
 import com.example.babbogi.ui.view.FloatingContainer
@@ -315,7 +315,10 @@ private fun FoodList(
                     .fillMaxWidth()
                     .height(100.dp)
             ) {
-                DescriptionText("음식을 검색하거나,\n카메라로 바코드를 찍으세요.\n이곳에 표시됩니다.")
+                Text(
+                    text = "음식을 검색하거나,\n카메라로 바코드를 찍으세요.\n이곳에 표시됩니다.",
+                    style = BabbogiTypography.bodySmall,
+                )
             }
         }
         else items(productList.size) { index ->

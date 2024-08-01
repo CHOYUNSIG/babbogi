@@ -21,18 +21,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.LineBreak
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.babbogi.R
+import com.example.babbogi.ui.theme.BabbogiTypography
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.getRandomTestProduct
 
@@ -57,15 +53,7 @@ fun CustomPopup(
                 contentDescription = null,
                 modifier = Modifier.size(50.dp)
             )
-            if (title != null) Text(
-                text = title,
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineBreak = LineBreak.Heading,
-                    textAlign = TextAlign.Center,
-                )
-            )
+            if (title != null) Text(text = title, style = BabbogiTypography.titleMedium)
             if (content != null) content()
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp, alignment = Alignment.End),

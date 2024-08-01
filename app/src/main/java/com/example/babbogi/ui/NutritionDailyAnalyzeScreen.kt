@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -41,10 +40,10 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTypography
 import com.example.babbogi.ui.view.ColumnScreen
 import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DateSelector
-import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.GptAnalyzeReport
 import com.example.babbogi.ui.view.NutritionAbstraction
@@ -52,9 +51,7 @@ import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.ScreenPreviewer
 import com.example.babbogi.ui.view.WeightHistoryPopup
 import com.example.babbogi.util.Consumption
-import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
-import com.example.babbogi.util.getRandomNutritionIntake
 import com.example.babbogi.util.testConsumptionList
 import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.toNutritionIntake
@@ -70,24 +67,19 @@ fun NutritionDailyAnalyzeScreen(
     showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
     var foodList by remember { mutableStateOf<List<Consumption>?>(null) }
-    var intake by remember { mutableStateOf<NutritionIntake?>(null) }
     var report by remember { mutableStateOf<String?>(null) }
     val clipboard = LocalClipboardManager.current
 
     LaunchedEffect(viewModel.today) {
-        viewModel.getFoodLists(viewModel.today) {
-            if (it != null) {
-                foodList = it[viewModel.today]
-                intake = foodList?.toNutritionIntake()
-            }
-        }
+        foodList = null
+        report = null
+        viewModel.getFoodLists(viewModel.today) { foodList = it?.get(viewModel.today) }
         viewModel.getDailyReport(viewModel.today, generate = false) { report = it }
     }
 
     NutritionDailyAnalyze(
         today = viewModel.today,
         recommendation = viewModel.nutritionRecommendation,
-        intake = intake,
         foodList = foodList,
         report = report,
         onNutritionCardClicked = { navController.navigate(Screen.NutritionOverview.name) },
@@ -117,14 +109,14 @@ fun NutritionDailyAnalyzeScreen(
             viewModel.deleteConsumption(id) { onEnded(it) }
         },
         onRefresh = { endRefresh ->
+            foodList = null
             viewModel.getFoodLists(viewModel.today, refresh = true) {
-                if (it != null) foodList = it[viewModel.today]
-                else showAlertPopup(
+                foodList = it?.get(viewModel.today)
+                if (it == null) showAlertPopup(
                     "오류",
                     "식사 정보를 받아오지 못했습니다.",
                     R.drawable.baseline_cancel_24,
                 )
-                intake = foodList?.toNutritionIntake()
                 endRefresh()
             }
         }
@@ -137,7 +129,6 @@ fun NutritionDailyAnalyzeScreen(
 private fun NutritionDailyAnalyze(
     today: LocalDate,
     recommendation: NutritionRecommendation,
-    intake: NutritionIntake?,
     foodList: List<Consumption>?,
     report: String?,
     onNutritionCardClicked: () -> Unit,
@@ -152,6 +143,7 @@ private fun NutritionDailyAnalyze(
     var showWeightHistoryPopup by remember { mutableStateOf(false) }
     var deletionConsumption by remember { mutableStateOf<Consumption?>(null) }
     var isDeletionProcessing by remember { mutableStateOf(false) }
+    val intake by remember(foodList) { mutableStateOf(foodList?.toNutritionIntake()) }
     val refreshState = rememberPullToRefreshState()
 
     if (refreshState.isRefreshing) {
@@ -160,17 +152,22 @@ private fun NutritionDailyAnalyze(
 
     Box(modifier = Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
         ColumnScreen {
-            FloatingContainer {
+            // 날짜 선택기
+            FloatingContainer(innerPadding = 8.dp) {
                 DateSelector(
                     initDate = today,
                     onDateChanged = onDateChanged,
                 )
             }
-            if (intake != null) NutritionAbstraction(
-                recommendation = recommendation,
-                intake = intake,
-                onClick = onNutritionCardClicked,
-            )
+            // 간략한 영양소 현황
+            intake?.let {
+                NutritionAbstraction(
+                    recommendation = recommendation,
+                    intake = it,
+                    onClick = onNutritionCardClicked
+                )
+            }
+            // 일일 분석 보고서
             GptAnalyzeReport(
                 title = "일일 레포트",
                 isDateIncludesToday = today == LocalDate.now(),
@@ -178,12 +175,14 @@ private fun NutritionDailyAnalyze(
                 onNewReportRequested = onNewReportRequested,
                 onCopyReportToClipboard = onCopyReportToClipboard,
             )
+            // 식사 정보
             MealList(
                 foodList = foodList,
                 onDeleteClicked = { deletionConsumption = it },
             )
         }
 
+        // 새로고침 로딩 아이콘
         PullToRefreshContainer(
             state = refreshState,
             modifier = Modifier.align(Alignment.TopCenter)
@@ -200,6 +199,7 @@ private fun NutritionDailyAnalyze(
         }
     )
 
+    // 음식 삭제시 확인 팝업 표시
     deletionConsumption?.let { consumption ->
         CustomPopup(
             callbacks = listOf(
@@ -235,13 +235,11 @@ private fun MealList(
     var showingConsumption by remember { mutableStateOf<Consumption?>(null) }
 
     FloatingContainer {
+        // 제목 행
         Row(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "사용자 식사 정보",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-            )
+            Text(text = "사용자 식사 정보", style = BabbogiTypography.titleMedium)
         }
+        // 로딩중임을 고지
         if (foodList == null) Row(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
@@ -252,18 +250,21 @@ private fun MealList(
                     .padding(16.dp)
             )
         }
+        // 섭취한 음식이 없음을 고지
         else if (foodList.isEmpty()) Row(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            DescriptionText(text = "섭취한 음식이 없어요!")
+            Text(text = "섭취한 음식이 없어요!", style = BabbogiTypography.bodySmall)
         }
+        // 섭취한 음식을 표시
         else LazyColumn(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.heightIn(max = 500.dp)
         ) {
+            item(key = null) { Spacer(modifier = Modifier) }  // 그림자 크기만큼 패딩
             items(foodList.size, key = { foodList[it].id }) { index ->
                 val food = foodList[index]
                 ProductAbstraction(
@@ -271,11 +272,12 @@ private fun MealList(
                     intakeRatio = food.intakeRatio,
                     onClick = { showingConsumption = food }
                 ) {
-                    DescriptionText(
+                    Text(
                         text = food.time?.let { time ->
                             "${if (time.hour < 12) "오전" else "오후"} %02d:%02d"
                                 .format((time.hour + 11) % 12 + 1, time.minute)
-                        } ?: "나중에 추가됨"
+                        } ?: "나중에 추가됨",
+                        style = BabbogiTypography.bodySmall,
                     )
                     IconButton(onClick = { onDeleteClicked(food) }) {
                         Icon(
@@ -285,10 +287,11 @@ private fun MealList(
                     }
                 }
             }
-            item(key = null) { Spacer(modifier = Modifier.height(10.dp)) }
+            item(key = null) { Spacer(modifier = Modifier) }  // 그림자 크기만큼 패딩
         }
     }
 
+    // 음식을 클릭할 시 팝업 표시
     showingConsumption?.let { consumption ->
         CustomPopup(
             callbacks = listOf(
@@ -318,7 +321,6 @@ fun PreviewNutritionDailyAnalyze() {
         NutritionDailyAnalyze(
             today = LocalDate.now(),
             recommendation = testNutritionRecommendation,
-            intake = getRandomNutritionIntake(),
             foodList = testConsumptionList,
             report = null,
             onNutritionCardClicked = {},

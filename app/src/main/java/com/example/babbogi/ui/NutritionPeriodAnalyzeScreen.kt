@@ -29,16 +29,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTypography
 import com.example.babbogi.ui.view.ColumnScreen
 import com.example.babbogi.ui.view.DateSelector
-import com.example.babbogi.ui.view.DescriptionText
-import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.FixedColorButton
+import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.GptAnalyzeReport
 import com.example.babbogi.ui.view.NutritionPeriodBarGraph
 import com.example.babbogi.ui.view.ScreenPreviewer
@@ -156,6 +155,7 @@ private fun NutritionPeriodAnalyze(
     var isLoading by remember { mutableStateOf(false) }
 
     ColumnScreen {
+        // 기간 선택기
         FloatingContainer(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             repeat(2) { index ->
                 Row(
@@ -187,10 +187,11 @@ private fun NutritionPeriodAnalyze(
                 )
             }
         }
+        // 영양소 섭취 그래프
         FloatingContainer {
             Text(
                 text = stringResource(id = selectedNutrition.res),
-                fontSize = 20.sp
+                style = BabbogiTypography.titleMedium
             )
             if (isLoading) Box(
                 contentAlignment = Alignment.Center,
@@ -209,7 +210,7 @@ private fun NutritionPeriodAnalyze(
                     .fillMaxWidth()
                     .height(200.dp)
             ) {
-                DescriptionText(text = "기간을 설정하고\n조회 버튼을 클릭하세요.\n이곳에 그래프가 표시됩니다.")
+                Text(text = "기간을 설정하고\n조회 버튼을 클릭하세요.\n이곳에 그래프가 표시됩니다.", style = BabbogiTypography.bodySmall)
             }
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(
@@ -226,6 +227,7 @@ private fun NutritionPeriodAnalyze(
                 }
             }
         }
+        // 기간 분석 보고서
         GptAnalyzeReport(
             title = "기간 레포트",
             isDateIncludesToday = selectedPeriod.last() == LocalDate.now(),

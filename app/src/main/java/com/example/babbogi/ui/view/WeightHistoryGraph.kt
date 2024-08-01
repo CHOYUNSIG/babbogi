@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.babbogi.ui.theme.BabbogiGreen
+import com.example.babbogi.ui.theme.BabbogiTypography
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStartAxis
@@ -249,7 +250,7 @@ fun WeightHistoryPopup(
                     bottomLimit = bottomLimit,
                     topLimit = topLimit,
                 )
-                else DescriptionText(text = "정보가 부족해 그래프를 그릴 수 없습니다.")
+                else Text(text = "정보가 부족해 그래프를 그릴 수 없습니다.", style = BabbogiTypography.bodySmall)
             }
             Column(
                 verticalArrangement = Arrangement.spacedBy(3.dp),
@@ -281,7 +282,9 @@ fun WeightHistoryPopup(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(300.dp)
-        ) { DescriptionText(text = "정보를 불러오는 데 실패했습니다.") }
+        ) {
+            Text(text = "정보를 불러오는 데 실패했습니다.", style = BabbogiTypography.bodySmall)
+        }
     }
 }
 

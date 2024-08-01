@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -31,10 +30,10 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTypography
 import com.example.babbogi.ui.view.ColumnScreen
-import com.example.babbogi.ui.view.DescriptionText
-import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.FixedColorSwitch
+import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.HealthAbstraction
 import com.example.babbogi.ui.view.InputHolder
 import com.example.babbogi.ui.view.ListModificationPopup
@@ -92,30 +91,19 @@ private fun Setting(
     var showRecommendationDialog by remember { mutableStateOf(false) }
 
     ColumnScreen {
-        if (healthState != null) HealthAbstraction(
-            healthState = healthState,
-            onClick = onHealthCardClicked,
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.baseline_edit_24),
-                contentDescription = "건강 정보 수정",
-            )
-        }
-        else FloatingContainer(onClick = onHealthCardClicked) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
+        // 사용자 건강 정보 카드
+        healthState?.let { healthState ->
+            HealthAbstraction(
+                healthState = healthState,
+                onClick = onHealthCardClicked,
             ) {
-                Text(text = "건강 정보 입력", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_edit_24),
-                    contentDescription = "건강 정보 입력",
+                    contentDescription = "건강 정보 수정",
                 )
             }
         }
+        // 권장 섭취량 카드
         NutritionRecommendationAbstraction(
             recommendation = recommendation,
             onClick = { showRecommendationDialog = true }
@@ -125,13 +113,14 @@ private fun Setting(
                 contentDescription = "권장 섭취량 조정",
             )
         }
+        // 알림 활성화 옵션
         InputHolder(content = "알림") {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    DescriptionText(text = "알림을 받으려면 알림 권한을 활성화해야 해요.")
+                    Text(text = "알림을 받으려면 알림 권한을 활성화해야 해요.", style = BabbogiTypography.bodySmall)
                 }
                 Spacer(modifier = Modifier.requiredWidth(20.dp))
                 FixedColorSwitch(
@@ -140,6 +129,7 @@ private fun Setting(
                 )
             }
         }
+        // 가이드라인 다시보기
         FloatingContainer(onClick = onTutorialRestartClicked) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -154,6 +144,7 @@ private fun Setting(
         }
     }
 
+    // 추천 영양소 수정 팝업 표시
     if (showRecommendationDialog) NutritionRecommendationPopup(
         recommendation = recommendation,
         onModifyClicked = {

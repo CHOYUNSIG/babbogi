@@ -19,12 +19,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ColumnScreen(
-    isFlexibleHeight: Boolean = false,
+    prohibitScroll: Boolean = false,
     content: @Composable (ColumnScope.() -> Unit)
 ) {
     Column(
         modifier = Modifier.let {
-            if (isFlexibleHeight) it.fillMaxHeight()
+            if (prohibitScroll) it.fillMaxHeight()
             else it.verticalScroll(rememberScrollState())
         }
     ) {

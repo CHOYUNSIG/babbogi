@@ -34,9 +34,9 @@ import androidx.navigation.NavController
 import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
+import com.example.babbogi.ui.theme.BabbogiTypography
 import com.example.babbogi.ui.view.ColumnScreen
 import com.example.babbogi.ui.view.CustomPopup
-import com.example.babbogi.ui.view.DescriptionText
 import com.example.babbogi.ui.view.DropDown
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.ScreenPreviewer
@@ -99,7 +99,7 @@ private fun FoodSearch(
     // 필터링된 검색 결과 리스트
     var filteredSearchResult by remember { mutableStateOf(searchResult) }
 
-    ColumnScreen(isFlexibleHeight = true) {
+    ColumnScreen(prohibitScroll = true) {
         SearchBar(
             value = word,
             onSubmit = {
@@ -138,8 +138,8 @@ private fun FoodSearch(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            DescriptionText(text = "${result.mainCategory} > ${result.subCategory}")
-                            DescriptionText(text = result.company ?: "")
+                            Text(text = "${result.mainCategory} > ${result.subCategory}", style = BabbogiTypography.bodySmall)
+                            Text(text = result.company ?: "", style = BabbogiTypography.bodySmall)
                         }
                     }
                     HorizontalDivider()
@@ -151,11 +151,12 @@ private fun FoodSearch(
                             .height(100.dp),
                         contentAlignment = Alignment.BottomCenter
                     ) {
-                        DescriptionText(
+                        Text(
                             text = "Tip!\n" +
                                     "두 글자 이상 검색하세요.\n" +
                                     "음식 이름을 입력하여 검색해보세요.\n" +
                                     "예) '김치', '된장찌개'",
+                            style = BabbogiTypography.bodySmall,
                         )
                     }
                 }
@@ -272,7 +273,7 @@ fun FoodPreviewPopup(
             CircularProgressIndicator(modifier = Modifier.size(50.dp))
         else loadedFood?.let { food ->
             ProductAbstraction(product = food) {
-                DescriptionText(text = "%.1fg 기준".format(food.servingSize))
+                Text(text = "%.1fg 기준".format(food.servingSize), style = BabbogiTypography.bodySmall)
             }
             TextInputHolder(
                 content = "섭취량",

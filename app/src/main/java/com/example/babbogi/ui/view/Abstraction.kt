@@ -18,14 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.babbogi.R
 import com.example.babbogi.ui.theme.BabbogiGreen
+import com.example.babbogi.ui.theme.BabbogiTypography
 import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionIntake
@@ -37,6 +36,7 @@ import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.testProduct1
 import com.example.babbogi.util.testProduct2
 import com.example.babbogi.util.testProduct3
+import kotlin.math.abs
 import kotlin.random.Random
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -46,23 +46,30 @@ fun NutritionAbstraction(
     intake: NutritionIntake,
     onClick: () -> Unit
 ) {
-    FloatingContainer(onClick = onClick) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = stringResource(id = Nutrition.Calorie.res))
-            NutritionBarGraph(
-                recommendation = recommendation[Nutrition.Calorie]!!,
-                intake = intake[Nutrition.Calorie]!!,
+    val graphDrawer = @Composable { nutrition: Nutrition, graphComposable: @Composable (Float, Float) -> Unit ->
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val r = recommendation[nutrition]!!
+            val i = intake[nutrition]!!
+            Text(text = stringResource(id = nutrition.res))
+            graphComposable(r, i)
+            Text(
+                text = "%.1f${nutrition.unit} ${if (r > i) "부족" else "초과"}".format(abs(r - i)),
+                fontSize = 12.sp
             )
         }
-        Row {
+    }
+
+    FloatingContainer(onClick = onClick) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(text = "권장량 대비 섭취량", style = BabbogiTypography.titleMedium)
+        }
+        graphDrawer(Nutrition.Calorie) { r, i -> NutritionBarGraph(r, i) }
+        Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
             listOf(Nutrition.Carbohydrate, Nutrition.Protein, Nutrition.Fat).forEach {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = stringResource(id = it.res))
-                    NutritionCircularGraph(
-                        recommendation = recommendation[it]!!,
-                        intake = intake[it]!!,
-                    )
-                }
+                graphDrawer(it) { r, i -> NutritionCircularGraph(r, i)}
             }
         }
     }
@@ -122,11 +129,7 @@ fun HealthAbstraction(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "사용자 건강 정보",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-            )
+            Text(text = "사용자 건강 정보", style = BabbogiTypography.titleMedium)
             icon()
         }
     }
@@ -152,11 +155,7 @@ fun NutritionRecommendationAbstraction(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "권장 섭취량",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-            )
+            Text(text = "권장 섭취량", style = BabbogiTypography.titleMedium)
             icon()
         }
     }
@@ -199,10 +198,8 @@ fun ProductAbstraction(
                 ) {
                     Text(
                         text = product.name.ifEmpty { "(이름 없음)" },
-                        style = TextStyle(
+                        style = BabbogiTypography.titleMedium.copy(
                             color = if (product.name.isEmpty()) Color.Gray else Color.Unspecified,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
                             lineBreak = LineBreak.Heading,
                         ),
                         modifier = Modifier.weight(1f, fill = false)

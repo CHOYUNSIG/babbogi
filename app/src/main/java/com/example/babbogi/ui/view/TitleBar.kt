@@ -15,13 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.babbogi.R
 import com.example.babbogi.ui.theme.BabbogiGreen
+import com.example.babbogi.ui.theme.BabbogiTypography
 
 //맨 위 앱 이름
 @Composable
@@ -35,11 +34,7 @@ fun TitleBar(title: String, buttonBar: @Composable () -> Unit = {}) {
                 .padding(16.dp)
                 .height(50.dp)
         ) {
-            Text(
-                text = title,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-            )
+            Text(text = title, style = BabbogiTypography.titleLarge)
             buttonBar()
         }
         Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.matchParentSize()) {

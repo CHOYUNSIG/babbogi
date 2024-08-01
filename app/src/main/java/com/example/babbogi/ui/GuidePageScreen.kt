@@ -133,7 +133,7 @@ private fun GuidePage(
     list: List<Int>,
     onComplete: () -> Unit,
 ) {
-    ColumnScreen {
+    ColumnScreen(prohibitScroll = true) {
         CustomSlider(modifier = Modifier.fillMaxWidth(), sliderList = list)
     }
 

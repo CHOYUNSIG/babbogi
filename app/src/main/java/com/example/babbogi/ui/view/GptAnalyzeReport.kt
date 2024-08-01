@@ -22,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +30,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.babbogi.R
+import com.example.babbogi.ui.theme.BabbogiTypography
 
 @Composable
 fun GptAnalyzeReport(
@@ -51,7 +51,7 @@ fun GptAnalyzeReport(
             modifier = Modifier.fillMaxWidth()
         ) {
             // 제목
-            Text(text = title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(text = title, style = BabbogiTypography.titleMedium)
             // ChatGPT 기반임을 표시
             Row(
                 horizontalArrangement = Arrangement.spacedBy(3.dp, Alignment.End),
@@ -79,7 +79,7 @@ fun GptAnalyzeReport(
                 ) {
                     // 당일 레포트 생성 불가 고지
                     if (isDateIncludesToday)
-                        DescriptionText(text = "당일 레포트는 생성할 수 없어요!")
+                        Text(text = "당일 레포트는 생성할 수 없어요!", style = BabbogiTypography.bodySmall)
                     // 로딩중임을 고지
                     else if (isLoading) {
                         Box {
@@ -94,12 +94,12 @@ fun GptAnalyzeReport(
                                 modifier = Modifier.size(150.dp)
                             )
                         }
-                        DescriptionText(text = "레포트를 생성하는 데\n10초에서 30초 정도\n걸릴 수 있습니다.")
+                        Text(text = "레포트를 생성하는 데\n10초에서 30초 정도\n걸릴 수 있습니다.", style = BabbogiTypography.bodySmall)
                     }
                     // 생성된 레포트 표시
                     else if (report != null) {
-                        Spacer(modifier = Modifier.heightIn(50.dp))
-                        Text(text = report)
+                        Spacer(modifier = Modifier.heightIn(50.dp))  // 클립보드 복사 버튼만큼의 패딩
+                        Text(text = report, fontSize = 15.sp, lineHeight = 20.sp)
                     }
                     // 레포트 생성 버튼
                     else FixedColorButton(

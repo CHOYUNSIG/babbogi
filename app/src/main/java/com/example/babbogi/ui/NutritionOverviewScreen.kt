@@ -8,14 +8,8 @@ import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,6 +38,7 @@ import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.getRandomNutritionIntake
 import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.toNutritionIntake
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -86,36 +82,31 @@ private fun CircularGraphCard(
         }
     }
 
-    FloatingContainer(innerPadding = 8.dp) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Row(modifier = Modifier.height(100.dp)) {
-                Row(modifier = Modifier.width(180.dp)) {
-                    NutritionCircularGraph(
-                        recommendation = recommendation,
-                        intake = intake,
-                    )
-                    Column(
-                        verticalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(vertical = 16.dp)
-                    ) {
-                        Text(text = stringResource(id = nutrition.res))
-                        Text(
-                            text = "/${"%.1f".format(recommendation)}${nutrition.unit}",
-                            fontSize = 12.sp,
-                        )
-                    }
+    FloatingContainer {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            NutritionCircularGraph(
+                recommendation = recommendation,
+                intake = intake,
+            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp, alignment = Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = stringResource(id = nutrition.res),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Text(text = "적정량보다", fontSize = 12.sp)
+                    Text(text = "${"%.1f".format(abs(recommendation - intake))}${nutrition.unit}")
+                    Text(text = if (recommendation < intake) "많습니다." else "적습니다", fontSize = 12.sp)
                 }
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Text(text = "이 날은 적정량의")
-                    Text(text = "$animatedValue%", fontSize = 32.sp)
-                    Text(text = "를 드셨습니다.")
-                }
+                Text(
+                    text = "${"%.1f".format(intake)}${nutrition.unit} / ${"%.1f".format(recommendation)}${nutrition.unit}",
+                    fontSize = 12.sp,
+                )
             }
         }
     }

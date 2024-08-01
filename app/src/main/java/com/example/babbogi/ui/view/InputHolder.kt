@@ -14,13 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.babbogi.ui.theme.BabbogiTypography
 
 @Composable
 fun InputHolder(
@@ -36,11 +36,7 @@ fun InputHolder(
                 .height(80.dp)
         ) {
             Box(modifier = Modifier.width(100.dp)) {
-                Text(
-                    text = content,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                )
+                Text(text = content, style = BabbogiTypography.titleMedium)
             }
             Box { holder() }
         }
