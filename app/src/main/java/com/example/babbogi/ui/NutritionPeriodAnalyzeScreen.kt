@@ -41,7 +41,6 @@ import com.example.babbogi.ui.view.FloatingContainer
 import com.example.babbogi.ui.view.GptAnalyzeReport
 import com.example.babbogi.ui.view.NutritionPeriodBarGraph
 import com.example.babbogi.ui.view.ScreenPreviewer
-import com.example.babbogi.ui.view.WeightHistoryPopup
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
@@ -49,7 +48,6 @@ import com.example.babbogi.util.getRandomNutritionIntake
 import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.toNutritionIntake
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -126,12 +124,6 @@ fun NutritionPeriodAnalyzeScreen(
             clipboard.setText(AnnotatedString(it))
             showSnackBar("레포트가 클립보드에 복사되었습니다.")
         },
-        onWeightClicked = { onLoaded ->
-            viewModel.getWeightHistory(true) {
-                onLoaded(it, viewModel.healthState?.height)
-            }
-        },
-        onChangeWeightClicked = { navController.navigate(Screen.HealthProfile.name) },
     )
 }
 
@@ -146,8 +138,6 @@ private fun NutritionPeriodAnalyze(
     onPeriodChanged: (List<LocalDate>, onEnded: () -> Unit) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
     onCopyReportToClipboard: (report: String) -> Unit,
-    onWeightClicked: (onLoaded: (Map<LocalDateTime, Float>?, Float?) -> Unit) -> Unit,
-    onChangeWeightClicked: () -> Unit,
 ) {
     var selectedNutrition by remember { mutableStateOf(Nutrition.Calorie) }
     var selectedPeriod by remember { mutableStateOf(period) }
@@ -236,16 +226,6 @@ private fun NutritionPeriodAnalyze(
             onCopyReportToClipboard = onCopyReportToClipboard,
         )
     }
-
-    if (showWeightHistoryPopup) WeightHistoryPopup(
-        onStarted = onWeightClicked,
-        onDismissRequest = { showWeightHistoryPopup = false },
-        onConfirmClicked = { showWeightHistoryPopup = false },
-        onChangeWeightClicked = {
-            showWeightHistoryPopup = false
-            onChangeWeightClicked()
-        }
-    )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -276,8 +256,6 @@ fun PreviewNutritionPeriodAnalyze() {
             onPeriodChanged = { _, _ -> },
             onNewReportRequested = {},
             onCopyReportToClipboard = {},
-            onWeightClicked = {},
-            onChangeWeightClicked = {},
         )
     }
 }

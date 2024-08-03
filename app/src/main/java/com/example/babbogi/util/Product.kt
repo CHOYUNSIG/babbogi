@@ -2,7 +2,6 @@ package com.example.babbogi.util
 
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
-import kotlin.random.nextUInt
 
 
 // 상품 정보

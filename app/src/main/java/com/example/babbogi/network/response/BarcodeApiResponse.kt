@@ -1,6 +1,5 @@
 package com.example.babbogi.network.response
 
-import com.example.babbogi.util.Product
 import kotlinx.serialization.Serializable
 
 @Serializable
