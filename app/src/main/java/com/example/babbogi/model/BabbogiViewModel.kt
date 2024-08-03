@@ -16,20 +16,21 @@ import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.SearchResult
+import com.example.babbogi.util.WeightHistory
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class BabbogiViewModel: ViewModel() {
     private val _nutritionRecommendation = mutableStateOf(BabbogiModel.nutritionRecommendation ?: Nutrition.entries.associateWith { it.defaultRecommend })
     private val _healthState = mutableStateOf(BabbogiModel.healthState)
     private val _isTutorialDone = mutableStateOf(BabbogiModel.isTutorialDone)
+    private val _useServerRecommendation = mutableStateOf(BabbogiModel.useServerRecommendation)
     private val _notificationActivation = mutableStateOf(BabbogiModel.notificationActivation)
     @RequiresApi(Build.VERSION_CODES.O)
     private val _today = mutableStateOf(LocalDate.now())
     private val _productList = mutableStateOf(BabbogiModel.productList.map { Triple(it.first, it.second, true) })
     private val _periodReport = mutableStateOf<Pair<List<LocalDate>, String?>?>(null)
-    private val _weightHistory = mutableStateOf<Map<LocalDateTime, Float>?>(null)
+    private val _weightHistory = mutableStateOf<List<WeightHistory>?>(null)
 
     private val foodLists = mutableStateMapOf<LocalDate, List<Consumption>>()
     private val dailyReport = mutableStateMapOf<LocalDate, String>()
@@ -75,7 +76,14 @@ class BabbogiViewModel: ViewModel() {
             BabbogiModel.notificationActivation = notificationActivation
         }
 
-    var weightHistory: Map<LocalDateTime, Float>?
+    var useServerRecommendation: Boolean
+        get() = _useServerRecommendation.value
+        set(useServerRecommendation) {
+            _useServerRecommendation.value = useServerRecommendation
+            BabbogiModel.useServerRecommendation = useServerRecommendation
+        }
+
+    var weightHistory: List<WeightHistory>?
         get() = _weightHistory.value
         set(weightHistory) { _weightHistory.value = weightHistory }
 
@@ -181,11 +189,14 @@ class BabbogiViewModel: ViewModel() {
 
     // 건강 정보를 변경하고 서버로 건강 정보를 전송한 뒤 조절된 권장량 로드
     @RequiresApi(Build.VERSION_CODES.O)
-    fun changeHealthState(healthState: HealthState, onEnded: (success: Boolean) -> Unit) {
+    fun changeHealthState(
+        healthState: HealthState,
+        onEnded: (success: Boolean) -> Unit
+    ) {
         viewModelScope.launch {
             var success = false
             try {
-                val newId = ServerApi.postHealthState(BabbogiModel.id, BabbogiModel.token!!, healthState)
+                val newId = ServerApi.postHealthState(BabbogiModel.id, BabbogiModel.token!!, healthState, useServerRecommendation)
                 val recommendation = ServerApi.getNutritionRecommendation(newId)
                 BabbogiModel.id = newId
                 this@BabbogiViewModel.healthState = healthState
@@ -340,14 +351,12 @@ class BabbogiViewModel: ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     fun getWeightHistory(
         refresh: Boolean = false,
-        onFetchingEnded: (weightHistory: Map<LocalDateTime, Float>?) -> Unit
+        onFetchingEnded: (weightHistory: List<WeightHistory>?) -> Unit
     ) {
         viewModelScope.launch {
             try {
                 if (refresh || weightHistory == null)
-                    weightHistory = ServerApi.getWeightHistory(BabbogiModel.id!!).let { history ->
-                        healthState?.let { history.plus(LocalDateTime.now() to it.weight) } ?: history
-                    }
+                    weightHistory = ServerApi.getWeightHistory(BabbogiModel.id!!)
             }
             catch(e: Exception) {
                 e.printStackTrace()
@@ -373,6 +382,53 @@ class BabbogiViewModel: ViewModel() {
             catch (e: Exception) {
                 e.printStackTrace()
                 Log.d("ViewModel", "Cannot delete consumption.")
+            }
+            finally {
+                onEnded(success)
+            }
+        }
+    }
+
+    // 서버에서 몸무게 정보 수정
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun changeWeightHistory(
+        id: Long,
+        weight: Float,
+        onEnded: (success: Boolean) -> Unit,
+    ) {
+        viewModelScope.launch {
+            var success = false
+            try {
+                ServerApi.putWeight(id, weight, useServerRecommendation)
+                weightHistory = ServerApi.getWeightHistory(BabbogiModel.id!!)
+                success = true
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot change weight history.")
+            }
+            finally {
+                onEnded(success)
+            }
+        }
+    }
+
+    // 서버에서 몸무게 정보 삭제
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun deleteWeightHistory(
+        id: Long,
+        onEnded: (success: Boolean) -> Unit,
+    ) {
+        viewModelScope.launch {
+            var success = false
+            try {
+                ServerApi.deleteWeight(id, useServerRecommendation)
+                weightHistory = ServerApi.getWeightHistory(BabbogiModel.id!!)
+                success = true
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("ViewModel", "Cannot delete weight history.")
             }
             finally {
                 onEnded(success)

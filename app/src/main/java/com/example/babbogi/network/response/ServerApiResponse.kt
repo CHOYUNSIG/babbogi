@@ -10,6 +10,7 @@ import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.SearchResult
+import com.example.babbogi.util.WeightHistory
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -92,6 +93,7 @@ data class ServerHealthPostFormat(
 
 @Serializable
 data class ServerHealthGetFormat(
+    val key: Long? = null,
     val id: Long? = null,
     val date: String? = null,
     override val name: String? = null,
@@ -100,7 +102,14 @@ data class ServerHealthGetFormat(
     override val age: Int? = null,
     override val gender: String? = null,
     override val disease: String? = null,
-): ServerUserFormat()
+): ServerUserFormat() {
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun toWeightHistory(): WeightHistory = WeightHistory(
+        id = key!!,
+        weight = weight!!.toFloat(),
+        date = LocalDateTime.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+    )
+}
 
 @Serializable
 data class ServerConsumptionPostFormat(
@@ -186,6 +195,7 @@ data class ServerNutritionRecommendationGetFormat(
 
 @Serializable
 data class ServerNutritionRecommendationPutFormat(
+    val id: Long,
     override val kcal: Double,
     override val carbohydrate: Double,
     override val sugar: Double,
@@ -197,8 +207,9 @@ data class ServerNutritionRecommendationPutFormat(
     override val natrium: Double,
 ): ServerNutritionFormat() {
     companion object {
-        fun fromNutritionMap(nutrition: NutritionMap<Float>): ServerNutritionRecommendationPutFormat {
+        fun fromNutritionMap(id: Long, nutrition: NutritionMap<Float>): ServerNutritionRecommendationPutFormat {
             return ServerNutritionRecommendationPutFormat(
+                id = id,
                 kcal = nutrition[Nutrition.Calorie]!!.toDouble(),
                 carbohydrate = nutrition[Nutrition.Carbohydrate]!!.toDouble(),
                 sugar = nutrition[Nutrition.Sugar]!!.toDouble(),

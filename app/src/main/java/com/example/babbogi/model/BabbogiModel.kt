@@ -23,9 +23,15 @@ object BabbogiModel {
         }
 
     var notificationActivation: Boolean
-        get() = sharedPreferences.getBoolean("notification_activation", false)
+        get() = sharedPreferences.getBoolean("notification_activation", true)
         set(notificationActivation) {
             sharedPreferences.edit().putBoolean("notification_activation", notificationActivation).apply()
+        }
+
+    var useServerRecommendation: Boolean
+        get() = sharedPreferences.getBoolean("use_server_recommendation", true)
+        set(useServerRecommendation) {
+            sharedPreferences.edit().putBoolean("use_server_recommendation", useServerRecommendation).apply()
         }
 
     var token: String?
