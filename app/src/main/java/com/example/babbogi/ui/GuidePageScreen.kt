@@ -11,6 +11,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -80,53 +82,64 @@ private fun CustomSlider(
     modifier: Modifier = Modifier,
     sliderList: List<Int>,
     dotsSize: Dp = 10.dp,
-    imageCornerRadius: Dp = 16.dp,
+    imageCornerRadius: Dp = 16.dp
 ) {
     val pagerState = rememberPagerState(pageCount = { sliderList.size })
     val scope = rememberCoroutineScope()
 
-    HorizontalPager(
-        verticalAlignment = Alignment.Top,
-        state = pagerState,
-        modifier = modifier,
-    ) { page ->
-        val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-        val scaleFactor = 0.75f + (1f - 0.75f) * (1f - pageOffset.absoluteValue)
-        Box(
-            modifier = modifier
-                .graphicsLayer {
-                    scaleX = scaleFactor
-                    scaleY = scaleFactor
-                }
-                .alpha(scaleFactor.coerceIn(0f, 1f))
-                .wrapContentHeight()
-                .clip(RoundedCornerShape(imageCornerRadius))
-        ) {
-            Image(
-                painter = painterResource(id = sliderList[page]),
-                contentDescription = "Image",
-                contentScale = ContentScale.Fit,
-            )
-        }
-    }
-    Row(
-        modifier = modifier
-            .height(50.dp)
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        repeat(sliderList.size) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+            val scaleFactor = 0.75f + (1f - 0.75f) * (1f - pageOffset.absoluteValue)
             Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .padding(2.dp)
-                    .clip(CircleShape)
-                    .size(dotsSize)
-                    .background(if (pagerState.currentPage == it) Color.LightGray else Color.DarkGray)
-                    .clickable { scope.launch { pagerState.animateScrollToPage(it) } }
-            )
+                    .graphicsLayer {
+                        scaleX = scaleFactor
+                        scaleY = scaleFactor
+                    }
+                    .alpha(scaleFactor.coerceIn(0f, 1f))
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .clip(RoundedCornerShape(imageCornerRadius))
+            ) {
+                Image(
+                    painter = painterResource(id = sliderList[page]),
+                    contentDescription = "Image",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight()
+                )
+            }
+        }
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp) // 하단 여백 설정
+                .height(50.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            repeat(sliderList.size) {
+                Box(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .clip(CircleShape)
+                        .size(dotsSize)
+                        .background(if (pagerState.currentPage == it) Color.LightGray else Color.DarkGray)
+                        .clickable { scope.launch { pagerState.animateScrollToPage(it) } }
+                )
+            }
         }
     }
 }
+
+
 
 @Composable
 private fun GuidePage(
