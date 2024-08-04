@@ -75,20 +75,24 @@ fun NutritionDailyAnalyzeScreen(
     var report by remember { mutableStateOf<String?>(null) }
     val clipboard = LocalClipboardManager.current
 
-    LaunchedEffect(viewModel.today) {
-        foodList = null
-        report = null
-        viewModel.getFoodLists(viewModel.today) { foodList = it?.get(viewModel.today) }
-        viewModel.getDailyReport(viewModel.today, generate = false) { report = it }
-    }
-
     NutritionDailyAnalyze(
         today = viewModel.today,
         recommendation = viewModel.nutritionRecommendation,
         foodList = foodList,
         report = report,
         onNutritionCardClicked = { navController.navigate(Screen.NutritionOverview.name) },
-        onDateChanged = { viewModel.today = it },
+        onDateChanged = { date, onLoaded ->
+            viewModel.today = date
+            foodList = null
+            report = null
+            viewModel.getFoodLists(viewModel.today) {
+                foodList = it?.get(viewModel.today)
+                viewModel.getDailyReport(viewModel.today, generate = false) { newReport ->
+                    report = newReport
+                    onLoaded()
+                }
+            }
+        },
         onNewReportRequested = { onLoadingEnded ->
             viewModel.getDailyReport(viewModel.today, refresh = true) {
                 if (it == null) showAlertPopup(
@@ -131,7 +135,7 @@ private fun NutritionDailyAnalyze(
     foodList: List<Consumption>?,
     report: String?,
     onNutritionCardClicked: () -> Unit,
-    onDateChanged: (LocalDate) -> Unit,
+    onDateChanged: (LocalDate, onEnded: () -> Unit) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
     onCopyReportToClipboard: (report: String) -> Unit,
     onDeleteFoodClicked: (id: Long, onEnded: (success: Boolean) -> Unit) -> Unit,
@@ -139,10 +143,22 @@ private fun NutritionDailyAnalyze(
 ) {
     var deletionConsumption by remember { mutableStateOf<Consumption?>(null) }
     var isDeletionProcessing by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
 
     if (refreshState.isRefreshing) {
-        LaunchedEffect(true) { onRefresh { refreshState.endRefresh() } }
+        LaunchedEffect(true) {
+            isLoading = true
+            onRefresh {
+                isLoading = false
+                refreshState.endRefresh()
+            }
+        }
+    }
+
+    LaunchedEffect(true) {
+        isLoading = true
+        onDateChanged(today) { isLoading = false }
     }
 
     Box(modifier = Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
@@ -151,10 +167,16 @@ private fun NutritionDailyAnalyze(
             FloatingContainer(innerPadding = 8.dp) {
                 DateSelector(
                     initDate = today,
-                    onDateChanged = onDateChanged,
+                    onDateChanged = { date ->
+                        isLoading = true
+                        onDateChanged(date) { isLoading = false }
+                    },
                 )
             }
-            if (foodList != null) {
+            if (isLoading) Box(modifier = Modifier.padding(50.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(modifier = Modifier.size(50.dp))
+            }
+            else if (foodList != null) {
                 // 간략한 영양소 현황
                 NutritionAbstraction(
                     recommendation = recommendation,
@@ -299,7 +321,7 @@ fun PreviewNutritionDailyAnalyze() {
             foodList = testConsumptionList,
             report = null,
             onNutritionCardClicked = {},
-            onDateChanged = {},
+            onDateChanged = { _, onLoaded -> onLoaded() },
             onNewReportRequested = {},
             onCopyReportToClipboard = {},
             onDeleteFoodClicked = { _, _ -> },

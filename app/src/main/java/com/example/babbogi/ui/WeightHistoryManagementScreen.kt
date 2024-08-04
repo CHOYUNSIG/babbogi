@@ -71,19 +71,10 @@ fun WeightHistoryManagementScreen(
     showSnackBar: (message: String) -> Unit,
     showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
-    LaunchedEffect(viewModel.weightHistory) {
-        if (viewModel.weightHistory == null) viewModel.getWeightHistory {
-            if (it == null) showAlertPopup(
-                "오류",
-                "몸무게 기록을 불러오는 데 실패했습니다.",
-                R.drawable.baseline_cancel_24,
-            )
-        }
-    }
-
     WeightHistoryManagement(
         history = viewModel.weightHistory,
         height = viewModel.healthState?.height,
+        onStarted = { onEnded -> viewModel.getWeightHistory { onEnded() } },
         onWeightHistoryChanged = { id, weight ->
             viewModel.changeWeightHistory(id, weight) {
                 if (it) showSnackBar("몸무게 기록이 변경되었습니다.")
@@ -105,7 +96,14 @@ fun WeightHistoryManagementScreen(
             }
         },
         onRefresh = { onLoaded ->
-            viewModel.getWeightHistory(refresh = true) { onLoaded() }
+            viewModel.getWeightHistory(refresh = true) {
+                if (it == null) showAlertPopup(
+                    "오류",
+                    "몸무게 기록을 불러오는 데 실패했습니다.",
+                    R.drawable.baseline_cancel_24,
+                )
+                onLoaded()
+            }
         },
     )
 }
@@ -116,6 +114,7 @@ fun WeightHistoryManagementScreen(
 fun WeightHistoryManagement(
     history: List<WeightHistory>?,
     height: Float?,
+    onStarted: (onEnded: () -> Unit) -> Unit,
     onWeightHistoryChanged: (id: Long, weight: Float) -> Unit,
     onWeightHistoryDeleted: (id: Long) -> Unit,
     onRefresh: (onLoaded: () -> Unit) -> Unit,
@@ -125,15 +124,24 @@ fun WeightHistoryManagement(
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
     LaunchedEffect(selectedIndex) {
         scope.launch {
-            selectedIndex?.let {
-                lazyListState.animateScrollToItem(it)
-            }
+            selectedIndex?.let { lazyListState.animateScrollToItem(it) }
         }
     }
 
+    var isLoading by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
-    if (refreshState.isRefreshing)
-        LaunchedEffect(true) { onRefresh { refreshState.endRefresh() } }
+    if (refreshState.isRefreshing) LaunchedEffect(true) {
+        isLoading = true
+        onRefresh {
+            isLoading = false
+            refreshState.endRefresh()
+        }
+    }
+
+    LaunchedEffect(true) {
+        isLoading = true
+        onStarted { isLoading = false }
+    }
 
     var showModifyPopup by remember { mutableStateOf(false) }
     var showDeletePopup by remember { mutableStateOf(false) }
@@ -146,7 +154,7 @@ fun WeightHistoryManagement(
                     Text(text = "몸무게 변화", style = BabbogiTypography.titleMedium)
                 }
                 // 로딩중임을 고지
-                if (refreshState.isRefreshing) Box(
+                if (isLoading) Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -167,6 +175,7 @@ fun WeightHistoryManagement(
                     ) {
                         LinearWeightHistoryGraph(
                             history = history,
+                            selectedHistoryID = selectedIndex?.let { history[it].id },
                             bottomLimit = bottomLimit,
                             topLimit = topLimit,
                             onWeightAnkerClicked = { selectedIndex = history.indexOf(it) },
@@ -243,13 +252,24 @@ fun WeightHistoryManagement(
                                         Text(text = "%.1fkg".format(w.weight))
                                     }
                                     Row {
-                                        IconButton(onClick = { selectedIndex = index; showModifyPopup = true }) {
+                                        IconButton(
+                                            onClick = {
+                                                selectedIndex = index
+                                                showModifyPopup = true
+                                            }
+                                        ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.baseline_edit_24),
                                                 contentDescription = "기록 변경",
                                             )
                                         }
-                                        if (history.size > 1) IconButton(onClick = { selectedIndex = index; showDeletePopup = true }) {
+                                        IconButton(
+                                            onClick = {
+                                                selectedIndex = index
+                                                showDeletePopup = true
+                                            },
+                                            enabled = index != history.lastIndex,
+                                        ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.baseline_delete_24),
                                                 contentDescription = "기록 삭제",
@@ -279,7 +299,9 @@ fun WeightHistoryManagement(
     }
 
     selectedIndex?.let { index ->
-        val w = history!![index]
+        if (history == null || index > history.lastIndex) return@let
+        val w = history[index]
+
         if (showModifyPopup) {
             var text by remember { mutableStateOf("%.1f".format(w.weight)) }
             var error by remember { mutableStateOf(false) }
@@ -313,6 +335,7 @@ fun WeightHistoryManagement(
                 )
             }
         }
+
         if (showDeletePopup) CustomPopup(
             callbacks = listOf({ onWeightHistoryDeleted(w.id) }, {}),
             labels = listOf("확인", "취소"),
@@ -349,9 +372,10 @@ fun PreviewWeightHistoryManagement() {
         WeightHistoryManagement(
             history = testWeightHistoryList,
             height = 180f,
+            onStarted = { it() },
             onWeightHistoryChanged = { _, _ -> },
             onWeightHistoryDeleted = {},
-            onRefresh = { it() }
+            onRefresh = {}
         )
     }
 }
