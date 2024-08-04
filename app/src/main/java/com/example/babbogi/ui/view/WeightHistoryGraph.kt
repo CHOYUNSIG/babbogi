@@ -126,11 +126,18 @@ private const val topPadding = 50
 @Composable
 fun LinearWeightHistoryGraph(
     history: List<WeightHistory>,
+    selectedHistoryID: Long? = null,
     bottomLimit: Float,
     topLimit: Float,
     onWeightAnkerClicked: (WeightHistory) -> Unit,
 ) {
-    val data by remember(history) { mutableStateOf(history.sortedBy { it.date }) }
+    val data by remember(history) {
+        mutableStateOf(
+            history.sortedBy { it.date }.let {
+                it.plus(it.last().copy(id = it.last().id + 1, date = LocalDateTime.now()))
+            }
+        )
+    }
     val startSecond = data.first().date.toEpochSecond(ZoneOffset.UTC)
     val endSecond = data.last().date.toEpochSecond(ZoneOffset.UTC)
     val minWeight by remember(data) { mutableFloatStateOf(min(data.minOf { it.weight }, bottomLimit)) }
@@ -170,7 +177,7 @@ fun LinearWeightHistoryGraph(
                 .horizontalScroll(scrollState)
         ) {
             // 정보가 부족할 경우
-            if (history.size < 2)
+            if (data.size < 2)
                 Text(text = "몸무게 정보가 부족하여\n그래프를 그릴 수 없습니다.", style = BabbogiTypography.bodySmall)
             // 그래프
             else if (width > 0) Canvas(
@@ -227,8 +234,8 @@ fun LinearWeightHistoryGraph(
                             topLeft = Offset(
                                 x = x + 5,
                                 y = size.height - textMeasurer.measure(
-                                    text,
-                                    style = style
+                                    text = text,
+                                    style = style,
                                 ).size.height
                             ),
                             style = style
@@ -282,10 +289,11 @@ fun LinearWeightHistoryGraph(
                 }
                 // 몸무게 앵커
                 anker.clear()
-                data.forEach { weightHistory ->
-                    val (_, weight, date) = weightHistory
+                repeat(data.lastIndex) { index ->
+                    val weightHistory = data[index]
+                    val (id, weight, date) = weightHistory
                     drawCircle(
-                        color = BabbogiGreen,
+                        color = if (id == selectedHistoryID) Color.Red else BabbogiGreen,
                         radius = 10f,
                         center = Offset(
                             x = getX(date),
