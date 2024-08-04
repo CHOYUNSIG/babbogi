@@ -119,6 +119,7 @@ fun GptAnalyzeReport(
                             fontSize = 15.sp,
                             lineHeight = 20.sp,
                             textAlign = TextAlign.Start,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                     // 레포트 생성 버튼
@@ -163,7 +164,7 @@ fun GptAnalyzeReport(
 @Preview
 @Composable
 fun PreviewGptAnalyzeReport() {
-    val report = ("레포트".repeat(Random.nextInt(20)) + "\n").repeat(10)
+    val report = ("레포트".repeat(2) + "\n").repeat(10)
 
     GptAnalyzeReport(
         title = "레포트 제목",
