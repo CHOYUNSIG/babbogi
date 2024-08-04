@@ -1,5 +1,6 @@
 package com.example.babbogi.ui
 
+import android.Manifest
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +47,10 @@ import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.testHealthState
 import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.toFloat2
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 
+@OptIn(ExperimentalPermissionsApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun SettingScreen(
@@ -54,10 +59,16 @@ fun SettingScreen(
     showSnackBar: (message: String) -> Unit,
     showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
+    // 알림 권한 설정
+    val hasPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || run {
+        rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS).hasPermission
+    }
+
     Setting(
         healthState = viewModel.healthState,
         recommendation = viewModel.nutritionRecommendation,
         notificationState = viewModel.notificationActivation,
+        hasNotificationPermission = hasPermission,
         serverRecommendationUsage = viewModel.useServerRecommendation,
         onNotificationStateChanged = { viewModel.notificationActivation = it },
         onServerRecommendationUsageChanged = { viewModel.useServerRecommendation = it },
@@ -85,6 +96,7 @@ private fun Setting(
     healthState: HealthState?,
     recommendation: NutritionRecommendation,
     notificationState: Boolean,
+    hasNotificationPermission: Boolean,
     serverRecommendationUsage: Boolean,
     onNotificationStateChanged: (Boolean) -> Unit,
     onServerRecommendationUsageChanged: (Boolean) -> Unit,
@@ -121,15 +133,14 @@ private fun Setting(
         InputHolder(content = "섭취량 추천") {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "밥보기에서 건강 정보를 바탕으로 추천한 권장 섭취량을 사용합니다.",
-                        style = BabbogiTypography.bodySmall,
-                    )
-                }
-                Spacer(modifier = Modifier.requiredWidth(20.dp))
+                Text(
+                    text = "밥보기가 사용자의 건강 정보를 기반으로 계산한 권장 섭취량을 사용합니다.",
+                    style = BabbogiTypography.bodySmall,
+                    modifier = Modifier.weight(1f),
+                )
                 FixedColorSwitch(
                     checked = serverRecommendationUsage,
                     onCheckedChange = onServerRecommendationUsageChanged
@@ -140,16 +151,24 @@ private fun Setting(
         InputHolder(content = "알림") {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "밥보기에서 푸시알림을 받습니다. 알림을 받으려면 알림 권한을 활성화해야 합니다.", style = BabbogiTypography.bodySmall)
-                }
-                Spacer(modifier = Modifier.requiredWidth(20.dp))
-                FixedColorSwitch(
-                    checked = notificationState,
-                    onCheckedChange = onNotificationStateChanged
+                if (!hasNotificationPermission) Text(
+                    text = "경고: 앱에 알림 권한이 부여되지 않았습니다. 알림을 받으려면 알림 권한을 활성화해야 합니다.",
+                    style = BabbogiTypography.bodySmall,
                 )
+                else {
+                    Text(
+                        text = "밥보기에서 푸시 알림을 받습니다.",
+                        style = BabbogiTypography.bodySmall,
+                        modifier = Modifier.weight(1f),
+                    )
+                    FixedColorSwitch(
+                        checked = notificationState,
+                        onCheckedChange = onNotificationStateChanged
+                    )
+                }
             }
         }
         // 가이드라인 다시보기
@@ -158,7 +177,7 @@ private fun Setting(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "메뉴얼 다시 보기", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                Text(text = "메뉴얼 다시 보기", style = BabbogiTypography.titleMedium)
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_menu_book_24),
                     contentDescription = "메뉴얼 다시 보기",
@@ -213,6 +232,7 @@ fun PreviewSetting() {
             healthState = testHealthState,
             recommendation = testNutritionRecommendation,
             notificationState = true,
+            hasNotificationPermission = false,
             serverRecommendationUsage = true,
             onHealthCardClicked = {},
             onRecommendationChanged = {},
