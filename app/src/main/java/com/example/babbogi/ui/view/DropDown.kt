@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +50,7 @@ fun DropDown(
                 focusedContainerColor = Color.Gray.copy(alpha = 0.1f),
             ),
             singleLine = true,
+            textStyle = TextStyle(textAlign = TextAlign.Start),
         )
         ExposedDropdownMenu(
             expanded = isExpended,
