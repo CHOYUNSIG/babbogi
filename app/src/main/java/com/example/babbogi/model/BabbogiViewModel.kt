@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class BabbogiViewModel: ViewModel() {
-    private val _nutritionRecommendation = mutableStateOf(BabbogiModel.nutritionRecommendation ?: Nutrition.entries.associateWith { it.defaultRecommend })
+    private val _nutritionRecommendation = mutableStateOf(BabbogiModel.nutritionRecommendation ?: Nutrition.entries.associateWith { it.defaultRecommendation })
     private val _healthState = mutableStateOf(BabbogiModel.healthState)
     private val _isTutorialDone = mutableStateOf(BabbogiModel.isTutorialDone)
     private val _useServerRecommendation = mutableStateOf(BabbogiModel.useServerRecommendation)
@@ -198,9 +198,11 @@ class BabbogiViewModel: ViewModel() {
             try {
                 val newId = ServerApi.postHealthState(BabbogiModel.id, BabbogiModel.token!!, healthState, useServerRecommendation)
                 val recommendation = ServerApi.getNutritionRecommendation(newId)
+                val history = ServerApi.getWeightHistory(newId)
                 BabbogiModel.id = newId
                 this@BabbogiViewModel.healthState = healthState
                 nutritionRecommendation = recommendation
+                weightHistory = history
                 success = true
             }
             catch (e: Exception) {
@@ -323,7 +325,6 @@ class BabbogiViewModel: ViewModel() {
     fun getPeriodReport(
         startDate: LocalDate,
         endDate: LocalDate,
-        generate: Boolean = true,
         refresh: Boolean = false,
         onFetchingEnded: (report: String?) -> Unit,
     ) {
@@ -331,9 +332,11 @@ class BabbogiViewModel: ViewModel() {
             var report: String? = null
             try {
                 periodReport?.let { (period, preReport) ->
-                    report = if (generate && (preReport == null || period.first() != startDate || period.last() != endDate || refresh))
+                    report = if (refresh || preReport == null || period.first() != startDate || period.last() != endDate)
                         ServerApi.getReport(BabbogiModel.id!!, startDate, endDate)
                     else preReport
+                } ?: run {
+                    report = ServerApi.getReport(BabbogiModel.id!!, startDate, endDate)
                 }
                 periodReport = listOf(startDate, endDate) to report
             }
