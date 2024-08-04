@@ -191,8 +191,7 @@ private fun FoodModificationCard(
                     text = product.name.ifEmpty { "(이름 없음)" },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    style = BabbogiTypography.titleMedium,
                 )
             }
             Row(

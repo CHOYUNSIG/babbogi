@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -82,7 +84,10 @@ fun CustomNavigationBarItem(
             modifier = Modifier.padding(8.dp)
         ) {
             Icon(painter = painterResource(id = icon), contentDescription = description)
-            Text(text = description)
+            Text(
+                text = description,
+                style = TextStyle(lineBreak = LineBreak.Heading)
+            )
         }
     }
 }

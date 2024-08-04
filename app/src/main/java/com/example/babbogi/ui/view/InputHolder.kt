@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
@@ -34,7 +35,7 @@ fun InputHolder(
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 5.dp)
                 .fillMaxWidth()
-                .height(80.dp)
+                .heightIn(min = 80.dp)
         ) {
             Box(modifier = Modifier.width(100.dp)) {
                 Text(text = content, style = BabbogiTypography.titleMedium)
