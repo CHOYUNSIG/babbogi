@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CardDefaults
@@ -37,8 +36,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -174,24 +177,21 @@ fun WeightHistoryManagement(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("신체질량지수(BMI) 기준,")
-                        Text("키 %.1fcm의 적정 몸무게는".format(height))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(3.dp),
-                        ) {
-                            Text(
-                                text = "%.1fkg".format(bottomLimit),
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(text = "이상")
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text(
-                                text = "%.1fkg".format(topLimit),
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(text = "이하입니다.")
-                        }
+                        Text(
+                            text = remember(height, bottomLimit, topLimit) {
+                                buildAnnotatedString {
+                                    val bold = SpanStyle(fontWeight = FontWeight.Bold)
+                                    append("신체질량지수(BMI) 기준,\n키 ")
+                                    withStyle(bold) { append("%.1fcm".format(height)) }
+                                    append("의 적정 몸무게는\n")
+                                    withStyle(bold) { append("%.1fkg".format(bottomLimit)) }
+                                    append(" 이상 ")
+                                    withStyle(bold) { append("%.1fkg".format(topLimit)) }
+                                    append(" 이하입니다.")
+                                }
+                            },
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
                 // 데이터를 불러오지 못함을 고지
@@ -209,8 +209,8 @@ fun WeightHistoryManagement(
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(text = "상세 기록", style = BabbogiTypography.titleMedium)
                 }
-                if (history != null && history.size >= 2) {
-                    Text(
+                if (history != null) {
+                    if (history.size > 1) Text(
                         text = "몸무게 그래프의 각 점을 클릭하면\n자동으로 해당 정보가 강조 표시됩니다.",
                         style = BabbogiTypography.bodySmall,
                     )
@@ -249,7 +249,7 @@ fun WeightHistoryManagement(
                                                 contentDescription = "기록 변경",
                                             )
                                         }
-                                        IconButton(onClick = { selectedIndex = index; showDeletePopup = true }) {
+                                        if (history.size > 1) IconButton(onClick = { selectedIndex = index; showDeletePopup = true }) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.baseline_delete_24),
                                                 contentDescription = "기록 삭제",
