@@ -193,7 +193,7 @@ object ServerApi {
         Log.d("ServerApi", "postHealthState($id, $token, $healthState")
         val body = ServerHealthPostFormat.fromHealthState(id, healthState)
         Log.d("ServerApi", "body: ${Json.encodeToJsonElement(body)}")
-        return retrofitService.postHealthState("\"" + token + "\"", useServerRecommendation, body)
+        return retrofitService.postHealthState(token, useServerRecommendation, body)
     }
 
     suspend fun putNutritionRecommendation(id: Long, nutrition: NutritionMap<Float>) {
