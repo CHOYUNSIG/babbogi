@@ -267,8 +267,7 @@ fun WeightHistoryManagement(
                                             onClick = {
                                                 selectedIndex = index
                                                 showDeletePopup = true
-                                            },
-                                            enabled = index != history.lastIndex,
+                                            }
                                         ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.baseline_delete_24),
