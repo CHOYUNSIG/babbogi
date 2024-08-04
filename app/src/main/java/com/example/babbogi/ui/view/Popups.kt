@@ -88,11 +88,12 @@ fun ListModificationPopup(
 
     CustomPopup(
         callbacks = listOf({
+            val textsZeroReplaced = texts.map { it.ifEmpty { "0" } }
             errors = List(defaultTexts.size) { index ->
-                types[index] == KeyboardType.Number && texts[index].toFloatOrNull() == null
+                types[index] == KeyboardType.Number && textsZeroReplaced[index].toFloatOrNull() == null
             }
             if (errors.all { !it }) {
-                onModifyClicked(texts)
+                onModifyClicked(textsZeroReplaced)
                 onDismiss()
             }
         }, onDismiss),
