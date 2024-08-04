@@ -30,6 +30,7 @@ fun InputHolder(
     FloatingContainer(innerPadding = 0.dp) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 5.dp)
                 .fillMaxWidth()

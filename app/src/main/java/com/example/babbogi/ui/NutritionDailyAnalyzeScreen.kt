@@ -50,11 +50,11 @@ import com.example.babbogi.ui.view.ScreenPreviewer
 import com.example.babbogi.ui.view.WeightHistoryPopup
 import com.example.babbogi.util.Consumption
 import com.example.babbogi.util.NutritionRecommendation
+import com.example.babbogi.util.WeightHistory
 import com.example.babbogi.util.testConsumptionList
 import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.toNutritionIntake
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -133,7 +133,7 @@ private fun NutritionDailyAnalyze(
     onDateChanged: (LocalDate) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
     onCopyReportToClipboard: (report: String) -> Unit,
-    onWeightClicked: (onLoaded: (Map<LocalDateTime, Float>?, Float?) -> Unit) -> Unit,
+    onWeightClicked: (onLoaded: (List<WeightHistory>?, Float?) -> Unit) -> Unit,
     onChangeWeightClicked: () -> Unit,
     onDeleteFoodClicked: (id: Long, onEnded: (success: Boolean) -> Unit) -> Unit,
     onRefresh: (endRefresh: () -> Unit) -> Unit,

@@ -58,7 +58,9 @@ fun SettingScreen(
         healthState = viewModel.healthState,
         recommendation = viewModel.nutritionRecommendation,
         notificationState = viewModel.notificationActivation,
+        serverRecommendationUsage = viewModel.useServerRecommendation,
         onNotificationStateChanged = { viewModel.notificationActivation = it },
+        onServerRecommendationUsageChanged = { viewModel.useServerRecommendation = it },
         onHealthCardClicked = { navController.navigate(Screen.HealthProfile.name) },
         onRecommendationChanged = {
             navController.navigate(Screen.Loading.name)
@@ -83,7 +85,9 @@ private fun Setting(
     healthState: HealthState?,
     recommendation: NutritionRecommendation,
     notificationState: Boolean,
+    serverRecommendationUsage: Boolean,
     onNotificationStateChanged: (Boolean) -> Unit,
+    onServerRecommendationUsageChanged: (Boolean) -> Unit,
     onHealthCardClicked: () -> Unit,
     onRecommendationChanged: (NutritionRecommendation) -> Unit,
     onTutorialRestartClicked: () -> Unit,
@@ -113,6 +117,25 @@ private fun Setting(
                 contentDescription = "권장 섭취량 조정",
             )
         }
+        // 추천 권장 섭취량 사용 옵션
+        InputHolder(content = "섭취량 추천") {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "밥보기에서 건강 정보를 바탕으로 추천한 권장 섭취량을 사용합니다.",
+                        style = BabbogiTypography.bodySmall,
+                    )
+                }
+                Spacer(modifier = Modifier.requiredWidth(20.dp))
+                FixedColorSwitch(
+                    checked = serverRecommendationUsage,
+                    onCheckedChange = onServerRecommendationUsageChanged
+                )
+            }
+        }
         // 알림 활성화 옵션
         InputHolder(content = "알림") {
             Row(
@@ -120,7 +143,7 @@ private fun Setting(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "알림을 받으려면 알림 권한을 활성화해야 해요.", style = BabbogiTypography.bodySmall)
+                    Text(text = "밥보기에서 푸시알림을 받습니다. 알림을 받으려면 알림 권한을 활성화해야 합니다.", style = BabbogiTypography.bodySmall)
                 }
                 Spacer(modifier = Modifier.requiredWidth(20.dp))
                 FixedColorSwitch(
@@ -190,8 +213,10 @@ fun PreviewSetting() {
             healthState = testHealthState,
             recommendation = testNutritionRecommendation,
             notificationState = true,
+            serverRecommendationUsage = true,
             onHealthCardClicked = {},
             onRecommendationChanged = {},
+            onServerRecommendationUsageChanged = {},
             onNotificationStateChanged = {},
             onTutorialRestartClicked = {},
         )

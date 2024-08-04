@@ -47,6 +47,7 @@ import com.example.babbogi.ui.theme.BabbogiTheme
 import com.example.babbogi.ui.view.CustomNavigationBar
 import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.TitleBar
+import com.example.babbogi.ui.WeightHistoryManagementScreen
 import kotlinx.coroutines.launch
 
 enum class Screen(
@@ -74,6 +75,11 @@ enum class Screen(
     NutritionPeriodAnalyze(
         title = "기간 분석",
         screenComposable = { v, n, s, a -> NutritionPeriodAnalyzeScreen(v, n, s, a) }
+    ),
+    @RequiresApi(Build.VERSION_CODES.O)
+    WeightHistoryManagement(
+        title = "몸무게 관리",
+        screenComposable = { v, n, s, a -> WeightHistoryManagementScreen(v, n, s, a) },
     ),
     @RequiresApi(Build.VERSION_CODES.O)
     NutritionOverview(
@@ -173,12 +179,16 @@ fun MainApp(viewModel: BabbogiViewModel) {
             val title = currentScreen?.let { Screen.valueOf(it).title }
             if (title != null) TitleBar(title = title) {
                 if (currentScreen != Screen.Setting.name && currentScreen != Screen.HealthProfile.name) Row(horizontalArrangement = Arrangement.End) {
-                    IconButton(
-                        onClick = { navController.navigate(Screen.Setting.name) }
-                    ) {
+                    IconButton(onClick = { navController.navigate(Screen.WeightHistoryManagement.name) }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_accessibility_24),
+                            contentDescription = Screen.WeightHistoryManagement.title,
+                        )
+                    }
+                    IconButton(onClick = { navController.navigate(Screen.Setting.name) }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_settings_24),
-                            contentDescription = "설정",
+                            contentDescription = Screen.Setting.title,
                         )
                     }
                 }

@@ -26,6 +26,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +37,7 @@ import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.theme.BabbogiGreen
 import com.example.babbogi.ui.view.ColumnScreen
+import com.example.babbogi.ui.view.CustomPopup
 import com.example.babbogi.ui.view.DropDown
 import com.example.babbogi.ui.view.FixedColorFloatingIconButton
 import com.example.babbogi.ui.view.InputHolder
@@ -56,9 +58,9 @@ fun HealthProfileScreen(
 ) {
     HealthProfile(
         healthState = viewModel.healthState,
-        onModifyClicked = {
+        onSubmitClicked = { healthState ->
             navController.navigate(Screen.Loading.name)
-            viewModel.changeHealthState(it) { success ->
+            viewModel.changeHealthState(healthState) { success ->
                 if (success) {
                     showSnackBar("건강 정보가 수정되었습니다.")
                     navController.navigate(Screen.NutritionDailyAnalyze.name) {
@@ -126,7 +128,7 @@ private fun Selector(
 @Composable
 private fun HealthProfile(
     healthState: HealthState?,
-    onModifyClicked: (HealthState) -> Unit,
+    onSubmitClicked: (HealthState) -> Unit,
 ) {
     var heightText by remember { mutableStateOf(healthState?.height?.toString() ?: "") }
     var weightText by remember { mutableStateOf(healthState?.weight?.toString() ?: "") }
@@ -138,6 +140,8 @@ private fun HealthProfile(
     var weightError by remember { mutableStateOf(false) }
     var ageError by remember { mutableStateOf(false) }
     var genderError by remember { mutableStateOf(false) }
+
+    var newHealthState by remember { mutableStateOf<HealthState?>(null) }
 
     ColumnScreen {
         TextInputHolder(
@@ -203,18 +207,29 @@ private fun HealthProfile(
                 ageError = age == null
                 genderError = g == null
 
-                if (height != null && weight != null && age != null && g != null) onModifyClicked(
-                    HealthState(
-                        height = height,
-                        weight = weight,
-                        gender = g,
-                        age = age,
-                        adultDisease = adultDisease
-                    )
+                if (height != null && weight != null && age != null && g != null) newHealthState = HealthState(
+                    height = height,
+                    weight = weight,
+                    gender = g,
+                    age = age,
+                    adultDisease = adultDisease
                 )
             },
             icon = R.drawable.baseline_send_24
         )
+    }
+
+    newHealthState?.let {
+        if (healthState != null) CustomPopup(
+            callbacks = listOf({ onSubmitClicked(it) }, {}),
+            labels = listOf("확인", "취소"),
+            onDismiss = { newHealthState = null },
+            title = "건강 정보 수정",
+            icon = R.drawable.baseline_send_24,
+        ) {
+            Text(text = "건강 정보를 수정하시겠습니까?", textAlign = TextAlign.Center)
+        }
+        else onSubmitClicked(it)
     }
 }
 
@@ -226,7 +241,7 @@ fun PreviewHealthProfile() {
     ScreenPreviewer(screen = Screen.HealthProfile) {
         HealthProfile(
             healthState = testHealthState,
-            onModifyClicked = {},
+            onSubmitClicked = {},
         )
     }
 }

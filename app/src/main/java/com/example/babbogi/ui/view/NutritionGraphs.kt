@@ -9,6 +9,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -118,8 +119,8 @@ fun NutritionBarGraph(recommendation: Float, intake: Float) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // Text(text = "%.0f%%".format(intake / recommendation * 100))
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(text = "%.0f%%".format(intake / recommendation * 100))
             Canvas(modifier = Modifier.fillMaxWidth().height(10.dp)) {
                 val barLength = size.width
                 val barHeight = 10.dp.toPx()

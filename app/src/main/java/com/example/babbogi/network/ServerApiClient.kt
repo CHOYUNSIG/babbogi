@@ -18,6 +18,7 @@ import com.example.babbogi.util.NutritionMap
 import com.example.babbogi.util.NutritionRecommendation
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.SearchResult
+import com.example.babbogi.util.WeightHistory
 import com.google.gson.GsonBuilder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
@@ -57,22 +58,22 @@ interface ServerApiService {
 
     @GET("User")
     suspend fun getHealthState(
-        @Query(value = "id") id: Long
+        @Query(value = "id") id: Long,
     ): List<ServerHealthGetFormat>
 
     @GET("UserNutrition")
     suspend fun getNutritionRecommendation(
-        @Query(value = "id") id: Long
+        @Query(value = "id") id: Long,
     ): ServerNutritionRecommendationGetFormat
 
     @GET("search")
     suspend fun getSearchResult(
-        @Query(value = "name") word: String
+        @Query(value = "name") word: String,
     ): List<ServerSearchResultGetFormat>
 
     @GET("food")
     suspend fun getMatchedFood(
-        @Query(value = "foodcode") id: String
+        @Query(value = "foodcode") foodID: String,
     ): ServerMatchedFoodGetFormat
 
     @GET("dailyreport")
@@ -85,38 +86,51 @@ interface ServerApiService {
     suspend fun getPeriodReport(
         @Query(value = "id") id: Long,
         @Query(value = "startdate") startDate: String,
-        @Query(value = "enddate") endDate: String
+        @Query(value = "enddate") endDate: String,
     ): String
 
     @POST("consumptions")
     suspend fun postProductList(
         @Query(value = "userId") id: Long,
-        @Body body: List<ServerConsumptionPostFormat>
+        @Body body: List<ServerConsumptionPostFormat>,
     ): List<ServerConsumptionGetFormat>
 
     @POST("consumptions/insert")
     suspend fun postProductListOnPast(
         @Query(value = "userId") id: Long,
         @Query(value = "date") date: String,
-        @Body body: List<ServerConsumptionPostFormat>
+        @Body body: List<ServerConsumptionPostFormat>,
     ): List<ServerConsumptionGetFormat>
 
     @POST("User")
     suspend fun postHealthState(
         @Query(value = "token") token: String,
-        @Body body: ServerHealthPostFormat
+        @Query(value = "recommendation") useServerRecommendation: Boolean,
+        @Body body: ServerHealthPostFormat,
     ): Long
 
     @PUT("User")
     suspend fun putNutritionRecommendation(
-        @Query(value = "id") id: Long,
-        @Body nutrition: ServerNutritionRecommendationPutFormat
+        @Body nutrition: ServerNutritionRecommendationPutFormat,
     ): ServerNutritionRecommendationGetFormat
+
+    @PUT("updateweight")
+    suspend fun putWeight(
+        @Query(value = "id") seq: Long,
+        @Query(value = "weight") weight: Double,
+        @Query(value = "recommendation") useServerRecommendation: Boolean,
+    )
 
     @DELETE("consumptions/delete")
     suspend fun deleteConsumption(
         @Query(value = "id") seq: Long,
     ): Boolean
+
+    @DELETE("deleteweight")
+    suspend fun deleteWeight(
+        @Query(value = "id") seq: Long,
+        @Query(value = "recommendation") useServerRecommendation: Boolean,
+    )
 }
 
 object ServerApi {
@@ -139,11 +153,10 @@ object ServerApi {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getWeightHistory(id: Long): Map<LocalDateTime, Float> {
+    suspend fun getWeightHistory(id: Long): List<WeightHistory> {
         Log.d("ServerApi", "getWeightTransition($id)")
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        return retrofitService.getHealthState(id)
-            .associate { LocalDateTime.parse(it.date!!, formatter) to it.weight!!.toFloat() }
+        return retrofitService.getHealthState(id).map { it.toWeightHistory() }
     }
 
     suspend fun getNutritionRecommendation(id: Long): NutritionRecommendation {
@@ -156,9 +169,9 @@ object ServerApi {
         return retrofitService.getSearchResult(word).map { it.toSearchResult() }
     }
 
-    suspend fun getMatchedProduct(id: String): Product {
-        Log.d("ServerApi", "getMatchedProduct($id)")
-        return retrofitService.getMatchedFood(id).toProduct()
+    suspend fun getMatchedProduct(foodID: String): Product {
+        Log.d("ServerApi", "getMatchedProduct($foodID)")
+        return retrofitService.getMatchedFood(foodID).toProduct()
     }
 
     suspend fun getReport(id: Long, startDate: LocalDate, endDate: LocalDate = startDate): String {
@@ -176,23 +189,33 @@ object ServerApi {
         else retrofitService.postProductListOnPast(id, date.toString(), body)
     }
 
-    suspend fun postHealthState(id: Long?, token: String, healthState: HealthState): Long {
+    suspend fun postHealthState(id: Long?, token: String, healthState: HealthState, useServerRecommendation: Boolean): Long {
         Log.d("ServerApi", "postHealthState($id, $token, $healthState")
         val body = ServerHealthPostFormat.fromHealthState(id, healthState)
         Log.d("ServerApi", "body: ${Json.encodeToJsonElement(body)}")
-        return retrofitService.postHealthState("\"" + token + "\"", body)
+        return retrofitService.postHealthState("\"" + token + "\"", useServerRecommendation, body)
     }
 
     suspend fun putNutritionRecommendation(id: Long, nutrition: NutritionMap<Float>) {
         Log.d("ServerApi", "putNutritionRecommend($id, $nutrition)")
-        val body = ServerNutritionRecommendationPutFormat.fromNutritionMap(nutrition)
+        val body = ServerNutritionRecommendationPutFormat.fromNutritionMap(id, nutrition)
         Log.d("ServerApi", "body: ${Json.encodeToJsonElement(body)}")
-        retrofitService.putNutritionRecommendation(id, body)
+        retrofitService.putNutritionRecommendation(body)
+    }
+
+    suspend fun putWeight(seq: Long, weight: Float, useServerRecommendation: Boolean) {
+        Log.d("ServerApi", "putWeight($seq, $weight)")
+        retrofitService.putWeight(seq, weight.toDouble(), useServerRecommendation)
     }
 
     suspend fun deleteConsumption(seq: Long) {
         Log.d("ServerApi", "deleteConsumption($seq)")
         retrofitService.deleteConsumption(seq)
+    }
+
+    suspend fun deleteWeight(seq: Long, useServerRecommendation: Boolean) {
+        Log.d("ServerApi", "deleteWeight($seq, $useServerRecommendation)")
+        retrofitService.deleteWeight(seq, useServerRecommendation)
     }
 }
 
