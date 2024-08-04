@@ -65,6 +65,10 @@ fun GuidePageScreen(
             R.drawable.guide_page4,
             R.drawable.guide_page5,
             R.drawable.guide_page6,
+            R.drawable.guide_page7,
+            R.drawable.guide_page8,
+            R.drawable.guide_page9,
+            R.drawable.guide_page10,
         ),
         onComplete = {
             viewModel.isTutorialDone = true
@@ -183,6 +187,10 @@ fun PreviewGuidePage() {
             R.drawable.guide_page4,
             R.drawable.guide_page5,
             R.drawable.guide_page6,
+            R.drawable.guide_page7,
+            R.drawable.guide_page8,
+            R.drawable.guide_page9,
+            R.drawable.guide_page10,
         )
     }
 
