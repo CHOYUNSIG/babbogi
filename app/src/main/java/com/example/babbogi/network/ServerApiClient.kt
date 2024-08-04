@@ -43,7 +43,7 @@ private val retrofitClient = Retrofit.Builder()
 private val longRetrofit = retrofitClient
     .client(
         OkHttpClient.Builder()
-            .connectTimeout(1, java.util.concurrent.TimeUnit.SECONDS)
+            .connectTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
             .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
             .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
             .build()
@@ -53,7 +53,7 @@ private val longRetrofit = retrofitClient
 private val retrofit = retrofitClient
     .client(
         OkHttpClient.Builder()
-            .connectTimeout(1, java.util.concurrent.TimeUnit.SECONDS)
+            .connectTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
             .writeTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
             .readTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
             .build()
