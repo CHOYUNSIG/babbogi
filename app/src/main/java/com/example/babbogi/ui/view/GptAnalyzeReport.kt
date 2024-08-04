@@ -78,7 +78,6 @@ fun GptAnalyzeReport(
                         }
                     )
                 },
-                maxLines = 1,
             )
         }
         // 내부 카드

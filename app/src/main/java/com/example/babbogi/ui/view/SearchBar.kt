@@ -6,6 +6,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.babbogi.R
 
@@ -53,6 +55,7 @@ fun SearchBar(value: String, onValueChange: (String) -> Unit, onSubmit: (String)
                 keyboardController?.hide()
                 onSubmit(value)
             }),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Unspecified),
             modifier = Modifier.fillMaxWidth()
         )
     }

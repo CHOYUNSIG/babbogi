@@ -162,7 +162,7 @@ private fun FoodSearch(
                 }
             }
             if (isLoading) Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(modifier = Modifier.size(100.dp))
+                CircularProgressIndicator(modifier = Modifier.size(50.dp))
             }
         }
     }

@@ -133,7 +133,13 @@ private fun FoodModificationCard(
                 )
             }
         },
-        suffix = { FixedColorCheckBox(checked = checked, onCheckedChange = onCheckedChanged) },
+        suffix = {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_edit_24),
+                contentDescription = null,
+            )
+            FixedColorCheckBox(checked = checked, onCheckedChange = onCheckedChanged)
+        },
         bottom = {
             Row (
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -187,9 +193,12 @@ private fun FoodModificationCard(
                 }
                 Text(
                     text = product.name.ifEmpty { "(이름 없음)" },
+                    style = BabbogiTypography.titleMedium.copy(
+                        color = if (product.name.isEmpty()) Color.Gray else Color.Unspecified,
+                    ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    style = BabbogiTypography.titleMedium,
+                    modifier = Modifier.weight(1f, fill = false)
                 )
             }
             Row(

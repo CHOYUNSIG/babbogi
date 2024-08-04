@@ -84,10 +84,7 @@ fun CustomNavigationBarItem(
             modifier = Modifier.padding(8.dp)
         ) {
             Icon(painter = painterResource(id = icon), contentDescription = description)
-            Text(
-                text = description,
-                style = TextStyle(lineBreak = LineBreak.Heading)
-            )
+            Text(text = description)
         }
     }
 }

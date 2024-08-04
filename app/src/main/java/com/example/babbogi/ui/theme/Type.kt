@@ -18,11 +18,13 @@ val Typography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.5.sp,
+        lineBreak = LineBreak.Heading,
+        textAlign = TextAlign.Center,
     ),
 )
 
-val nanumFontFamily = FontFamily(
+val NanumFontFamily = FontFamily(
     Font(R.font.nanumsquare_acb),
     /*
     Font(R.font.nanumgothic, FontWeight.Black),
@@ -37,14 +39,14 @@ val nanumFontFamily = FontFamily(
 
 val BabbogiTypography = Typography(
     titleLarge = TextStyle(
-        fontFamily = nanumFontFamily,
+        fontFamily = NanumFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 26.sp,
         textAlign = TextAlign.Center,
         lineBreak = LineBreak.Heading,
     ),
     titleMedium = TextStyle(
-        fontFamily = nanumFontFamily,
+        fontFamily = NanumFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 20.sp,
         textAlign = TextAlign.Center,
