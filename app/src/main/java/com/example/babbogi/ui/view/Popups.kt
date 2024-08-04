@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -88,7 +89,9 @@ fun ListModificationPopup(
 
     CustomPopup(
         callbacks = listOf({
-            val textsZeroReplaced = texts.map { it.ifEmpty { "0" } }
+            val textsZeroReplaced = texts.mapIndexed { index, it ->
+                if (types[index] == KeyboardType.Number) it.ifEmpty { "0" } else it
+            }
             errors = List(defaultTexts.size) { index ->
                 types[index] == KeyboardType.Number && textsZeroReplaced[index].toFloatOrNull() == null
             }
@@ -123,6 +126,7 @@ fun ListModificationPopup(
                                 imeAction = ImeAction.Done
                             ),
                             modifier = Modifier.weight(1f),
+                            textStyle = TextStyle(),
                             enabled = true,
                             singleLine = true,
                             isError = errors[index],
