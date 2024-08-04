@@ -141,7 +141,6 @@ private fun NutritionPeriodAnalyze(
 ) {
     var selectedNutrition by remember { mutableStateOf(Nutrition.Calorie) }
     var selectedPeriod by remember { mutableStateOf(period) }
-    var showWeightHistoryPopup by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
 
     ColumnScreen {
@@ -220,8 +219,11 @@ private fun NutritionPeriodAnalyze(
         // 기간 분석 보고서
         GptAnalyzeReport(
             title = "기간 레포트",
-            isDateIncludesToday = selectedPeriod.last() == LocalDate.now(),
             report = report,
+            prohibitMessage = when {
+                LocalDate.now() in period.first()..period.last() -> "오늘이 포함한 기간의 레포트는 생성할 수 없습니다."
+                else -> null
+            },
             onNewReportRequested = onNewReportRequested,
             onCopyReportToClipboard = onCopyReportToClipboard,
         )
