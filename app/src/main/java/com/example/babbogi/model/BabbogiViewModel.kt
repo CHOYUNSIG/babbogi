@@ -400,6 +400,7 @@ class BabbogiViewModel: ViewModel() {
                 ServerApi.putWeight(id, weight, useServerRecommendation)
                 weightHistory = ServerApi.getWeightHistory(userID)
                 healthState = ServerApi.getHealthState(userID)
+                nutritionRecommendation = ServerApi.getNutritionRecommendation(userID)
                 success = true
             }
             catch (e: Exception) {
@@ -424,6 +425,7 @@ class BabbogiViewModel: ViewModel() {
                 ServerApi.deleteWeight(id, useServerRecommendation)
                 weightHistory = ServerApi.getWeightHistory(BabbogiModel.id!!)
                 healthState = ServerApi.getHealthState(userID)
+                nutritionRecommendation = ServerApi.getNutritionRecommendation(userID)
                 success = true
             }
             catch (e: Exception) {
