@@ -1,7 +1,6 @@
 package com.example.babbogi.model
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -126,7 +125,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot get product by barcode.")
             }
             finally {
                 onFetchingEnded(product)
@@ -149,7 +147,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot send list to server.")
             }
             finally {
                 onEnded(success)
@@ -178,8 +175,12 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 result = null
+                var date = startDate
+                while (date <= endDate) {
+                    foodLists.remove(date)
+                    date = date.plusDays(1)
+                }
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot get list from server.")
             }
             finally {
                 onFetchingEnded(result?.toMap())
@@ -207,7 +208,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot send state to server.")
             }
             finally {
                 onEnded(success)
@@ -225,7 +225,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot get user state from server")
             }
             finally {
                 onEnded(success)
@@ -248,7 +247,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot put nutrition recommend.")
             }
             finally {
                 onEnded(success)
@@ -268,7 +266,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot search food.")
             }
             finally {
                 onSearchDone(result)
@@ -288,7 +285,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot get food by searching.")
             }
             finally {
                 onSearchDone(result)
@@ -313,7 +309,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot get daily report.")
             }
             finally {
                 onFetchingEnded(report)
@@ -342,7 +337,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch(e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot get period report.")
             }
             finally {
                 onFetchingEnded(report)
@@ -363,7 +357,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch(e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot get weight history.")
             }
             finally {
                 onFetchingEnded(weightHistory)
@@ -384,7 +377,6 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot delete consumption.")
             }
             finally {
                 onEnded(success)
@@ -402,13 +394,14 @@ class BabbogiViewModel: ViewModel() {
         viewModelScope.launch {
             var success = false
             try {
+                val userID = BabbogiModel.id!!
                 ServerApi.putWeight(id, weight, useServerRecommendation)
-                weightHistory = ServerApi.getWeightHistory(BabbogiModel.id!!)
+                weightHistory = ServerApi.getWeightHistory(userID)
+                healthState = ServerApi.getHealthState(userID)
                 success = true
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot change weight history.")
             }
             finally {
                 onEnded(success)
@@ -425,13 +418,14 @@ class BabbogiViewModel: ViewModel() {
         viewModelScope.launch {
             var success = false
             try {
+                val userID = BabbogiModel.id!!
                 ServerApi.deleteWeight(id, useServerRecommendation)
                 weightHistory = ServerApi.getWeightHistory(BabbogiModel.id!!)
+                healthState = ServerApi.getHealthState(userID)
                 success = true
             }
             catch (e: Exception) {
                 e.printStackTrace()
-                Log.d("ViewModel", "Cannot delete weight history.")
             }
             finally {
                 onEnded(success)
