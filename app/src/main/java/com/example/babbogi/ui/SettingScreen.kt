@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,7 +54,6 @@ fun SettingScreen(
     showSnackBar: (message: String) -> Unit,
     showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
-    // 알림 권한 설정
     val hasPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || run {
         rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS).hasPermission
     }
@@ -64,6 +64,7 @@ fun SettingScreen(
         notificationState = viewModel.notificationActivation,
         hasNotificationPermission = hasPermission,
         serverRecommendationUsage = viewModel.useServerRecommendation,
+        onStarted = { viewModel.getHealthStateFromServer {} },
         onNotificationStateChanged = { viewModel.notificationActivation = it },
         onServerRecommendationUsageChanged = { viewModel.useServerRecommendation = it },
         onHealthCardClicked = { navController.navigate(Screen.HealthProfile.name) },
@@ -92,6 +93,7 @@ private fun Setting(
     notificationState: Boolean,
     hasNotificationPermission: Boolean,
     serverRecommendationUsage: Boolean,
+    onStarted: () -> Unit,
     onNotificationStateChanged: (Boolean) -> Unit,
     onServerRecommendationUsageChanged: (Boolean) -> Unit,
     onHealthCardClicked: () -> Unit,
@@ -99,6 +101,7 @@ private fun Setting(
     onTutorialRestartClicked: () -> Unit,
 ) {
     var showRecommendationDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(true) { if (healthState == null) onStarted() }
 
     ColumnScreen {
         // 사용자 건강 정보 카드
@@ -229,6 +232,7 @@ fun PreviewSetting() {
             notificationState = true,
             hasNotificationPermission = false,
             serverRecommendationUsage = true,
+            onStarted = {},
             onHealthCardClicked = {},
             onRecommendationChanged = {},
             onServerRecommendationUsageChanged = {},

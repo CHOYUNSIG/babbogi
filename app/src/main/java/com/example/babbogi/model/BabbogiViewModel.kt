@@ -225,6 +225,7 @@ class BabbogiViewModel: ViewModel() {
             }
             catch (e: Exception) {
                 e.printStackTrace()
+                healthState = null
             }
             finally {
                 onEnded(success)
@@ -357,6 +358,7 @@ class BabbogiViewModel: ViewModel() {
             }
             catch(e: Exception) {
                 e.printStackTrace()
+                weightHistory = null
             }
             finally {
                 onFetchingEnded(weightHistory)
