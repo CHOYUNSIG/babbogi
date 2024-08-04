@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -22,6 +25,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,13 +43,13 @@ import com.example.babbogi.ui.theme.BabbogiTypography
 @Composable
 fun GptAnalyzeReport(
     title: String,
-    isDateIncludesToday: Boolean,
     report: String?,
+    prohibitMessage: String? = null,
     onCopyReportToClipboard: (report: String) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
 ) {
     var isLoading by remember { mutableStateOf(false) }
-    val showReport = !isLoading && !isDateIncludesToday && report != null
+    val showReport = !isLoading && prohibitMessage == null && report != null
 
     FloatingContainer {
         // 제목 행
@@ -50,22 +58,28 @@ fun GptAnalyzeReport(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // 제목
             Text(text = title, style = BabbogiTypography.titleMedium)
-            // ChatGPT 기반임을 표시
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(3.dp, Alignment.End),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Powered by", fontSize = 12.sp)
-                Icon(
-                    modifier = Modifier.size(20.dp),
-                    painter = painterResource(id = R.drawable.chatgpt_logo),
-                    contentDescription = "ChatGPT 로고"
-                )
-                Text(text = "ChatGPT")
-            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = remember {
+                    buildAnnotatedString {
+                        withStyle(SpanStyle(fontSize = 12.sp)) { append("Powered by ") }
+                        appendInlineContent("chatgpt_logo")
+                        append(" ChatGPT")
+                    }
+                },
+                inlineContent = remember {
+                    mapOf(
+                        "chatgpt_logo" to InlineTextContent(Placeholder(20.sp, 20.sp, PlaceholderVerticalAlign.TextCenter)) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.chatgpt_logo),
+                                contentDescription = "ChatGPT 로고"
+                            )
+                        }
+                    )
+                },
+                maxLines = 1,
+            )
         }
         // 내부 카드
         FloatingContainer {
@@ -78,8 +92,8 @@ fun GptAnalyzeReport(
                         .verticalScroll(rememberScrollState())
                 ) {
                     // 당일 레포트 생성 불가 고지
-                    if (isDateIncludesToday)
-                        Text(text = "당일 레포트는 생성할 수 없어요!", style = BabbogiTypography.bodySmall)
+                    if (prohibitMessage != null)
+                        Text(text = prohibitMessage, style = BabbogiTypography.bodySmall)
                     // 로딩중임을 고지
                     else if (isLoading) {
                         Box {
@@ -107,7 +121,7 @@ fun GptAnalyzeReport(
                             isLoading = true
                             onNewReportRequested { isLoading = false }
                         },
-                        text = "레포트를 생성하려면 클릭하세요"
+                        text = "레포트 생성"
                     )
                 }
                 // 클립보드 복사 버튼
@@ -147,8 +161,8 @@ fun PreviewGptAnalyzeReport() {
 
     GptAnalyzeReport(
         title = "레포트 제목",
-        isDateIncludesToday = false,
         report = report,
+        prohibitMessage = null, // "레포트 생성에 실패했습니다.",
         onNewReportRequested = {},
         onCopyReportToClipboard = {},
     )
