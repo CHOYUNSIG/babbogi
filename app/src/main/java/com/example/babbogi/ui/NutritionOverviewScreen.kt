@@ -23,9 +23,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -110,13 +112,14 @@ private fun CircularGraphCard(
                     Text(
                         text = remember(recommendation, intake, nutrition) {
                             buildAnnotatedString {
+                                val centered = ParagraphStyle(textAlign = TextAlign.Center)
                                 val normal = SpanStyle(fontSize = 12.sp)
                                 val isOver = recommendation < intake
                                 withStyle(normal) {
                                     append(
                                         when(nutrition.recommendationType) {
                                             NutritionRecommendationType.Normal ->
-                                                "적정량보다 "
+                                                "섭취량이 적정량보다 "
                                             NutritionRecommendationType.UpperLimit ->
                                                 "섭취 상한선${if (isOver) "을" else "까지"} "
                                             NutritionRecommendationType.LowerLimit ->
@@ -129,7 +132,7 @@ private fun CircularGraphCard(
                                     append(
                                         when(nutrition.recommendationType) {
                                             NutritionRecommendationType.Normal ->
-                                                if (isOver) " 많습니다." else " 적습니다."
+                                                if (isOver) " 많습니다." else " 부족합니다."
                                             NutritionRecommendationType.UpperLimit ->
                                                 if (isOver) "만큼 초과했습니다." else " 남았습니다."
                                             NutritionRecommendationType.LowerLimit ->
