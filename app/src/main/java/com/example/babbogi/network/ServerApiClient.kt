@@ -35,17 +35,29 @@ import retrofit2.http.Query
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-private val retrofit = Retrofit.Builder()
-    .client(
-        OkHttpClient.Builder()
-            .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
-            .writeTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
-            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-            .build()
-    )
+private val retrofitClient = Retrofit.Builder()
     .addConverterFactory(ScalarsConverterFactory.create())
     .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
     .baseUrl(BuildConfig.SERVER_URL + BuildConfig.SERVER_API_KEY)
+
+private val longRetrofit = retrofitClient
+    .client(
+        OkHttpClient.Builder()
+            .connectTimeout(1, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+    )
+    .build()
+
+private val retrofit = retrofitClient
+    .client(
+        OkHttpClient.Builder()
+            .connectTimeout(1, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+    )
     .build()
 
 interface ServerApiService {
@@ -133,6 +145,10 @@ interface ServerApiService {
 }
 
 object ServerApi {
+    private val longRetrofitService : ServerApiService by lazy {
+        longRetrofit.create(ServerApiService::class.java)
+    }
+
     private val retrofitService : ServerApiService by lazy {
         retrofit.create(ServerApiService::class.java)
     }
@@ -174,8 +190,8 @@ object ServerApi {
 
     suspend fun getReport(id: Long, startDate: LocalDate, endDate: LocalDate = startDate): String {
         Log.d("ServerApi", "getPeriodReport($id, $startDate, $endDate)")
-        return if (startDate == endDate) retrofitService.getDailyReport(id, startDate.toString())
-        else retrofitService.getPeriodReport(id, startDate.toString(), endDate.toString())
+        return if (startDate == endDate) longRetrofitService.getDailyReport(id, startDate.toString())
+        else longRetrofitService.getPeriodReport(id, startDate.toString(), endDate.toString())
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
