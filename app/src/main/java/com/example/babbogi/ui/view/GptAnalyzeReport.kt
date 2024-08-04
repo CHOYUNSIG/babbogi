@@ -29,6 +29,7 @@ import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,6 +40,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.babbogi.R
 import com.example.babbogi.ui.theme.BabbogiTypography
+import kotlin.random.Random
 
 @Composable
 fun GptAnalyzeReport(
@@ -112,7 +114,12 @@ fun GptAnalyzeReport(
                     // 생성된 레포트 표시
                     else if (report != null) {
                         Spacer(modifier = Modifier.heightIn(50.dp))  // 클립보드 복사 버튼만큼의 패딩
-                        Text(text = report, fontSize = 15.sp, lineHeight = 20.sp)
+                        Text(
+                            text = report,
+                            fontSize = 15.sp,
+                            lineHeight = 20.sp,
+                            textAlign = TextAlign.Start,
+                        )
                     }
                     // 레포트 생성 버튼
                     else FixedColorButton(
@@ -156,7 +163,7 @@ fun GptAnalyzeReport(
 @Preview
 @Composable
 fun PreviewGptAnalyzeReport() {
-    val report = "레포트".repeat(100)
+    val report = ("레포트".repeat(Random.nextInt(20)) + "\n").repeat(10)
 
     GptAnalyzeReport(
         title = "레포트 제목",
