@@ -1,5 +1,6 @@
 package com.example.babbogi.ui
 
+import android.Manifest
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
@@ -15,8 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -30,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,15 +45,16 @@ import com.example.babbogi.ui.view.GptAnalyzeReport
 import com.example.babbogi.ui.view.NutritionAbstraction
 import com.example.babbogi.ui.view.ProductAbstraction
 import com.example.babbogi.ui.view.ScreenPreviewer
-import com.example.babbogi.ui.view.WeightHistoryPopup
 import com.example.babbogi.util.Consumption
 import com.example.babbogi.util.NutritionRecommendation
-import com.example.babbogi.util.WeightHistory
 import com.example.babbogi.util.testConsumptionList
 import com.example.babbogi.util.testNutritionRecommendation
 import com.example.babbogi.util.toNutritionIntake
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 import java.time.LocalDate
 
+@OptIn(ExperimentalPermissionsApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NutritionDailyAnalyzeScreen(
@@ -64,6 +63,14 @@ fun NutritionDailyAnalyzeScreen(
     showSnackBar: (message: String) -> Unit,
     showAlertPopup: (title: String, message: String, icon: Int) -> Unit,
 ) {
+    // 알림 권한 설정
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS).let {
+            if (!it.permissionRequested)
+                LaunchedEffect(true) { it.launchPermissionRequest() }
+        }
+    }
+
     var foodList by remember { mutableStateOf<List<Consumption>?>(null) }
     var report by remember { mutableStateOf<String?>(null) }
     val clipboard = LocalClipboardManager.current
@@ -97,12 +104,6 @@ fun NutritionDailyAnalyzeScreen(
             clipboard.setText(AnnotatedString(it))
             showSnackBar("레포트가 클립보드에 복사되었습니다.")
         },
-        onWeightClicked = { onLoaded ->
-            viewModel.getWeightHistory(true) {
-                onLoaded(it, viewModel.healthState?.height)
-            }
-        },
-        onChangeWeightClicked = { navController.navigate(Screen.HealthProfile.name) },
         onDeleteFoodClicked = { id, onEnded ->
             viewModel.deleteConsumption(id) { onEnded(it) }
         },
@@ -133,15 +134,11 @@ private fun NutritionDailyAnalyze(
     onDateChanged: (LocalDate) -> Unit,
     onNewReportRequested: (onLoadingEnded: () -> Unit) -> Unit,
     onCopyReportToClipboard: (report: String) -> Unit,
-    onWeightClicked: (onLoaded: (List<WeightHistory>?, Float?) -> Unit) -> Unit,
-    onChangeWeightClicked: () -> Unit,
     onDeleteFoodClicked: (id: Long, onEnded: (success: Boolean) -> Unit) -> Unit,
     onRefresh: (endRefresh: () -> Unit) -> Unit,
 ) {
-    var showWeightHistoryPopup by remember { mutableStateOf(false) }
     var deletionConsumption by remember { mutableStateOf<Consumption?>(null) }
     var isDeletionProcessing by remember { mutableStateOf(false) }
-    val intake by remember(foodList) { mutableStateOf(foodList?.toNutritionIntake()) }
     val refreshState = rememberPullToRefreshState()
 
     if (refreshState.isRefreshing) {
@@ -157,27 +154,34 @@ private fun NutritionDailyAnalyze(
                     onDateChanged = onDateChanged,
                 )
             }
-            // 간략한 영양소 현황
-            intake?.let {
+            if (foodList != null) {
+                // 간략한 영양소 현황
                 NutritionAbstraction(
                     recommendation = recommendation,
-                    intake = it,
+                    intake = remember(foodList) { foodList.toNutritionIntake() },
                     onClick = onNutritionCardClicked
                 )
+                // 일일 분석 보고서
+                GptAnalyzeReport(
+                    title = "일일 레포트",
+                    report = report,
+                    prohibitMessage = when {
+                        foodList.isEmpty() -> "섭취한 음식이 없어 레포트를 생성할 수 없습니다."
+                        today == LocalDate.now() -> "오늘의 레포트는 생성할 수 없습니다."
+                        else -> null
+                    },
+                    onNewReportRequested = onNewReportRequested,
+                    onCopyReportToClipboard = onCopyReportToClipboard,
+                )
+                // 식사 정보
+                MealList(
+                    foodList = foodList,
+                    onDeleteClicked = { deletionConsumption = it },
+                )
             }
-            // 일일 분석 보고서
-            GptAnalyzeReport(
-                title = "일일 레포트",
-                isDateIncludesToday = today == LocalDate.now(),
-                report = report,
-                onNewReportRequested = onNewReportRequested,
-                onCopyReportToClipboard = onCopyReportToClipboard,
-            )
-            // 식사 정보
-            MealList(
-                foodList = foodList,
-                onDeleteClicked = { deletionConsumption = it },
-            )
+            else Box(modifier = Modifier.padding(50.dp), contentAlignment = Alignment.Center) {
+                Text(text = "정보를 불러올 수 없습니다.", style = BabbogiTypography.bodySmall)
+            }
         }
 
         // 새로고침 로딩 아이콘
@@ -186,16 +190,6 @@ private fun NutritionDailyAnalyze(
             modifier = Modifier.align(Alignment.TopCenter)
         )
     }
-
-    if (showWeightHistoryPopup) WeightHistoryPopup(
-        onStarted = onWeightClicked,
-        onDismissRequest = { showWeightHistoryPopup = false },
-        onConfirmClicked = { showWeightHistoryPopup = false },
-        onChangeWeightClicked = {
-            showWeightHistoryPopup = false
-            onChangeWeightClicked()
-        }
-    )
 
     // 음식 삭제시 확인 팝업 표시
     deletionConsumption?.let { consumption ->
@@ -227,7 +221,7 @@ private fun NutritionDailyAnalyze(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun MealList(
-    foodList: List<Consumption>?,
+    foodList: List<Consumption>,
     onDeleteClicked: (Consumption) -> Unit,
 ) {
     var showingConsumption by remember { mutableStateOf<Consumption?>(null) }
@@ -237,19 +231,8 @@ private fun MealList(
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(text = "사용자 식사 정보", style = BabbogiTypography.titleMedium)
         }
-        // 로딩중임을 고지
-        if (foodList == null) Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .size(50.dp)
-                    .padding(16.dp)
-            )
-        }
         // 섭취한 음식이 없음을 고지
-        else if (foodList.isEmpty()) Row(
+        if (foodList.isEmpty()) Row(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
@@ -277,12 +260,6 @@ private fun MealList(
                         } ?: "나중에 추가됨",
                         style = BabbogiTypography.bodySmall,
                     )
-                    IconButton(onClick = { onDeleteClicked(food) }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_delete_24),
-                            contentDescription = "삭제"
-                        )
-                    }
                 }
             }
             item(key = null) { Spacer(modifier = Modifier) }  // 그림자 크기만큼 패딩
@@ -325,8 +302,6 @@ fun PreviewNutritionDailyAnalyze() {
             onDateChanged = {},
             onNewReportRequested = {},
             onCopyReportToClipboard = {},
-            onWeightClicked = {},
-            onChangeWeightClicked = {},
             onDeleteFoodClicked = { _, _ -> },
             onRefresh = {},
         )
