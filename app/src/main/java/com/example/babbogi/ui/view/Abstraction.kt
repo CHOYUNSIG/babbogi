@@ -29,6 +29,7 @@ import com.example.babbogi.util.HealthState
 import com.example.babbogi.util.Nutrition
 import com.example.babbogi.util.NutritionIntake
 import com.example.babbogi.util.NutritionRecommendation
+import com.example.babbogi.util.NutritionRecommendationType
 import com.example.babbogi.util.Product
 import com.example.babbogi.util.getRandomNutritionIntake
 import com.example.babbogi.util.testHealthState
@@ -46,7 +47,7 @@ fun NutritionAbstraction(
     intake: NutritionIntake,
     onClick: () -> Unit
 ) {
-    val graphDrawer = @Composable { nutrition: Nutrition, graphComposable: @Composable (Float, Float) -> Unit ->
+    val graphDrawer = @Composable { nutrition: Nutrition, graphComposable: @Composable (Nutrition, Float, Float) -> Unit ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -54,9 +55,15 @@ fun NutritionAbstraction(
             val r = recommendation[nutrition]!!
             val i = intake[nutrition]!!
             Text(text = stringResource(id = nutrition.res))
-            graphComposable(r, i)
+            graphComposable(nutrition, r, i)
             Text(
-                text = "%.1f${nutrition.unit} ${if (r > i) "부족" else "초과"}".format(abs(r - i)),
+                text = "%.1f${nutrition.unit} ${ 
+                    when(nutrition.recommendationType) {
+                        NutritionRecommendationType.Normal -> if (r > i) "부족" else "초과"
+                        NutritionRecommendationType.UpperLimit -> if (r > i) "남음" else "초과"
+                        NutritionRecommendationType.LowerLimit -> if (r > i) "부족" else "이상"
+                    }
+                }".format(abs(r - i)),
                 fontSize = 12.sp
             )
         }
@@ -66,10 +73,13 @@ fun NutritionAbstraction(
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(text = "권장량 대비 섭취량", style = BabbogiTypography.titleMedium)
         }
-        graphDrawer(Nutrition.Calorie) { r, i -> NutritionBarGraph(r, i) }
-        Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
+        graphDrawer(Nutrition.Calorie) { n, r, i -> NutritionBarGraph(n, r, i) }
+        Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
             listOf(Nutrition.Carbohydrate, Nutrition.Protein, Nutrition.Fat).forEach {
-                graphDrawer(it) { r, i -> NutritionCircularGraph(r, i)}
+                graphDrawer(it) { n, r, i -> NutritionCircularGraph(n, r, i)}
             }
         }
     }

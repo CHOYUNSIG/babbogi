@@ -2,54 +2,70 @@ package com.example.babbogi.util
 
 import com.example.babbogi.R
 
+enum class NutritionRecommendationType {
+    Normal,
+    UpperLimit,
+    LowerLimit,
+}
+
 enum class Nutrition(
     val res: Int,
     val unit: String,
-    val defaultRecommend: Float,
+    val defaultRecommendation: Float,
+    val recommendationType: NutritionRecommendationType,
 ) {
     Calorie(
         res = R.string.calorie,
         unit = "kcal",
-        defaultRecommend = 2200f,
+        defaultRecommendation = 2200f,
+        recommendationType = NutritionRecommendationType.Normal,
     ),
     Carbohydrate(
         res = R.string.carbohydrate,
         unit = "g",
-        defaultRecommend = 100f,
+        defaultRecommendation = 100f,
+        recommendationType = NutritionRecommendationType.Normal,
     ),
     Protein(
         res = R.string.protein,
         unit = "g",
-        defaultRecommend = 50f,
+        defaultRecommendation = 50f,
+        recommendationType = NutritionRecommendationType.Normal,
     ),
     Fat (
         res = R.string.fat,
         unit = "g",
-        defaultRecommend = 70f,
+        defaultRecommendation = 70f,
+        recommendationType = NutritionRecommendationType.Normal,
     ),
     Sugar (
         res = R.string.sugar,
         unit = "g",
-        defaultRecommend = 25f,
+        defaultRecommendation = 25f,
+        recommendationType = NutritionRecommendationType.UpperLimit,
     ),
     Salt (
         res = R.string.salt,
         unit = "mg",
-        defaultRecommend = 2.2f,
+        defaultRecommendation = 2.2f,
+        recommendationType = NutritionRecommendationType.UpperLimit,
     ),
     Cholesterol (
         res = R.string.cholesterol,
         unit = "mg",
-        defaultRecommend = 300f,
+        defaultRecommendation = 300f,
+        recommendationType = NutritionRecommendationType.UpperLimit,
     ),
     SaturatedFat (
         res = R.string.saturated_fat,
         unit = "g",
-        defaultRecommend = 15f,
+        defaultRecommendation = 15f,
+        recommendationType = NutritionRecommendationType.UpperLimit,
     ),
     TransFat (
         res = R.string.trans_fat,
         unit = "g",
-        defaultRecommend = 2.2f,
+        defaultRecommendation = 2.2f,
+        recommendationType = NutritionRecommendationType.UpperLimit,
     ),
 }

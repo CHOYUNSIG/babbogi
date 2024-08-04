@@ -8,5 +8,5 @@ typealias NutritionIntake = NutritionMap<Float>
 
 
 // 테스트용 데이터
-fun getRandomNutritionIntake(): NutritionIntake = Nutrition.entries.associateWith { (it.defaultRecommend * random() * 1.5).toFloat() }
-val testNutritionRecommendation: NutritionRecommendation = Nutrition.entries.associateWith { it.defaultRecommend }
+fun getRandomNutritionIntake(): NutritionIntake = Nutrition.entries.associateWith { (it.defaultRecommendation * random() * 1.5).toFloat() }
+val testNutritionRecommendation: NutritionRecommendation = Nutrition.entries.associateWith { it.defaultRecommendation }

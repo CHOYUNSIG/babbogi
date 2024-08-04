@@ -32,7 +32,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.babbogi.ui.theme.GradientColorsList
 import com.example.babbogi.util.Nutrition
+import com.example.babbogi.util.NutritionRecommendationType
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStartAxis
@@ -55,17 +57,26 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.min
 
-private fun getColorListByRatio(ratio: Float): List<Color> {
-    return if (ratio > 1.2)
-        listOf(Color(0xFFFF0000), Color(0xFFFFA07A))
-    else if (ratio > 0.7)
-        listOf(Color(0xff63C6C4), Color(0xff97CA49))
-    else
-        listOf(Color(0xFFFFFF00), Color(0xFFFFD700))
+private fun getColorsByNutritionIntakeRatio(nutrition: Nutrition, ratio: Float): List<Color> {
+    return when(nutrition.recommendationType) {
+        NutritionRecommendationType.Normal -> run {
+            if (ratio > 1.2) GradientColorsList[0]
+            else if (ratio > 8.0) GradientColorsList[1]
+            else GradientColorsList[2]
+        }
+        NutritionRecommendationType.UpperLimit -> run {
+            if (ratio < 1.0) GradientColorsList[1]
+            else GradientColorsList[0]
+        }
+        NutritionRecommendationType.LowerLimit -> run {
+            if (ratio > 1.0) GradientColorsList[1]
+            else GradientColorsList[0]
+        }
+    }
 }
 
 @Composable
-fun NutritionCircularGraph(recommendation: Float, intake: Float) {
+fun NutritionCircularGraph(nutrition: Nutrition, recommendation: Float, intake: Float) {
     val animatedValue = remember { Animatable(0f) }
     val preIntake by remember(intake) { mutableFloatStateOf(intake) }
 
@@ -88,7 +99,10 @@ fun NutritionCircularGraph(recommendation: Float, intake: Float) {
             )
             drawArc(
                 brush = Brush.linearGradient(
-                    colors = getColorListByRatio(intake / recommendation),
+                    colors = getColorsByNutritionIntakeRatio(
+                        nutrition = nutrition,
+                        ratio = intake / recommendation,
+                    ),
                     start = Offset.Zero,
                     end = Offset.Infinite,
                 ),
@@ -104,7 +118,7 @@ fun NutritionCircularGraph(recommendation: Float, intake: Float) {
 }
 
 @Composable
-fun NutritionBarGraph(recommendation: Float, intake: Float) {
+fun NutritionBarGraph(nutrition: Nutrition, recommendation: Float, intake: Float) {
     val animatedValue = remember { Animatable(0f) }
     val preIntake by remember(intake) { mutableFloatStateOf(intake) }
 
@@ -132,7 +146,10 @@ fun NutritionBarGraph(recommendation: Float, intake: Float) {
                 )
                 drawRoundRect(
                     brush = Brush.linearGradient(
-                        colors = getColorListByRatio(intake / recommendation),
+                        colors = getColorsByNutritionIntakeRatio(
+                            nutrition = nutrition,
+                            ratio = intake / recommendation,
+                        ),
                         start = Offset.Zero,
                         end = Offset.Infinite,
                     ),
@@ -171,8 +188,9 @@ fun NutritionPeriodBarGraph(
                         thickness = 20.dp,
                         shape = Shape.Pill,
                         dynamicShader = DynamicShader.verticalGradient(
-                            getColorListByRatio(
-                                (intakes.values.average() / recommend).toFloat()
+                            getColorsByNutritionIntakeRatio(
+                                nutrition = nutrition,
+                                ratio = (intakes.values.average() / recommend).toFloat()
                             ).toTypedArray()
                         ),
                     ))
@@ -218,6 +236,7 @@ fun NutritionPeriodBarGraph(
 @Composable
 fun PreviewNutritionCircularGraph() {
     NutritionCircularGraph(
+        nutrition = Nutrition.Calorie,
         recommendation = 2200f,
         intake = 2000f,
     )
@@ -227,6 +246,7 @@ fun PreviewNutritionCircularGraph() {
 @Composable
 fun PreviewNutritionBarGraph() {
     NutritionBarGraph(
+        nutrition = Nutrition.Calorie,
         recommendation = 2200f,
         intake = 2000f,
     )
@@ -247,7 +267,7 @@ fun PreviewPeriodBarGraph() {
     )
     NutritionPeriodBarGraph(
         nutrition = Nutrition.Calorie,
-        recommend = Nutrition.Calorie.defaultRecommend,
+        recommend = Nutrition.Calorie.defaultRecommendation,
         intakes = data,
     )
 }
