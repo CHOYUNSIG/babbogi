@@ -23,8 +23,8 @@ fun ColumnScreen(
     content: @Composable (ColumnScope.() -> Unit)
 ) {
     Column(
-        modifier = Modifier.let {
-            if (prohibitScroll) it.fillMaxHeight()
+        modifier = Modifier.fillMaxHeight().let {
+            if (prohibitScroll) it
             else it.verticalScroll(rememberScrollState())
         }
     ) {

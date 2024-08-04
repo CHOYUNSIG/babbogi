@@ -169,6 +169,7 @@ private fun Setting(
         FloatingContainer(onClick = onTutorialRestartClicked) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "메뉴얼 다시 보기", style = BabbogiTypography.titleMedium)
