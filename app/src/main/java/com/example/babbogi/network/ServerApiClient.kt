@@ -34,7 +34,6 @@ import retrofit2.http.PUT
 import retrofit2.http.Query
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 private val retrofit = Retrofit.Builder()
     .client(
@@ -155,7 +154,6 @@ object ServerApi {
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getWeightHistory(id: Long): List<WeightHistory> {
         Log.d("ServerApi", "getWeightTransition($id)")
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         return retrofitService.getHealthState(id).map { it.toWeightHistory() }
     }
 
