@@ -339,7 +339,7 @@ fun WeightHistoryManagement(
         if (showDeletePopup) CustomPopup(
             callbacks = listOf({ onWeightHistoryDeleted(w.id) }, {}),
             labels = listOf("확인", "취소"),
-            onDismiss = { showDeletePopup = false },
+            onDismiss = { showDeletePopup = false; selectedIndex = null },
             icon = R.drawable.baseline_delete_24,
             title = "기록 삭제",
         ) {
