@@ -40,7 +40,6 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.babbogi.R
 import com.example.babbogi.ui.theme.BabbogiTypography
-import kotlin.random.Random
 
 @Composable
 fun GptAnalyzeReport(
