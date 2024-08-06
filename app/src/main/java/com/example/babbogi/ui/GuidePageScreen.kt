@@ -19,10 +19,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -45,6 +48,7 @@ import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.view.ColumnScreen
+import com.example.babbogi.ui.view.FixedColorIconButton
 import com.example.babbogi.ui.view.ScreenPreviewer
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -102,23 +106,21 @@ private fun CustomSlider(
         ) { page ->
             val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
             val scaleFactor = 0.75f + (1f - 0.75f) * (1f - pageOffset.absoluteValue)
-            Box(
-                contentAlignment = Alignment.Center,
+            Card(
                 modifier = Modifier
                     .graphicsLayer {
                         scaleX = scaleFactor
                         scaleY = scaleFactor
                     }
                     .alpha(scaleFactor.coerceIn(0f, 1f))
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .clip(RoundedCornerShape(imageCornerRadius))
+                    .wrapContentSize(),
+                shape = RoundedCornerShape(imageCornerRadius),
             ) {
                 Image(
                     painter = painterResource(id = sliderList[page]),
                     contentDescription = "Image",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight()
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
@@ -161,17 +163,12 @@ private fun GuidePage(
             .fillMaxSize()
             .padding(32.dp)
     ) {
-        IconButton(
+        FixedColorIconButton(
+            icon = R.drawable.baseline_skip_24,
+            contentDescription = "건너뛰기",
             onClick = onComplete,
-            modifier = Modifier.size(75.dp),
-            colors = IconButtonDefaults.iconButtonColors(contentColor = Color.Black)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.baseline_skip_24),
-                contentDescription = "Skip",
-                modifier = Modifier.size(75.dp)
-            )
-        }
+            size = 75.dp,
+        )
     }
 }
 

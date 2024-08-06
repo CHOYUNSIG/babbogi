@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.babbogi.R
 import com.example.babbogi.ui.theme.BabbogiGreen
@@ -106,6 +107,7 @@ fun FixedColorCheckBox(
 fun FixedColorIconButton(
     icon: Int,
     contentDescription: String? = null,
+    size: Dp = 40.dp,
     onClick: () -> Unit,
 ) {
     ElevatedButton(
@@ -117,11 +119,12 @@ fun FixedColorIconButton(
         ),
         elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 5.dp),
         contentPadding = PaddingValues(0.dp),
-        modifier = Modifier.size(40.dp)
+        modifier = Modifier.size(size)
     ) {
         Icon(
             painter = painterResource(icon),
             contentDescription = contentDescription,
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
