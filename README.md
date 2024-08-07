@@ -1,5 +1,5 @@
 <div align=center>
-  <img src="https://raw.githubusercontent.com/CHOYUNSIG/babbogi/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" width=200 alt="아이콘"/>
+  <img src="https://raw.githubusercontent.com/CHOYUNSIG/babbogi/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" alt="아이콘"/>
   <h1>밥보기</h1>
   <p>안드로이드 영양소 관리 앱</p>
 </div>
