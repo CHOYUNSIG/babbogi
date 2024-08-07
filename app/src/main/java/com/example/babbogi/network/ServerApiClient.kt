@@ -170,7 +170,7 @@ object ServerApi {
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getWeightHistory(id: Long): List<WeightHistory> {
         Log.d("ServerApi", "getWeightTransition($id)")
-        return retrofitService.getHealthState(id).map { it.toWeightHistory() }
+        return retrofitService.getHealthState(id).map { it.toWeightHistory() }.sortedBy { it.date }
     }
 
     suspend fun getNutritionRecommendation(id: Long): NutritionRecommendation {
