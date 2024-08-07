@@ -112,12 +112,12 @@ enum class Screen(
 }
 
 class MainActivity : ComponentActivity() {
+    private val viewModel by lazy { BabbogiViewModel() }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         BabbogiModel.init(this)
-        val viewModel = BabbogiViewModel()
 
         setContent {
             BabbogiTheme {

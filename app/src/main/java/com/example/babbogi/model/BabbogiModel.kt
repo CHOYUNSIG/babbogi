@@ -14,6 +14,7 @@ object BabbogiModel {
 
     fun init(context: Context) {
         sharedPreferences = context.getSharedPreferences("babbogi", Context.MODE_PRIVATE)
+        Log.d("DataPreference", "Initialized.\nToken: $token")
     }
 
     var isTutorialDone: Boolean
