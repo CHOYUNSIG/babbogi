@@ -118,8 +118,8 @@ private fun FoodModificationCard(
 ) {
     var detailsMode by remember { mutableStateOf(false) }
     val onDetailsModeToggled: (Boolean) -> Unit = remember { { mode -> detailsMode = mode } }
-    var servingSizeText by remember { mutableStateOf(product.servingSize.toString()) }
-    var intakeRatioText by remember { mutableStateOf((intakeRatio * 100).toString()) }
+    var servingSizeText by remember { mutableStateOf("%.1f".format(product.servingSize)) }
+    var intakeRatioText by remember { mutableStateOf("%.1f".format(intakeRatio * 100)) }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     if (detailsMode) ProductAbstraction(
@@ -456,7 +456,11 @@ private fun FoodList(
             Column {
                 indexes.forEach { index ->
                     val (product, ratio) = productList[index]
-                    Text(text = "${product.name} %.1fg".format(ratio * product.servingSize))
+                    Text(
+                        text = "${
+                            product.name.ifEmpty { "(이름 없음)" }
+                        } %.1fg".format(ratio * product.servingSize)
+                    )
                 }
             }
             Column {

@@ -61,7 +61,7 @@ private fun getColorsByNutritionIntakeRatio(nutrition: Nutrition, ratio: Float):
     return when(nutrition.recommendationType) {
         NutritionRecommendationType.Normal -> run {
             if (ratio > 1.2) GradientColorsList[0]
-            else if (ratio > 8.0) GradientColorsList[1]
+            else if (ratio > 0.8) GradientColorsList[1]
             else GradientColorsList[2]
         }
         NutritionRecommendationType.UpperLimit -> run {

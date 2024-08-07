@@ -118,7 +118,7 @@ fun FixedColorIconButton(
             contentColor = Color.White,
         ),
         elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 5.dp),
-        contentPadding = PaddingValues(0.dp),
+        contentPadding = PaddingValues(5.dp),
         modifier = Modifier.size(size)
     ) {
         Icon(
