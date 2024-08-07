@@ -1,7 +1,7 @@
 <div align=center>
   <img src="https://raw.githubusercontent.com/CHOYUNSIG/babbogi/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" alt="아이콘"/>
   <h1>밥보기</h1>
-  <p>안드로이드 영양소 관리 앱</p>
+  <p>섭취 기반 영양소 관리 서비스</p>
 </div>
 
 <h2>📝소개</h2>
