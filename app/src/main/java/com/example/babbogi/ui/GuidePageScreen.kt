@@ -145,29 +145,32 @@ private fun GuidePage(
     list: List<Int>,
     onComplete: () -> Unit,
 ) {
-    ColumnScreen(prohibitScroll = true) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        // 이미지 슬라이더
+        CustomSlider(sliderList = list)
+
+        // 스킵 버튼을 이미지 위에 배치, 투명 배경 처리
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.TopEnd,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp, 32.dp)
         ) {
-            CustomSlider(sliderList = list)
+            // FixedColorIconButton의 배경을 제거하고, 버튼만 표시되도록 함
+            Image(
+                painter = painterResource(id = R.drawable.baseline_skip_24),
+                contentDescription = "건너뛰기",
+                modifier = Modifier
+                    .size(100.dp)
+                    .clickable { onComplete() }
+            )
         }
     }
-
-    Box(
-        contentAlignment = Alignment.TopEnd,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp)
-    ) {
-        FixedColorIconButton(
-            icon = R.drawable.baseline_skip_24,
-            contentDescription = "건너뛰기",
-            onClick = onComplete,
-            size = 75.dp,
-        )
-    }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview(uiMode = UI_MODE_NIGHT_NO)
