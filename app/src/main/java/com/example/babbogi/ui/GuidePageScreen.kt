@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,6 +23,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -45,7 +48,6 @@ import com.example.babbogi.R
 import com.example.babbogi.Screen
 import com.example.babbogi.model.BabbogiViewModel
 import com.example.babbogi.ui.view.ColumnScreen
-import com.example.babbogi.ui.view.FixedColorIconButton
 import com.example.babbogi.ui.view.ScreenPreviewer
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -145,32 +147,30 @@ private fun GuidePage(
     list: List<Int>,
     onComplete: () -> Unit,
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        // 이미지 슬라이더
-        CustomSlider(sliderList = list)
-
-        // 스킵 버튼을 이미지 위에 배치, 투명 배경 처리
-        Box(
-            contentAlignment = Alignment.TopEnd,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp, 32.dp)
+    ColumnScreen(prohibitScroll = true) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp, alignment = Alignment.CenterVertically),
         ) {
-            // FixedColorIconButton의 배경을 제거하고, 버튼만 표시되도록 함
-            Image(
-                painter = painterResource(id = R.drawable.baseline_skip_24),
-                contentDescription = "건너뛰기",
-                modifier = Modifier
-                    .size(100.dp)
-                    .clickable { onComplete() }
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.baseline_skip_24),
+                    contentDescription = "건너뛰기",
+                    contentScale = ContentScale.Crop,
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
+                    modifier = Modifier
+                        .height(50.dp)
+                        .width(100.dp)
+                        .clickable { onComplete() }
+                )
+            }
+            CustomSlider(sliderList = list)
         }
     }
 }
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview(uiMode = UI_MODE_NIGHT_NO)
