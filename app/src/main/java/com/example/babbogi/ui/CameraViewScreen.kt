@@ -219,7 +219,12 @@ private fun CameraView(
             onDismiss = onCancelClicked,
             title = "다음 상품을 추가하시겠습니까?"
         ) {
-            ProductAbstraction(product = product, nullMessage = "서버에 영양 정보가 없습니다.")
+            ProductAbstraction(
+                product = product,
+                nullMessage = "서버에 영양 정보가 없습니다.",
+            ) {
+                Text(text = "1회 제공량\n%.1fg 당".format(product.servingSize), style = BabbogiTypography.bodySmall)
+            }
         }
         else CustomPopup(
             callbacks = listOf(onCancelClicked),
