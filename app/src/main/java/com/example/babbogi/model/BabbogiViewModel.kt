@@ -328,9 +328,11 @@ class BabbogiViewModel: ViewModel() {
             var report: String? = null
             try {
                 periodReport?.let { (period, preReport) ->
-                    report = if (refresh || preReport == null || period.first() != startDate || period.last() != endDate)
-                        ServerApi.getReport(BabbogiModel.id!!, startDate, endDate)
-                    else preReport
+                    if (refresh || preReport == null || period.first() != startDate || period.last() != endDate) {
+                        periodReport = null
+                        report = ServerApi.getReport(BabbogiModel.id!!, startDate, endDate)
+                    }
+                    else report = preReport
                 } ?: run {
                     report = ServerApi.getReport(BabbogiModel.id!!, startDate, endDate)
                 }

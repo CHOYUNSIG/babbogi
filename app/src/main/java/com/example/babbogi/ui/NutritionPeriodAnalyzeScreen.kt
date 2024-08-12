@@ -110,7 +110,7 @@ fun NutritionPeriodAnalyzeScreen(
             }
         },
         onNewReportRequested = { onLoadingEnded ->
-            viewModel.getPeriodReport(period.first(), period.last()) {
+            viewModel.getPeriodReport(period.first(), period.last(), refresh = true) {
                 report = it
                 if (it == null) showAlertPopup(
                     "레포트 생성 실패",
@@ -221,7 +221,7 @@ private fun NutritionPeriodAnalyze(
             title = "기간 레포트",
             report = report,
             prohibitMessage = when {
-                LocalDate.now() in period.first()..period.last() -> "오늘이 포함한 기간의 레포트는 생성할 수 없습니다."
+                LocalDate.now() in period.first()..period.last() -> "오늘이 포함된 기간의 레포트는 생성할 수 없습니다."
                 else -> null
             },
             onNewReportRequested = onNewReportRequested,

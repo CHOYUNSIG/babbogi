@@ -12,12 +12,14 @@ data class Consumption (
     val time: LocalDateTime?,
 ) {
     val weight: Float = product.servingSize * intakeRatio
-    val nutritionIntake: NutritionIntake = product.nutrition!!.mapValues { it.value * intakeRatio }
+    val nutritionIntake: NutritionIntake = Nutrition.entries.associateWith {
+        this.product.nutrition?.get(it)?.times(intakeRatio) ?: 0f
+    }
 }
 
 fun List<Consumption>.toNutritionIntake(): NutritionIntake = Nutrition.entries.associateWith { nutrition ->
     this.sumOf {
-        it.product.nutrition?.get(nutrition)?.toDouble() ?: 0.0
+        it.product.nutrition?.get(nutrition)?.toDouble()?.times(it.intakeRatio) ?: 0.0
     }.toFloat()
 }
 

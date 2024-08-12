@@ -184,7 +184,7 @@ fun ProductAbstraction(
     Abstraction(
         data = if (product.nutrition != null) Nutrition.entries.map { nutrition ->
             stringResource(id = nutrition.res) to Pair(
-                product.nutrition[nutrition].toString(),
+                "%.1f".format(product.nutrition[nutrition]?.times(intakeRatio ?: 1f) ?: 0f),
                 nutrition.unit,
             )
         } else listOf(nullMessage to Pair("", "")),
