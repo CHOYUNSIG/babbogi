@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActionScope
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
@@ -118,9 +119,16 @@ private fun FoodModificationCard(
 ) {
     var detailsMode by remember { mutableStateOf(false) }
     val onDetailsModeToggled: (Boolean) -> Unit = remember { { mode -> detailsMode = mode } }
-    var servingSizeText by remember { mutableStateOf("%.1f".format(product.servingSize)) }
-    var intakeRatioText by remember { mutableStateOf("%.1f".format(intakeRatio * 100)) }
+    var servingSizeText by remember(product) { mutableStateOf("%.1f".format(product.servingSize)) }
+    var intakeRatioText by remember(intakeRatio) { mutableStateOf("%.1f".format(intakeRatio * 100)) }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val onKeyboardDone: KeyboardActionScope.() -> Unit = remember {
+        {
+            servingSizeText.toFloatOrNull()?.let { onServingSizeChanged(it) }
+            intakeRatioText.toFloatOrNull()?.let { onIntakeRatioChanged(it / 100) }
+            keyboardController?.hide()
+        }
+    }
 
     if (detailsMode) ProductAbstraction(
         product = product,
@@ -153,10 +161,7 @@ private fun FoodModificationCard(
                     suffix = { Text(text = "g") },
                     modifier = Modifier.weight(1f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {
-                        servingSizeText.toFloatOrNull()?.let { onServingSizeChanged(it) }
-                        keyboardController?.hide()
-                    }),
+                    keyboardActions = KeyboardActions(onDone = onKeyboardDone),
                 )
                 Text(text = " × ")
                 OutlinedTextField(
@@ -166,10 +171,7 @@ private fun FoodModificationCard(
                     suffix = { Text(text = "%") },
                     modifier = Modifier.weight(1f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {
-                        intakeRatioText.toFloatOrNull()?.let { onIntakeRatioChanged(it / 100) }
-                        keyboardController?.hide()
-                    }),
+                    keyboardActions = KeyboardActions(onDone = onKeyboardDone),
                 )
             }
         }
