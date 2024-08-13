@@ -122,7 +122,7 @@ private fun FoodModificationCard(
     var servingSizeText by remember(product) { mutableStateOf("%.1f".format(product.servingSize)) }
     var intakeRatioText by remember(intakeRatio) { mutableStateOf("%.1f".format(intakeRatio * 100)) }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val onKeyboardDone: KeyboardActionScope.() -> Unit = remember {
+    val onKeyboardDone: KeyboardActionScope.() -> Unit = remember(servingSizeText, intakeRatioText, keyboardController) {
         {
             servingSizeText.toFloatOrNull()?.let { onServingSizeChanged(it) }
             intakeRatioText.toFloatOrNull()?.let { onIntakeRatioChanged(it / 100) }
