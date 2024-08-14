@@ -1,7 +1,8 @@
 <div align=center>
-  <img src="https://raw.githubusercontent.com/CHOYUNSIG/babbogi/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" alt="아이콘"/>
+  <img src="https://raw.githubusercontent.com/CHOYUNSIG/babbogi/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" alt="아이콘"/><br>
   <h1>밥보기</h1>
   <p>섭취 기반 영양소 관리 서비스</p>
+  <img src="https://shields.io/badge/숭실대학교_2024_소프트웨어_공모전-Silver_Award-AAAACC.svg?&style=for-the-badge&logoColor=white"/><br>
 </div>
 
 <h2>📝 소개</h2>
@@ -112,5 +113,5 @@
 </div>
 
 <blockquote>
-  이 프로젝트는 "숭실대학교 2024 소프트웨어공모전"의 출품작입니다.
+  이 프로젝트는 숭실대학교 "소프트웨어프로젝트" 수업의 일환으로 시작되었습니다. 프로젝트의 이전 모습을 보시려면 <a href="https://github.com/CHOYUNSIG/babbogi/blob/main/README_OLD.md">이곳</a>을 참조하세요.
 </blockquote>
