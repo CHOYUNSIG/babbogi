@@ -1,17 +1,9 @@
-<br>
-<br>
-
-<h1>  
-  밥보기
-  <img src="https://raw.githubusercontent.com/CHOYUNSIG/babbogi/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" alt="아이콘" align=left width=150>
-</h1>
-<div aling=center>
-  <blockquote>섭취 기반 영양소 관리 서비스</blockquote>
-  <img src="https://shields.io/badge/숭실대학교_2024_소프트웨어_공모전-Silver_Award-AAAACC.svg?&style=for-the-badge&logoColor=white">
-</div><br>
-
-<br>
-<br>
+<div align=center>
+  <img src="https://raw.githubusercontent.com/CHOYUNSIG/babbogi/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" alt="아이콘"/><br>
+  <h1>밥보기</h1>
+  <p>섭취 기반 영양소 관리 서비스</p>
+  <img src="https://shields.io/badge/숭실대학교_2024_소프트웨어_공모전-Silver_Award-AAAACC.svg?&style=for-the-badge&logoColor=white"/><br>
+</div>
 
 <h2>📝 소개</h2>
 <blockquote>
