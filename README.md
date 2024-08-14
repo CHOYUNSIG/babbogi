@@ -5,6 +5,10 @@
   <img src="https://shields.io/badge/숭실대학교_2024_소프트웨어_공모전-Silver_Award-AAAACC.svg?&style=for-the-badge&logoColor=white"/><br>
 </div>
 
+<br>
+<br>
+<br>
+
 <h2>📝 소개</h2>
 <blockquote>
   밥보기는 사용자의 건강 정보와 식사 정보를 바탕으로 하루 적정 영양소 섭취량을 계산하고 관리할 수 있는 앱이다. 사용자는 앱을 통해서 자신이 섭취한 음식을 편리하게 입력하고 오늘의 영양 정보를 쉽게 받아볼 수 있다.
