@@ -118,4 +118,5 @@
 
 <blockquote>
   이 프로젝트는 숭실대학교 "소프트웨어프로젝트" 수업의 일환으로 시작되었습니다. 프로젝트의 이전 모습을 보시려면 <a href="https://github.com/CHOYUNSIG/babbogi/blob/main/README_OLD.md">이곳</a>을 참조하세요.
+  이 리포지토리는 "밥보기" 서비스의 클라이언트 앱의 리포지토리입니다. 서비스의 서버 리포지토리는 <a href="https://github.com/BabBogi/BabBogi-backend">이곳</a>을 참조하세요.
 </blockquote>
